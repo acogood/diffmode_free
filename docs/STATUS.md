@@ -18,9 +18,17 @@ Last updated: **2026-06-01**
 > instead of re-running the deep-research passes (≈8 duplicate Perplexity calls saved). (5)
 > **Perplexity caps** — search-first, ≤~1-2 deep `perplexity_research` calls/stage. (6)
 > **Channel-Menu-2026** bundled (replaces 2025). Counts: skills 14→12, reviewer **gates** 7→2
-> (the 7 rubric files are retained, just unused for the dropped stages). Ships only if the
-> theona re-test holds the quality bars (revert = `git revert`; partial-revert = re-split
-> `explore` back into its two former skills).
+> (the 7 rubric files are retained, just unused for the dropped stages).
+>
+> **✅ Re-test PASSED (theona.ai, 2026-06-02) — SHIPPED.** All ship bars held; the moat-risky
+> synthesis collapse *improved* quality. **8 tactics · 88% unconventional** (vs v2.2.0 67%, bar
+> ≥60%) · **100% white-space retention** (4/4 Phase-1 carried) · **0 phantom vectors** (18 unique
+> IDs, all traceable) · **verb groups 9, ≤2/group** · **0 purity / 0 deception failures** ·
+> **`synthesis-build` reviewer APPROVED score 9, first pass.** Wins measured: **wall-clock 85 min**
+> (vs ~112 min) even *with* one `explore` socket-death respawn (auto-recovered, att2 OK); **think-tanks
+> 0s `started_at` spread** (true parallel); **5 deep `perplexity_research` calls** (down from 6) +
+> search-first rebalance, growth-factors mining 10 min (vs ~38 min), no respawn duplication. No
+> revert triggered — commit kept.
 
 > **Round-3 speed pass (2026-06-01, plugin v2.2.0).** Cut the 2.5–3h run without changing
 > output quality: (1) **per-stage timing** instrumented in the run-ledger (`started_at` +
@@ -55,8 +63,8 @@ studies (`growth-factors-mining` → `growth-factors.json`) and a skill replaces
 constraints generator (`lite-constraints`). The 4-step synthesis was ported and IP-scrubbed to
 read that LIGHT DB. Paid Diffmode keeps prioritization, implementation guides, and the real DB.
 
-**This work is written and validated (all 12 skills pass `quick_validate.py`); v2.3.0 ships
-only after the theona re-test holds the quality bars (see *Open items*).**
+**This work is written, validated (all 12 skills pass `quick_validate.py`), and the v2.3.0
+theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see the Round-4 note).**
 
 ## Status at a glance
 
@@ -74,7 +82,7 @@ only after the theona re-test holds the quality bars (see *Open items*).**
 | Orchestrator (`run-growth-tactics.md`) + standalone `run-enrichment.md` | ✅ done |
 | All 12 skills pass `quick_validate.py` | ✅ done |
 | Clean-room verified (nothing reads `tactics_DB/`) | ✅ done (grep + skill prohibitions) |
-| End-to-end live run | ⬜ not started |
+| End-to-end live run | ✅ v2.3.0 theona.ai re-test PASSED (2026-06-02): 8 tactics, 88% unconv, 100% white-space, 0 phantom, build reviewer 9, 85 min, think-tanks 0s-parallel |
 | Git commit (untracked on `main`) | ⬜ not started |
 | Per-run cost/latency measured | ⬜ not started |
 | Light-DB vs proprietary-DB moat comparison | ⬜ not started |
