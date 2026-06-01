@@ -1,0 +1,203 @@
+---
+description: Run the Diffmode enrichment stage only — competitors → audience ‖ acquisition-tactics, reviewer-gated, into a ./<slug>/ workspace in your cwd.
+---
+
+# Run Enrichment
+
+Main-thread orchestrator for the **enrichment** stage, run as skills + worker
+sub-agents. Owns the DAG, the parallel fan-out, the reviewer-retry quality gate, and the
+stage-boundary existence checks, following the same single-shot worker / main-thread
+orchestration pattern as the full `run-growth-tactics` pipeline.
+
+> **This command runs in the main thread.** It dispatches worker sub-agents via the
+> Agent/Task tool. It must NOT itself be run as a sub-agent — sub-agents are one level
+> deep and could not then spawn the workers. (See the repo's `docs/architecture.md`.)
+
+Design refs (internal, not shipped in the plugin):
+`docs/enrichment-pilot.md` (corrected DAG, inputs, bug fixes),
+`docs/architecture.md` (roles, state contract).
+
+> **Naming under the plugin.** This command ships in the `diffmode-growth-tactics` plugin and
+> is invoked as `/diffmode-growth-tactics:run-enrichment`. Its skills and worker agents are
+> plugin-namespaced — use these exact ids in Agent-tool dispatches:
+> skills `diffmode-growth-tactics:enrichment-<dimension>`; workers
+> `diffmode-growth-tactics:research-worker`,
+> `diffmode-growth-tactics:analysis-worker`, `diffmode-growth-tactics:reviewer`.
+> The plugin is **self-contained**: it reads its bundled channel menu from
+> `${CLAUDE_PLUGIN_ROOT}/reference/` and writes outputs to a `./<slug>/` workspace in the
+> user's current directory. No host repo is required.
+
+## Arguments
+
+`$ARGUMENTS`:
+
+- `--product <slug>` (required) — names the workspace at `./<slug>/` in the current directory.
+  Example: `/run-enrichment --product theona.ai`.
+- `--only <dimension[,dimension…]>` (optional) — run a subset (e.g. `--only competitors`).
+  Dependencies must already exist on disk for any dimension not in the subset.
+- `--scratch` (optional) — write outputs to `02-enrichment-scratch/` instead of
+  `02-enrichment/`, preserving any existing originals (use for dry-runs / parity checks,
+  honoring the "never edit originals" rule for known-good outputs).
+
+The three dimensions: `competitors`, `audience`, `acquisition-tactics`.
+
+## Pre-flight
+
+1. **Resolve the workspace** — `WS = ./<slug>` under the user's **current working directory**.
+   Confirm `WS/01-diagnostics/founder-input.md` exists and is non-empty. If missing, abort with
+   `missing-founder-input` (diagnostics must run first). **No host repo is required** — the
+   plugin is self-contained.
+2. **Confirm the channel menu** — `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md`
+   exists (bundled in the plugin; required by competitors, acquisition-tactics, audience).
+   `${CLAUDE_PLUGIN_ROOT}` expands to the plugin's install directory at runtime.
+3. **Resolve the output dir** — `OUT = WS/02-enrichment` (or `WS/02-enrichment-scratch`
+   under `--scratch`). Create it if missing.
+4. **Confirm the plugin is active** — the `diffmode-growth-tactics` plugin's skills
+   (`diffmode-growth-tactics:enrichment-*`) and worker agents are present whenever the plugin
+   is enabled, so no install step is needed here. If a worker dispatch later reports an
+   unknown agent, the plugin is not enabled — run `/plugin` and enable `diffmode-growth-tactics`
+   (or `claude plugin install diffmode-growth-tactics@diffmode-free`).
+5. **Confirm the reviewer threshold** — score **≥ 7**, **max 3** iterations per
+   dimension (the pipeline norm).
+
+## The DAG (waves)
+
+```
+Wave 1 (blocking gate):  competitors
+Wave 2 (parallel):       audience          ‖ acquisition-tactics      (both depend_on competitors)
+```
+
+`acquisition-tactics` is a leaf (nothing downstream in enrichment consumes it). Wave 2 is the
+last enrichment wave — there is no Wave 3. (Enrichment is intentionally lean: dimensions whose
+output no downstream stage reads are not run. See the repo's `docs/enrichment-pilot.md` for the
+removal history.)
+
+### Per-dimension input wiring (the worker's `inputs`)
+
+| Dimension | Worker (plugin-namespaced) | Inputs | Reviewer spec_path |
+|-----------|--------|--------|--------------------|
+| competitors | `diffmode-growth-tactics:research-worker` | `WS/01-diagnostics/founder-input.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-competitors/SKILL.md` |
+| audience | **`diffmode-growth-tactics:analysis-worker`** (no MCP) | `WS/01-diagnostics/founder-input.md`; `OUT/competitors-analysis.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-audience/SKILL.md` |
+| acquisition-tactics | `diffmode-growth-tactics:research-worker` | `WS/01-diagnostics/founder-input.md`; `OUT/competitors-analysis.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-acquisition-tactics/SKILL.md` |
+
+Output filenames in `OUT/`: `competitors-analysis.md`, `audience-jtbd.md`,
+`acquisition-tactics.md`.
+
+> **Channel-menu fix:** the audience worker DOES receive the channel menu, unlike the
+> legacy Python config — a deliberate correction (`enrichment-pilot.md` bug fix #1).
+> **Audience no-search:** audience uses `analysis-worker`, which has no
+> research MCP, so ENR-001's no-new-web-search rule is structurally enforced.
+
+## The per-dimension routine (generate → existence-check → reviewer loop)
+
+For each dimension `D` with worker `W`, output `O = OUT/<file>.md`, rubric spec `S`:
+
+### 1. Dispatch the worker
+
+Call the Agent tool with `subagent_type = W` (the plugin-namespaced worker id from the
+table, e.g. `diffmode-growth-tactics:research-worker`) and a self-contained brief:
+
+```
+skill:   diffmode-growth-tactics:enrichment-<D>
+inputs:  [ …the paths from the table above… ]
+output:  <O>          (absolute or repo-relative)
+blocking_issues: <none on the first pass>
+```
+
+The worker loads the skill, reads inputs, (researches), writes `O`, and returns
+`{status, outputPath, summary}`.
+
+### 2. Stage-boundary existence check (replaces Python `verify_outputs`)
+
+After the worker returns, confirm deterministically:
+
+- `O` exists and is **non-empty** (`test -s <O>`).
+- `O` contains the dimension's required top-level sections (a cheap grep, e.g.
+  competitors → `## Competitor Overview` and `## Competitive Channel Matrix`; audience →
+  `## Customer Segments` and `## Segment Evaluation Summary`; acquisition-tactics →
+  `## Tactics Summary Dashboard`).
+
+If the file is missing/empty/structurally incomplete and the worker returned `ok`,
+treat as a failed attempt and re-dispatch once with the specific gap noted; if the
+worker returned `error`, surface its `reason` and stop this dimension's branch.
+
+### 3. Reviewer loop (score ≥ 7, max 3 iterations)
+
+```
+iter = 1
+loop:
+  dispatch Agent(subagent_type = "diffmode-growth-tactics:reviewer", brief = {
+      dimension: <D>, spec_path: <S>, output_path: <O>,
+      context_paths: [ WS/01-diagnostics/founder-input.md, …upstream outputs… ] })
+  read verdict JSON { score, verdict, format_compliance, blocking_issues[] }
+
+  if verdict == APPROVED (score ≥ 7 and format PASS):
+      mark D done; record score; break
+
+  else:  # REJECTED
+      if iter >= 3:
+          mark D FAILED; append blocking_issues to the run summary; STOP D's branch
+          (do not dispatch dimensions that depend on D)
+      else:
+          re-dispatch W with the SAME brief plus blocking_issues injected verbatim;
+          re-run step 2 (existence check); iter += 1; continue
+```
+
+The reviewer's `blocking_issues` are passed unchanged into the worker's re-dispatch
+brief — the worker's procedure addresses them first. This is the repo's threshold-7 /
+max-3 norm.
+
+## Execution order (the actual run)
+
+1. **Wave 1 — competitors.** Run the per-dimension routine for `competitors`. **This is
+   a blocking gate** — if it ends FAILED, abort the whole run (both other dimensions depend
+   on `competitors-analysis.md`).
+
+2. **Wave 2 — audience ‖ acquisition-tactics (parallel).** Dispatch BOTH workers in a
+   **single message containing two Agent tool uses** so they run concurrently:
+   - `diffmode-growth-tactics:analysis-worker` for `audience` (no MCP),
+   - `diffmode-growth-tactics:research-worker` for `acquisition-tactics`.
+   Then run each dimension's existence-check + reviewer loop. (Reviewer dispatches for
+   the two may also be batched in one message.) `acquisition-tactics` is a leaf; nothing in
+   enrichment depends on it. Wave 2 is the last enrichment wave — there is no Wave 3.
+
+## Output / report
+
+When the run finishes, report a compact summary to the user (do not paste file
+contents):
+
+```
+Enrichment — <slug>
+  competitors          APPROVED  (score 8, 1 pass)        OUT/competitors-analysis.md
+  audience             APPROVED  (score 9, 1 pass)        OUT/audience-jtbd.md
+  acquisition-tactics  APPROVED  (score 7, 2 passes)      OUT/acquisition-tactics.md
+```
+
+For any FAILED dimension, list its final `blocking_issues`.
+
+## Failure modes
+
+| Code | Where | Meaning | Recovery |
+|------|-------|---------|----------|
+| `missing-founder-input` | pre-flight | `WS/01-diagnostics/founder-input.md` absent/empty | run diagnostics first |
+| `missing-channel-menu` | pre-flight | bundled channel menu absent from `${CLAUDE_PLUGIN_ROOT}/reference/` | reinstall the plugin |
+| `plugin-not-enabled` | any dispatch | a worker/skill id (`diffmode-growth-tactics:…`) doesn't resolve | enable the plugin: `/plugin` → `diffmode-growth-tactics`, or `claude plugin install diffmode-growth-tactics@diffmode-free` |
+| `competitors-gate-failed` | Wave 1 | competitors REJECTED after 3 iterations | inspect blocking_issues; the 2 downstream dims cannot run |
+| `worker-error` | any | a worker returned `{status:"error"}` | surface `reason`; fix the input it named |
+| `output-missing` | existence check | worker returned ok but file missing/empty/incomplete | re-dispatched once; if still bad, stop that branch |
+| `dimension-failed` | reviewer loop | a dim REJECTED after 3 iterations | list final blocking_issues; dependents skipped |
+
+## Idempotency
+
+Overwrite-on-rerun for `OUT/*.md`, matching the current CLI. A re-run regenerates the
+three files from scratch. Use `--scratch` to write into `02-enrichment-scratch/` and
+preserve known-good originals (dry-runs / output-parity checks).
+
+## Acceptance check (user runs after the orchestrator finishes)
+
+1. All three `OUT/*.md` exist, non-empty, with the required sections.
+2. Each dimension reached APPROVED (score ≥ 7); note any that needed 2-3 passes.
+3. Spot-check `OUT/*.md` for completeness — every required section present, every
+   required field populated, sources cited where the skill demands them.
+4. Confirm the audience worker performed **no** web lookups (no research MCP available
+   to it) and that a research worker actually cited Perplexity-sourced URLs.

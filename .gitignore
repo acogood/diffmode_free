@@ -1,0 +1,14 @@
+# Per-run workspace artifacts.
+# The pipeline writes each run into ./<slug>/ in the user's current directory; these
+# patterns keep an accidental in-repo test run (and its run-ledger) out of git.
+.run-state.json
+RUN-LOG.md
+**/01-diagnostics/
+**/02-enrichment/
+**/03-think-tanks/
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/

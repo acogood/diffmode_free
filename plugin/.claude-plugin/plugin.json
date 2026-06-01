@@ -1,0 +1,8 @@
+{
+  "name": "diffmode-growth-tactics",
+  "description": "Diffmode's free growth-ideation pipeline as a Claude Code plugin. A /run-growth-tactics orchestrator drives the full DAG — fast diagnostics intake (URL research or minimal Q&A) -> 2-wave enrichment -> parallel think-tank research (competitor-gaps, cross-industry, platform-arbitrage), with per-run growth-factors mining (a clean-room LIGHT vector DB built fresh from public case studies) running concurrently from right after the competitors gate -> lite synthesis constraints -> 4-step multi-pass synthesis (step1 combinations -> step2 mechanisms -> pass1 white-space -> pass2 founder-fit) -> a final synthesis.md of 7-9 novel demand-gen tactic IDEAS. It STOPS at synthesis: prioritization, implementation guides, and the proprietary 576-vector database stay paid. A parameterized reviewer gates every generating stage (score >= 7, max 3 retries). Research stages require a Perplexity MCP server; analysis + synthesis stages run with no MCP by design.",
+  "version": "2.2.0",
+  "author": {
+    "name": "Anton Kogut"
+  }
+}

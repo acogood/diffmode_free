@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "diffmode-free",
+  "owner": {
+    "name": "Anton Kogut",
+    "email": "tooogoood@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "diffmode-growth-tactics",
+      "source": "./plugin",
+      "description": "Diffmode free growth-ideation pipeline: a /run-growth-tactics orchestrator + diagnostics intake, enrichment, think-tank research, a per-run clean-room LIGHT vector DB, lite synthesis constraints, and a 4-step multi-pass synthesis that stops at 7-9 novel demand-gen tactic ideas. Parameterized reviewer + worker sub-agents. Self-contained: writes runs into ./<slug>/ in the user's cwd, no host repo required.",
+      "category": "marketing"
+    }
+  ]
+}
