@@ -35,7 +35,7 @@ The orchestrator's prompt gives you:
   `analysis-worker`, NOT this worker, because they forbid / do not require web research.)
 - **`inputs`** — absolute or workspace-relative paths to read (e.g. the workspace's
   `01-diagnostics/founder-input.md`, `02-enrichment/*.md`, the bundled channel menu at
-  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md`). For
+  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`). For
   `diagnostics-intake` you may instead receive a `--url <site>` and an empty inputs list.
 - **`output`** — the exact path to write (e.g.
   `<slug>/02-enrichment/competitors-analysis.md`, or
@@ -61,12 +61,18 @@ refuse that path and note it in your summary.
 2. **Read the inputs** the brief lists. Read `founder-input.md` FIRST when present so the
    work is tailored to THIS product. If a listed input is missing, proceed per the skill's
    guidance and note the limitation in the output.
-3. **Research the web** with `mcp__perplexity__perplexity_research` (deep, multi-source)
-   and `mcp__perplexity__perplexity_search` (targeted facts/URLs); use `WebFetch` to pull
-   a specific page (e.g. a homepage/pricing/about page in diagnostics-intake). Cite
-   sources with URLs and access dates as the skill's output template requires. Prefer
-   real, verifiable findings; mark uncertain data `[Estimated]`/`[Unverified]`; never
-   fabricate.
+3. **Research the web — search-first, deep-research capped (cost control).**
+   `mcp__perplexity__perplexity_search` (targeted facts/URLs, fast + cheap) is your
+   **default** tool: reach for it first and use it for the bulk of your lookups.
+   `mcp__perplexity__perplexity_research` (deep, multi-source, slow + expensive) is
+   **capped at ~1-2 calls per stage** — spend them only on the one or two questions that
+   genuinely need multi-source synthesis (e.g. an initial landscape pass), then fall back
+   to `search` for everything else. Deep-research calls drove ~85% of a run's research cost
+   in the field, so treat them as scarce. Use `WebFetch` to pull a specific page (e.g. a
+   homepage/pricing/about page in diagnostics-intake). Cite sources with URLs and access
+   dates as the skill's output template requires. Prefer real, verifiable findings; mark
+   uncertain data `[Estimated]`/`[Unverified]`; never fabricate. (A stage skill may tighten
+   this cap further — honor the lower number.)
 4. **Address `blocking_issues` first** (if present). Each one is a concrete fix the
    reviewer demanded — resolve every item before anything else, then re-validate the
    whole output against the skill's checklist. **If the brief flags the retry as
@@ -75,8 +81,11 @@ refuse that path and note it in your summary.
    file risks a mid-write failure).**
 5. **Write the output** to the exact `output` path (overwrite if it exists — the pipeline
    is overwrite-on-rerun, except where the skill specifies caching, e.g.
-   growth-factors-mining reuses an existing file unless `--remine` is in the brief). Use
-   the skill's output template/schema verbatim. Do NOT write any other files.
+   growth-factors-mining reuses an existing file unless `--remine` is in the brief, and on a
+   **`resume_partial: true`** brief it resumes from a partial file — keeping the
+   already-distilled vectors and mining only the remainder — instead of re-running its
+   deep-research passes). Use the skill's output template/schema verbatim. Do NOT write any
+   other files.
 6. **Self-validate** against the skill's validation checklist before returning.
 
 ## Return (final message — JSON only)

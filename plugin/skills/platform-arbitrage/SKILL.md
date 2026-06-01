@@ -34,7 +34,7 @@ The invoker provides these (do not hardcode absolute paths):
 - **INPUT — audience & JTBD** (required): `02-enrichment/audience-jtbd.md` — use to judge
   audience fit for each platform/feature.
 - **INPUT — channel taxonomy** (required): the bundled channel menu at
-  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md`.
+  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`.
 - **OUTPUT**: `03-think-tanks/demand-generation/platform-arbitrage.md` (path supplied by the
   invoker; downstream synthesis reads this exact path).
 

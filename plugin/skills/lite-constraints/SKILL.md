@@ -34,13 +34,13 @@ specific pairs.
 
 ## What the synthesis chain actually uses (build these fields)
 
-1. **`diverse_white_space`** (Pass 1 reads this) — 8-10 cross-category vector PAIRS that
+1. **`diverse_white_space`** (explore + build read this) — 8-10 cross-category vector PAIRS that
    are genuinely unconventional and exclude over-represented "content flywheel"-type
    vectors. Each: `{ "vectors": [id_a, id_b], "reason": "<the emergent angle in plain
    English>", "source": "white_space" }`. Pick pairs whose mechanisms, when combined,
    would make a generic marketer say "that's unusual / risky" (not "obviously do that").
 
-2. **`mandatory_combinations`** (Step 1 + Pass 2 read these pools) — a flat array; each
+2. **`mandatory_combinations`** (explore + build read these pools) — a flat array; each
    item has a `pool`, `vectors`, `reason`, `priority`:
    - **Pool A — `A_white_space`** (5): the strongest 5 from `diverse_white_space`.
    - **Pool B — `B_synergy`** (5): high-synergy CROSS-CATEGORY pairs (e.g. Structural +
@@ -64,16 +64,16 @@ specific pairs.
    - "community-join" + "audience-borrowing" → "join communities and participate".
    - "content flywheel" + any SEO/authority/backlink vector → "create content to rank".
 
-4. **`category_diversity_requirements`** (Pass 1/2 read this) — compute from
+4. **`category_diversity_requirements`** (build reads this) — compute from
    `growth-factors.json` `metadata.category_counts` exactly like the paid script:
    `{ "total_vectors": N, "category_counts": {…}, "minimum_unique_vectors_in_synthesis":
    {prefix: min}, "max_single_category_pct": 60, "note": "No single category prefix should
    exceed 60% of vectors used in synthesis output" }`. Minimum rule per prefix by its share
    of total: share ≥25% → 6; ≥10% → 5; ≥2% → 2; else → 1.
 
-Also emit (lite versions of the script's other fields, used loosely by step1/step2/pass2):
+Also emit (lite versions of the script's other fields, used loosely by synthesis explore/build):
 
-5. **`anti_patterns`** (Pass 2 reads this INSTEAD of the proprietary anti-vector tracking) — a
+5. **`anti_patterns`** (synthesis-build reads this INSTEAD of the proprietary anti-vector tracking) — a
    short generic list of demand-gen anti-patterns to reject, each `{ "pattern": "...",
    "severity": "HIGH|MEDIUM", "why": "..." }`. Always include: fabricated scarcity/urgency;
    multi-account astroturfing / fake social proof; fake-door pages for nonexistent

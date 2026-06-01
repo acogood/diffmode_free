@@ -34,7 +34,7 @@ are the same files.
 - **Skills** are read from `.agents/skills/<skill>/SKILL.md`. Codex reads a **checked-out
   repo** (not a copied cache), so the relative symlinks into `../plugin/skills/*` resolve
   fine — one physical skill set, both runtimes.
-- **The channel menu** is at `plugin/reference/Marketing-Channel-Menu-2025-Extended.md` (from
+- **The channel menu** is at `plugin/reference/Marketing-Channel-Menu-2026.md` (from
   the repo root) — i.e. `../plugin/reference/…` relative to this `codex/` directory. The skill
   bodies mention it as `${CLAUDE_PLUGIN_ROOT}/reference/…`; that token is **Claude-only**.
   Skills declare the channel menu as **invoker-supplied** ("the invoker provides these; do not
@@ -85,7 +85,7 @@ Codex:
 2. Register the Perplexity MCP (above) and confirm the key reaches it.
 3. Drive `research-worker` with a brief: `skill = enrichment-competitors`, `inputs =` a
    `founder-input.md` you supply + the channel menu path
-   (`plugin/reference/Marketing-Channel-Menu-2025-Extended.md`), `output =`
+   (`plugin/reference/Marketing-Channel-Menu-2026.md`), `output =`
    `./<slug>/02-enrichment/competitors-analysis.md`.
 4. Verify the output has the required sections (`## Competitor Overview`,
    `## Competitive Channel Matrix`) and cites Perplexity-sourced URLs.

@@ -97,7 +97,7 @@ Act as a **senior growth consultant** hired to review this acquisition research.
 - Does it cover traditional, digital, platform-specific, AND unconventional channels?
 - Are all major competitors' primary channels documented?
 - Are unconventional tactics ~20-25% of total (not majority, not absent)?
-- Does it reference Marketing-Channel-Menu-2025-Extended.md systematically?
+- Does it reference Marketing-Channel-Menu-2026.md systematically?
 
 **B. Tactic Quality & Specificity**
 - Are tactics SPECIFIC with execution details (not vague descriptions)?

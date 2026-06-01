@@ -22,12 +22,14 @@ The invoker provides these (do not hardcode absolute paths):
 - **INPUT — founder context** (required): the workspace's
   `01-diagnostics/founder-input.md`. Read this FIRST.
 - **INPUT — channel taxonomy** (required): the bundled channel menu at
-  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` — 98 channels
+  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md` — 100+ channels (2026 edition)
   with Impact/Cost/Measurability metadata. Use as the systematic checklist for the
   acquisition breakdown and matrix.
-- **WEB RESEARCH** (required capability): use the web-research backend (Perplexity by
-  default) to fetch competitor sites, reviews, funding, traffic. Cite URLs + access
-  dates.
+- **WEB RESEARCH** (required capability): use the web-research backend to fetch competitor
+  sites, reviews, funding, traffic. **Search-first, deep-research capped:** make
+  `perplexity_search` your default and cap `perplexity_research` (deep) at **~1-2 calls**
+  for this stage (e.g. one landscape pass), then verify specifics with `search`/`WebFetch`.
+  Cite URLs + access dates.
 - **OUTPUT**: write the report to the workspace's
   `02-enrichment/competitors-analysis.md` (path supplied by the invoker).
 

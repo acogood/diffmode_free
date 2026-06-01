@@ -47,9 +47,24 @@ than a static asset. Mitigate:
   NOT include `--remine`, do NOT re-research. Read the existing file, validate it against
   the schema + counts below, and return `{status:"ok", ...,"summary":"reused cached growth-factors.json (N vectors)"}`.
   Re-mine only when `--remine` is present or the file is missing/invalid.
-- **Bound breadth:** review **12-20 public case studies** in **one deep research pass**
-  (a handful of deep-research calls seeded from the founder context, not an open-ended
-  crawl). Stop when you have enough distinct mechanisms to hit the target count.
+- **Resume-partial (socket-death recovery — do NOT re-pay for deep research):** if the brief
+  includes **`resume_partial: true`** (the orchestrator sets this only when re-spawning after a
+  mid-mine death) AND a partial `growth-factors.json` exists that PARSES but is short of target
+  (e.g. < 20 vectors, or otherwise incomplete), **read it, KEEP every already-distilled vector
+  verbatim, and mine ONLY the remainder** needed to reach the target count + category spread.
+  Continue each prefix's sequential numbering from where the partial file left off; do NOT
+  re-run the deep-research passes that produced the vectors already on disk — that duplication
+  (≈8 Perplexity calls) is exactly what this flag exists to avoid. `resume_partial` is **never
+  combined with `--remine`** (which forces a full fresh re-mine); if both somehow appear,
+  `--remine` wins and you re-research from scratch.
+- **Bound breadth + cap deep research (the run's biggest cost lever):** review **12-20
+  public case studies** using **at most ~1-2 `perplexity_research` (deep) calls** — seed
+  them from the founder context for the initial case-study landscape, then gather the
+  remaining case studies + their specific metrics with cheaper `perplexity_search` calls.
+  Do NOT open-ended crawl. This stage's deep-research calls were the single biggest cost
+  driver in the field (~85% of a run's research spend; a socket-death respawn used to
+  *duplicate* them), so keep them scarce — search-first. Stop when you have enough distinct
+  mechanisms to hit the target count.
 
 ## Method — adapt the proven extraction methodology
 
@@ -141,11 +156,15 @@ fabricate); `source_url` is a real, reachable URL; `time_to_signal_weeks` option
 
 1. **Read founder context** (+ competitive context if provided). Derive 4-6 search themes
    (business model, primary channels, industry, adjacent industries to borrow from).
-2. **Check the cache** (see above). If valid and no `--remine`, reuse and return.
-3. **Deep research pass:** run a bounded set of web-research calls (deep research +
-   targeted search) on growth case studies across those themes + 2-3 deliberately *different*
-   industries (for transferable mechanisms). Capture source URLs + the specific result/
-   metric for each story.
+2. **Check the cache / resume-partial** (see above). If a valid full file exists and no
+   `--remine`, reuse and return. If the brief sets `resume_partial: true` and a parseable but
+   short partial file exists (and no `--remine`), load it, keep its vectors, and mine only the
+   remainder — skip the deep-research passes for what's already there.
+3. **Deep research pass (search-first, ≤~1-2 deep calls):** run a bounded set of web-research
+   calls — at most ~1-2 deep `perplexity_research` calls for the initial landscape, then
+   cheaper `perplexity_search` calls — on growth case studies across those themes + 2-3
+   deliberately *different* industries (for transferable mechanisms). Capture source URLs +
+   the specific result/metric for each story.
 4. **Distill** each case study → 1-3 atomic vectors using the method above. Assign category
    + a local sequential `{prefix}-NNN-slug` id. Write `mechanism`, `transferability`,
    `saturation_risk`, 2-3 cross-industry `examples`, `evidence`, `source_url`.

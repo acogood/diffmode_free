@@ -20,7 +20,7 @@ orchestrator/worker supplies file paths and control flow.
 - **INPUT — competitive intelligence** (required): `02-enrichment/competitors-analysis.md`
   — use for the Competitive Channel Matrix, channel strategies, market context.
 - **INPUT — channel taxonomy** (required): the bundled channel menu at
-  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md`. **NOTE:** the
+  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`. **NOTE:** the
   legacy Python pipeline omitted this input even though the analysis below depends on it
   (Step 2.5 channel-fit). This skill declares it **required** — a deliberate fix, not the
   latent bug.

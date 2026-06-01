@@ -19,10 +19,12 @@ Distilled from the Diffmode AI-CMO enrichment methodology (ENR-004).
 - **INPUT — founder context** (required): `01-diagnostics/founder-input.md`.
 - **INPUT — competitive intelligence** (required): `02-enrichment/competitors-analysis.md`.
 - **INPUT — channel taxonomy** (required): the bundled channel menu at
-  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` — use as a
+  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md` — use as a
   systematic checklist so NO channels are overlooked.
-- **WEB RESEARCH** (required capability): web-research backend (Perplexity by default)
-  for tactics/trends/data after the training cutoff and for real-time verification.
+- **WEB RESEARCH** (required capability): web-research backend for tactics/trends/data
+  after the training cutoff and for real-time verification. **Search-first, deep-research
+  capped:** default to `perplexity_search` and cap `perplexity_research` (deep) at **~1-2
+  calls** for this stage, then fill in specifics with `search`.
 - **OUTPUT**: `02-enrichment/acquisition-tactics.md` (path supplied by invoker).
 
 ## Scope (CRITICAL)

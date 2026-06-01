@@ -26,8 +26,7 @@ the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
 >   `diffmode-growth-tactics:enrichment-<dimension>`,
 >   `diffmode-growth-tactics:competitor-gaps` · `:cross-industry` · `:platform-arbitrage`,
 >   `diffmode-growth-tactics:growth-factors-mining`, `diffmode-growth-tactics:lite-constraints`,
->   `diffmode-growth-tactics:synthesis-step1-combinations` · `:synthesis-step2-mechanisms` ·
->   `:synthesis-pass1-whitespace` · `:synthesis-pass2-founder`
+>   `diffmode-growth-tactics:synthesis-explore` · `:synthesis-build`
 > - workers: `diffmode-growth-tactics:research-worker`,
 >   `diffmode-growth-tactics:analysis-worker`, `diffmode-growth-tactics:synthesis-worker`,
 >   `diffmode-growth-tactics:reviewer`
@@ -54,8 +53,8 @@ the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
   with `[NEEDS FOUNDER INPUT]` placeholders left in (useful for demos; quality is lower).
 
 **Stage names** (for `--from` / `--only`): `diagnostics`, `enrichment`, `think-tanks`,
-`growth-factors`, `lite-constraints`, `synthesis` (or finer synthesis steps `step1`,
-`step2`, `pass1`, `pass2`).
+`growth-factors`, `lite-constraints`, `synthesis` (or finer synthesis steps `explore`,
+`build`).
 
 ## Pre-flight
 
@@ -64,7 +63,7 @@ the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
    `WS/01-diagnostics`, `WS/02-enrichment`, `WS/03-think-tanks/demand-generation` as needed
    (or the `*-scratch` variants under `--scratch`). **No host repo is required** — the plugin
    is self-contained and writes the run into the cwd.
-2. **Confirm the channel menu** — `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md`
+2. **Confirm the channel menu** — `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`
    exists (it is bundled in the plugin; `${CLAUDE_PLUGIN_ROOT}` expands to the plugin's
    install directory at runtime). All stages that need the channel taxonomy read it from
    there.
@@ -72,24 +71,28 @@ the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
    whenever the plugin is enabled. If a dispatch reports an unknown agent/skill, the plugin
    isn't enabled — run `/plugin` → enable `diffmode-growth-tactics` (or
    `claude plugin install diffmode-growth-tactics@diffmode-free`).
-4. **Reviewer gate** — score **≥ 7**, **max 3** iterations per gated stage (the pipeline norm).
+4. **Reviewer gate** — score **≥ 7**, **max 3** iterations, applied at the **two gated stages
+   only**: enrichment **`competitors`** (the Wave-1 blocker) and the **final synthesis
+   deliverable** (`synthesis.md`). Every other generating stage gets a **structural check
+   only** — see *The per-stage routine*. (v2.3.0 cut the gates from 7 → 2: the dropped gates
+   added latency, tokens, and retry risk without moving the outcome in the field.)
 
 ## The DAG
 
 ```
 Stage 0    diagnostics-intake        → WS/01-diagnostics/founder-input.md
 Stage 1    enrichment (2 waves)      → WS/02-enrichment/*.md
-              Wave 1 (gate):  competitors
-              Wave 2 (‖):     audience ‖ acquisition-tactics
+              Wave 1 (reviewer gate):           competitors
+              Wave 2 (‖, structural check only): audience ‖ acquisition-tactics
 Stage 1.5  growth-factors mining     → …/growth-factors.json  (LIGHT DB)
               ↑ starts right after Wave-1 competitors is APPROVED and runs
                 CONCURRENTLY through the rest of enrichment + Stage 2; structural
                 check only (no reviewer gate); collected/validated at the Stage-3 boundary.
-Stage 2    think-tank ×3             (parallel, after enrichment)
+Stage 2    think-tank ×3             (parallel, after enrichment; structural check only — no reviewer gate)
               competitor-gaps · cross-industry · platform-arbitrage
 Stage 3    lite-constraints          → WS/03-think-tanks/demand-generation/synthesis-constraints.json
               precondition: growth-factors.json present + valid
-Stage 4    synthesis  step1 → step2 → pass1 → pass2   → synthesis.md   (STOP)
+Stage 4    synthesis  explore → build   → synthesis.md   (STOP)
 ```
 
 Filesystem state is the contract between stages (same pattern as the enrichment pilot).
@@ -144,10 +147,8 @@ dimension `D` + spec `Spec`:
 
    | Stage | Last-required-section anchor | Min-line floor |
    |-------|------------------------------|----------------|
-   | step1 (`synthesis-step1-combinations.md`) | `## Summary Statistics` | ~80 |
-   | step2 (`synthesis-step2-mechanisms.md`) | the dedup/verb-group result section | ~80 |
-   | pass1 (`synthesis-pass1.md`) | `## Generated Tactics` (with ≥4 `### ` tactic blocks) | ~60 |
-   | pass2 (`synthesis.md`) | `## Post-Synthesis Self-Review` | ~150 |
+   | explore (`synthesis-explore.md`) | `## Validated Mechanisms` (the completeness anchor; `## Blind Draw (IDs only)` must precede `## Vector Combinations`; ends with `## Action Deduplication Result`) | ~120 |
+   | build (`synthesis.md`) | `## Post-Synthesis Self-Review` | ~150 |
    | enrichment / think-tank `.md` | the skill's final section | per skill |
 
    If the worker returned `ok` but `O` is missing / empty / **lacks its last-required section
@@ -172,9 +173,11 @@ dimension `D` + spec `Spec`:
    > `worker-dispatch-failed` with a resume hint — **the orchestrator never does the worker's
    > content work in the main thread, including never patching `O` itself.**
 
-Stages **without** a rubric (growth-factors, lite-constraints, and synthesis step1/step2/
-pass1) get a **structural check only** (step 2) — see each stage below. Only the enrichment
-dimensions, the 3 think-tanks, and the final `pass2` synthesis are reviewer-gated.
+Stages **without** a reviewer gate — growth-factors, lite-constraints, the synthesis
+intermediate step(s), enrichment `audience` + `acquisition-tactics`, and all 3 think-tanks —
+get a **structural check only** (step 2); see each stage below. Only **two** stages are
+reviewer-gated: enrichment **`competitors`** (the Wave-1 blocker) and the **final synthesis
+deliverable** (`synthesis.md`).
 
 ## Stage 0 — Diagnostics intake (the entry point)
 
@@ -215,24 +218,27 @@ Run the enrichment DAG exactly as `run-enrichment.md` specifies (that file is th
 reference and the standalone entry). Compactly:
 
 ```
-Wave 1 (blocking gate):  competitors
-Wave 2 (parallel):       audience  ‖  acquisition-tactics     (depend on competitors)
+Wave 1 (blocking reviewer gate):  competitors
+Wave 2 (parallel, structural check only):  audience  ‖  acquisition-tactics   (depend on competitors)
 ```
 
-Per-dimension wiring (worker · inputs · reviewer spec):
+Per-dimension wiring (worker · inputs · gate):
 
-| Dim | Worker | Inputs | Reviewer spec_path | rubric dim |
-|-----|--------|--------|--------------------|-----------|
-| competitors | research-worker | founder-input; channel menu | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-competitors/SKILL.md` | competitors |
-| audience | **analysis-worker** (no MCP) | founder-input; competitors-analysis; channel menu | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-audience/SKILL.md` | audience |
-| acquisition-tactics | research-worker | founder-input; competitors-analysis; channel menu | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-acquisition-tactics/SKILL.md` | acquisition-tactics |
+| Dim | Worker | Inputs | Gate |
+|-----|--------|--------|------|
+| competitors | research-worker | founder-input; channel menu | **reviewer-gated** — spec `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-competitors/SKILL.md`, rubric dim `competitors` |
+| audience | **analysis-worker** (no MCP) | founder-input; competitors-analysis; channel menu | structural check only (no reviewer) |
+| acquisition-tactics | research-worker | founder-input; competitors-analysis; channel menu | structural check only (no reviewer) |
 
 Skills: `diffmode-growth-tactics:enrichment-<dim>`. Outputs in `OUT = WS/02-enrichment/`:
-`competitors-analysis.md`, `audience-jtbd.md`, `acquisition-tactics.md`. Each runs the full
-per-stage routine (reviewer-gated). **Wave 1 is a blocking gate** — if `competitors` FAILS,
-abort (the rest of enrichment, Stage 1.5 mining, the think-tanks, and all synthesis depend on
-`competitors-analysis.md`). (`acquisition-tactics` is a leaf within enrichment, but its output
-feeds the think-tanks, so let it complete.)
+`competitors-analysis.md`, `audience-jtbd.md`, `acquisition-tactics.md`. **Only `competitors`
+is reviewer-gated** (the Wave-1 blocker); `audience` + `acquisition-tactics` get a structural
+completeness check only — confirm required sections present per `run-enrichment.md` step 2,
+re-dispatch once on a gap (their outputs proved reliable enough in the field that a reviewer
+gate added latency + retry risk without changing the result). **Wave 1 is a blocking gate** —
+if `competitors` FAILS, abort (the rest of enrichment, Stage 1.5 mining, the think-tanks, and
+all synthesis depend on `competitors-analysis.md`). (`acquisition-tactics` is a leaf within
+enrichment, but its output feeds the think-tanks, so let it complete.)
 
 > **Kick off Stage 1.5 the moment `competitors` is APPROVED** — see the next section. The
 > mining branch runs concurrently with Wave 2 and Stage 2; do not wait for the rest of
@@ -256,6 +262,17 @@ before moving on to Wave 2 / Stage 2):
 
 - Pass `--remine` into the brief if present. Otherwise the skill's **cache rule is unchanged**:
   if `growth-factors.json` already exists and `--remine` is absent, the worker reuses it.
+- **Socket-death respawn = retry-in-place, NOT re-mine (cost fix).** This stage's deep-research
+  passes are the priciest in the pipeline, and a mid-mine socket death used to make the fresh
+  respawn re-run them all from scratch (≈8 duplicated Perplexity calls — the single biggest
+  avoidable cost in the field). So whenever you re-spawn a **dead** growth-factors worker (per
+  the worker-lifecycle rule / the Stage-3-boundary `died` path) **and a partial
+  `growth-factors.json` already exists at the output path**, set **`resume_partial: true`** in
+  the respawn brief. The fresh worker then reads the partial file, KEEPS the vectors already
+  distilled, and mines only the remainder to reach the target count — it does NOT re-run the
+  deep-research passes already paid for. **Never combine `resume_partial` with `--remine`**:
+  `--remine` means "discard the cache and re-research from scratch" (the opposite intent), so a
+  respawn under `--remine` re-mines fresh and ignores any partial file.
 - Record the long-running branch in the run-ledger as `growth-factors` (one row when dispatched,
   one when it resolves, with `started_at`/`duration_s`).
 - The `acquisition-tactics.md` seed is "optional but recommended" — if mining is dispatched
@@ -265,47 +282,65 @@ before moving on to Wave 2 / Stage 2):
 growth-factors structural + clean-room check there, NOT here. This stage just launches the
 branch and keeps a handle on it.
 
-## Stage 2 — Think-tank research (parallel)
+## Stage 2 — Think-tank research (parallel, structural check only)
 
-After enrichment outputs exist, **dispatch all three think-tanks in a single message** (three
-Agent calls) so they run concurrently (alongside the still-running Stage-1.5 mining branch):
+After enrichment outputs exist, **dispatch all three think-tanks in a SINGLE message
+containing exactly three Agent tool calls** so they run concurrently (alongside the
+still-running Stage-1.5 mining branch). **Order them platform-arbitrage → competitor-gaps →
+cross-industry within that one message:** `platform-arbitrage` is the slowest branch and the
+only one that needs Perplexity (it runs on `research-worker`), so launching it first lets the
+two no-MCP analysis branches finish under its cover. **Do NOT split them across messages** —
+separate messages serialize the batch (the field bug that cost ~18 min); "single message,
+exactly three Agent calls" is load-bearing, and with the per-branch reviewer loops removed
+(below) the batch now resolves on its **slowest branch**, not the sum.
 
 | Stage | Worker | Skill | Inputs | Output |
 |-------|--------|-------|--------|--------|
+| platform-arbitrage | **research-worker** | `:platform-arbitrage` | founder-input; competitors-analysis; **audience-jtbd**; acquisition-tactics; channel menu | `…/platform-arbitrage.md` |
 | competitor-gaps | analysis-worker | `:competitor-gaps` | founder-input; competitors-analysis; audience-jtbd; acquisition-tactics; channel menu | `…/competitor-gaps.md` |
 | cross-industry | analysis-worker | `:cross-industry` | founder-input; competitors-analysis; audience-jtbd; acquisition-tactics | `…/cross-industry.md` |
-| platform-arbitrage | **research-worker** | `:platform-arbitrage` | founder-input; competitors-analysis; acquisition-tactics; channel menu | `…/platform-arbitrage.md` |
 
-(`…` = `WS/03-think-tanks/demand-generation/`.)
+(`…` = `WS/03-think-tanks/demand-generation/`.) **Input fix:** `platform-arbitrage` now
+declares **`audience-jtbd`** — its `SKILL.md` lists it as a required input ("use to judge
+audience fit for each platform/feature"), and the old orchestrator row omitted it.
 
-**Gating:** the **3 think-tanks** are reviewer-gated (rubric dims `competitor-gaps`,
-`cross-industry`, `platform-arbitrage`; spec_path = each stage skill's `SKILL.md`). Run their
-reviewer loops (the three reviewer dispatches may be batched).
+**No reviewer gate (v2.3.0).** The 3 think-tanks are **structural-check-only** — there is no
+reviewer dispatch for them anymore. They are exploration outputs that the synthesis chain
+reads as context; a reviewer gate added latency + retry risk without changing the synthesis
+result in the field.
 
-**Concurrent-partial-failure handling (the 3-way fan-out).** The three think-tanks are
-dispatched in one message and return independently, so handle them as a batch: **after the
-batch returns, classify each branch** and record each in the run-ledger —
+**Concurrent-partial resolution (the 3-way fan-out).** The three are dispatched in one message
+and return independently, so handle them as a batch: **after the batch returns, run each
+branch's structural completeness check** (step 2 — confirm the skill's required sections are
+present per its `SKILL.md`: `platform-arbitrage` carries its feature-recency findings with
+cited sources, `competitor-gaps` its Tier-1/2/3 gaps, `cross-industry` its case studies +
+transferable patterns) and classify + record each in the run-ledger:
 
-- **`ok`** (think-tank APPROVED by its reviewer) → resolved.
-- **`rejected`** (reviewer REJECTED, score < 7) → run that branch's reviewer-retry loop
-  (fresh worker, blocking_issues injected, max 3) → resolves to ok or failed.
+- **`ok`** (structural check passes) → resolved.
+- **`incomplete`** (worker returned ok but the output is missing a required section or
+  truncated) → **regenerate ONCE** with a fresh worker noting the specific gap → resolves to
+  ok or `failed`.
 - **`died`** (dispatch failed / no JSON) → re-spawn a FRESH worker up to 2× per the worker
   lifecycle rule → resolves to ok or `worker-dispatch-failed`.
-- **`failed`** (still rejected at iter 3, or still dead after 2 respawns) → record FAILED.
+- **`failed`** (still incomplete after the single regenerate, or still dead after 2 respawns)
+  → record FAILED.
 
 **Gate Stage 3 on all three think-tanks RESOLVED + `ok`**: a failed think-tank **blocks
-synthesis** (pass1/step1/pass2 read all three think-tank reports). If any think-tank ends
-`failed`, stop before Stage 3, surface its `blocking_issues`, and print the resume command
-(`--from think-tanks` or `--only <branch>`). The Stage-1.5 `growth-factors` branch is gated
-separately, at the Stage-3 boundary below.
+synthesis** (the synthesis chain reads all three think-tank reports). If any think-tank ends
+`failed`, stop before Stage 3, surface its gap, and print the resume command (`--from
+think-tanks` or `--only <branch>`). The Stage-1.5 `growth-factors` branch is gated separately,
+at the Stage-3 boundary below.
 
 ## Stage 3 — Lite constraints
 
 **Stage-3 boundary precondition — collect + validate the Stage-1.5 mining branch (BLOCKING).**
 Before dispatching `lite-constraints`, the `growth-factors` branch launched in Stage 1.5 must
 have RESOLVED and passed its check. Classify it like any concurrent branch (record in the
-run-ledger): `ok` if it passes the check below; `died` → re-spawn a FRESH worker up to 2×;
-`failed` → still bad after 2 respawns. A failed `growth-factors.json` **blocks everything**
+run-ledger): `ok` if it passes the check below; `died` → re-spawn a FRESH worker up to 2×
+(carry **`resume_partial: true`** when a partial `growth-factors.json` is on disk and
+`--remine` is NOT in play, so the respawn resumes mining the remainder instead of re-paying for
+the deep-research passes — see Stage 1.5); `failed` → still bad after 2 respawns. A failed
+`growth-factors.json` **blocks everything**
 (synthesis needs the LIGHT DB → the constraints), so on `failed`, stop here, surface
 `blocking_issues`, and print the resume command (`--only growth-factors` or `--remine`).
 
@@ -333,50 +368,55 @@ conventional patterns), `anti_patterns`, and `category_diversity_requirements`
 (`max_single_category_pct: 60`). **Every vector ID referenced must exist in
 `growth-factors.json`** (cheap cross-check of a sample of ids). Re-dispatch once on failure.
 
-## Stage 4 — Synthesis chain (step1 → step2 → pass1 → pass2)
+## Stage 4 — Synthesis chain (explore → build)
 
-**ID-consistency precheck (BLOCKING — run BEFORE step1).** `synthesis-constraints.json` is
+**ID-consistency precheck (BLOCKING — run BEFORE explore).** `synthesis-constraints.json` is
 built against a specific `growth-factors.json`. If the LIGHT DB was re-mined (`--remine`)
 without rebuilding constraints — e.g. `--remine` then `--from synthesis`, which skips Stage 3
 — the on-disk constraints reference vector IDs that no longer exist, and synthesis would
-emit broken traceability silently. So before dispatching step1: collect every vector ID
+emit broken traceability silently. So before dispatching explore: collect every vector ID
 referenced anywhere in `synthesis-constraints.json` (`diverse_white_space`,
 `mandatory_combinations`, `prohibited_combinations.vectors_if_present`,
 `unconventional_anchors`) and confirm **each one exists in the CURRENT `growth-factors.json`**.
 On ANY mismatch, **ABORT** with code **`constraints-stale`** and the hint: *"`synthesis-constraints.json`
 references vector IDs absent from the current `growth-factors.json` — re-run
 `--from lite-constraints` to rebuild constraints against the current LIGHT DB."* Do not
-proceed to step1 with stale constraints.
+proceed to explore with stale constraints.
 
-All four on **`synthesis-worker`** (no MCP, clean-room), sequentially — but **model-tiered**
+Both on **`synthesis-worker`** (no MCP, clean-room), sequentially — but **model-tiered**
 (see the *Model tiering* note below the table):
 
 | Step | Model | Skill | Inputs | Output | Gate |
 |------|-------|-------|--------|--------|------|
-| step1 | **sonnet** | `:synthesis-step1-combinations` | founder-input; growth-factors.json; synthesis-constraints.json; audience-jtbd; the 3 think-tank reports | `…/synthesis-step1-combinations.md` | structural |
-| step2 | **sonnet** | `:synthesis-step2-mechanisms` | step1 output; growth-factors.json; founder-input | `…/synthesis-step2-mechanisms.md` | structural |
-| pass1 | **opus** | `:synthesis-pass1-whitespace` | synthesis-constraints.json; step2 output; growth-factors.json; founder-input; the 3 think-tank reports; channel menu | `…/synthesis-pass1.md` | structural |
-| pass2 | **opus** | `:synthesis-pass2-founder` | synthesis-pass1.md; synthesis-constraints.json; growth-factors.json; founder-input; audience-jtbd; competitors-analysis; competitor-gaps; cross-industry; platform-arbitrage; channel menu | `…/synthesis.md` | **reviewer-gated** |
+| explore | **sonnet** | `:synthesis-explore` | founder-input; growth-factors.json; synthesis-constraints.json; audience-jtbd; the 3 think-tank reports | `…/synthesis-explore.md` | structural |
+| build | **opus** | `:synthesis-build` | synthesis-explore.md; synthesis-constraints.json; growth-factors.json; founder-input; audience-jtbd; competitors-analysis; competitor-gaps; cross-industry; platform-arbitrage; channel menu | `…/synthesis.md` | **reviewer-gated** |
 
-> **Model tiering (cost/latency tuning, no quality change expected).** The mechanical steps —
-> `lite-constraints` (Stage 3), `step1` (blind vector combinations + strip test), and `step2`
-> (3-step mechanism prototypes + conventional-detection gate) — run on **sonnet**; the
-> creative/novelty engine (`pass1` white-space) and the final reviewer-gated deliverable
-> (`pass2`) stay on **opus**. Pass the tier with a **per-dispatch `model` override** on the
-> Agent/Task call (e.g. `model: sonnet` for step1/step2) — that param takes precedence over
-> `synthesis-worker`'s `opus` frontmatter default, so no extra worker file is needed.
-> **`step2` is the riskier downgrade** (mechanism novelty): if a run's strip-test pass-rate or
-> unconventional ratio visibly drops, revert just `step2` to `opus` (one-line change).
+> **Model tiering (cost/latency tuning, no quality change expected).** The mechanical
+> blind-draw + mechanism-derivation stage — `explore` (its Phase 1 draws blind vector
+> combinations + runs the strip test; its Phase 2 writes the 3-step mechanism prototypes +
+> conventional-detection gate), plus `lite-constraints` (Stage 3) — runs on **sonnet**; the
+> creative/novelty engine + final reviewer-gated deliverable — `build` (its Phase 1 ideates
+> white-space tactics, Phases 2-3 do founder-fit adaptation + merge) — stays on **opus**. Pass
+> the tier with a **per-dispatch `model` override** on the Agent/Task call (e.g. `model: sonnet`
+> for explore) — that param takes precedence over `synthesis-worker`'s `opus` frontmatter
+> default, so no extra worker file is needed. **`explore` is the riskier downgrade** (its
+> Phase-2 mechanism-novelty work was the highest-risk part of the old chain): if a run's
+> strip-test pass-rate or unconventional ratio visibly drops, revert just `explore` to `opus`
+> (one-line change), or re-split `explore` back into the two former synthesis skills it fused
+> (recover them from git history / `docs/STATUS.md` — the documented partial-revert path).
 > *(Fallback if a runtime ever ignores the per-dispatch override: add a 5th worker
 > `agents/synthesis-fast-worker.md` — `model: sonnet`, same tools + clean-room rule — and route
-> lite-constraints/step1/step2 to it instead.)*
+> lite-constraints/explore to it instead.)*
 
-**Structural checks** for step1/step2/pass1: file exists, non-empty, has the skill's required
-sections (step1 → `## Vector Combinations` + `## Stripped Core Action Test`; step2 →
-`## Validated Mechanisms` + the dedup result; pass1 → `## Generated Tactics`), and — quick
-novelty smell-test — that referenced vector IDs exist in `growth-factors.json` and no tactic
-names leak into step1/step2. If a step's own validation marks it INVALID (e.g. step2 verb
-groups < 7), spawn a fresh worker once with the gap.
+**Structural check for `explore`:** file exists, non-empty, not truncated, with a min-line
+floor (~120). Verify the skill's required sections **in order** — `## Blind Draw (IDs only)`
+must **physically precede** `## Vector Combinations` (the Phase-1 blind-draw wall held), and
+`## Validated Mechanisms` (the completeness anchor — NOT `## Generated Tactics`, which is a
+build-only section and would always be absent here) must be present, followed by
+`## Action Deduplication Result`. Quick novelty smell-test: referenced vector IDs exist in
+`growth-factors.json` and NO tactic names leak in. If explore's own validation marks it
+INVALID (e.g. verb groups < 7, or the blind-draw wall is out of order), spawn a fresh worker
+once with the gap.
 
 **`must_include` enforcement gate — Bug-C fix (hardened).** Skill self-checks alone were
 shown to be skippable, so the orchestrator enforces this deterministically. Parse
@@ -384,28 +424,28 @@ shown to be skippable, so the orchestrator enforces this deterministically. Pars
 A + B). A raw whole-file grep only proves *line-presence*, which is too weak — the two IDs
 could appear in unrelated combinations. So enforce **block-level co-occurrence**:
 
-- **After step1 writes its output:** split the file into `### Combination #N` blocks (parse
+- **After `explore` writes its output:** split the file into `### Combination #N` blocks (parse
   per-block, not whole-file). For EACH `must_include` pair, a pair is **validly used** only
   if **both** of its vector IDs appear **within a single `### Combination #N` block**. A pair
   is **validly substituted** only if there is an explicit substitution note that (i) names
   that pair AND (ii) **names a replacement vector that EXISTS in `growth-factors.json`**
   (validity, not mere presence of the word "substituted"). If any pair is neither validly
-  used nor validly substituted, spawn a fresh step1 worker **ONCE** with the specific pairs
+  used nor validly substituted, spawn a fresh explore worker **ONCE** with the specific pairs
   in `blocking_issues` (e.g. "Pool-B pair `lever-NNN`+`struct-NNN` is not co-located in any
   one combination and has no valid substitution — co-locate both IDs in one combination, or
   substitute with a replacement vector that exists in growth-factors.json").
-- **After pass2 writes the final `synthesis.md` (closing check WITH remediation):** apply the
+- **After `build` writes the final `synthesis.md` (closing check WITH remediation):** apply the
   same block-level test per *tactic* — for each Pool-B `must_include` pair, both IDs must
   appear within a single tactic's `**Source:** … Vectors` line/block, OR a valid substitution
   note (naming an existing replacement vector) must be present. If any Pool-B pair is neither
-  validly used nor validly substituted, **re-dispatch pass2 ONCE** with `blocking_issues`
+  validly used nor validly substituted, **re-dispatch build ONCE** with `blocking_issues`
   listing exactly the missing pairs (this is a real remediation, not just a re-grep). If a
-  pair is still uncovered after that single pass2 retry, record it as a known gap in the
+  pair is still uncovered after that single build retry, record it as a known gap in the
   run-ledger and the final report — do not silently pass.
 
-**pass2 reviewer gate:** dispatch `diffmode-growth-tactics:reviewer` with
+**`build` reviewer gate:** dispatch `diffmode-growth-tactics:reviewer` with
 `{dimension: "demand-gen-synthesis", spec_path:
-"${CLAUDE_PLUGIN_ROOT}/skills/synthesis-pass2-founder/SKILL.md", output_path: "…/synthesis.md",
+"${CLAUDE_PLUGIN_ROOT}/skills/synthesis-build/SKILL.md", output_path: "…/synthesis.md",
 context_paths: [growth-factors.json, synthesis-constraints.json, founder-input.md,
 audience-jtbd.md, competitors-analysis.md, competitor-gaps.md, cross-industry.md,
 platform-arbitrage.md]}`.
@@ -424,12 +464,12 @@ which should overlap (not add to) enrichment + the think-tanks:
 ```
 Growth Tactics — <slug>                                                          duration
   diagnostics          OK                                  …/founder-input.md           42s
-  enrichment           3/3 APPROVED                        WS/02-enrichment/*.md       18m
-  growth-factors       OK  (31 vectors, 6 categories)      …/growth-factors.json  [‖ 38m, clean-room]
-  think-tanks          3/3 APPROVED                        …/{competitor-gaps,cross-industry,platform-arbitrage}.md  22m
+  enrichment           competitors APPROVED · audience+acq OK (structural)   WS/02-enrichment/*.md   14m
+  growth-factors       OK  (31 vectors, 6 categories)      …/growth-factors.json  [‖ 34m, clean-room, no re-mine]
+  think-tanks          3/3 OK (structural, parallel)       …/{competitor-gaps,cross-industry,platform-arbitrage}.md  ~11m
   lite-constraints     OK                                  …/synthesis-constraints.json  3m
-  synthesis            APPROVED (score 8, 1 pass)          …/synthesis.md  (8 tactics, 5 unconv.)  19m
-  ── total wall-clock ──────────────────────────────────────────────────────────  ~1h52m
+  synthesis            APPROVED (score 8, 1 pass)          …/synthesis.md  (8 tactics, 5 unconv.)  15m
+  ── total wall-clock ──────────────────────────────────────────────────────────  ~1h25m
 ```
 
 (Durations are illustrative; print the real `duration_s` from `WS/.run-state.json`. Mark the
@@ -454,11 +494,11 @@ For any FAILED stage, list its final `blocking_issues`.
 | `worker-dispatch-failed` | any stage | worker died mid-run (API/socket error, no JSON) after 2 fresh re-spawns | stage FAILED; resume with the printed `--from <stage>`/`--only <stage>` — no main-thread fallback |
 | `intake-incomplete` | Stage 0 | founder-input has unresolved must-ask gaps | ask the founder the Confirmation Gaps |
 | `competitors-gate-failed` | Wave 1 | competitors REJECTED ×3 | inspect blocking_issues; downstream can't run |
-| `dimension-failed` | enrichment | a dim REJECTED ×3 | list blocking_issues; dependents skipped |
+| `dimension-failed` | enrichment (Wave 2) | `audience`/`acquisition-tactics` structurally incomplete after a single re-dispatch (no reviewer loop in v2.3.0) | list the gap; dependents skipped |
 | `growth-factors-invalid` | Stage 1.5 / Stage-3 boundary | JSON/schema/clean-room check failed ×2 | inspect; synthesis can't run without the LIGHT DB |
 | `constraints-invalid` | Stage 3 | synthesis-constraints schema/id check failed | re-dispatch lite-constraints |
 | `constraints-stale` | Stage 4 precheck | `synthesis-constraints.json` references vector IDs absent from the CURRENT `growth-factors.json` (e.g. `--remine` then `--from synthesis`) | re-run `--from lite-constraints` to rebuild constraints against the current LIGHT DB |
-| `synthesis-failed` | Stage 4 | pass2 REJECTED ×3 | list blocking_issues |
+| `synthesis-failed` | Stage 4 | `build` REJECTED ×3 | list blocking_issues |
 | `clean-room-violation` | Stage 1.5/3/4 | a worker read `tactics_DB/` | re-dispatch; the LIGHT-DB stages must never touch the proprietary DB |
 
 ## Idempotency
@@ -488,7 +528,7 @@ ledger at `WS/.run-state.json` and **append to it after every stage attempt**:
 ```json
 { "stage": "enrichment:competitors", "attempt": 1, "verdict": "APPROVED", "score": 8, "started_at": 1717200000, "duration_s": 1080, "output": "WS/02-enrichment/competitors-analysis.md" }
 { "stage": "growth-factors", "attempt": 1, "verdict": "OK", "started_at": 1717200200, "duration_s": 2280, "output": "WS/03-think-tanks/demand-generation/growth-factors.json" }
-{ "stage": "synthesis:pass2", "attempt": 2, "verdict": "REJECTED", "score": 6, "started_at": 1717206000, "duration_s": 900, "blocking": ["…"] }
+{ "stage": "synthesis:build", "attempt": 2, "verdict": "REJECTED", "score": 6, "started_at": 1717206000, "duration_s": 900, "blocking": ["…"] }
 ```
 
 (JSON-lines, or an equivalent `WS/RUN-LOG.md` table — append-only, one row per attempt.)
@@ -518,8 +558,9 @@ ledger at `WS/.run-state.json` and **append to it after every stage attempt**:
 3. Spot-check that tactics are **non-generic** (the novelty test the whole pipeline exists
    for) — strip the tactic name + adjectives; a traditional marketer should NOT say "obviously
    do that" for the majority.
-4. Enrichment (3 dims) + think-tank outputs reached APPROVED (score ≥7); note any that needed
-   2-3 passes.
+4. Enrichment `competitors` reached APPROVED (score ≥7); `audience` + `acquisition-tactics`
+   and all 3 think-tank outputs passed their structural completeness check (required sections
+   present). Note anything that needed a re-dispatch.
 5. `WS/.run-state.json` carries a `duration_s` for every stage attempt, and the run report
    printed the per-stage timing column — confirm `growth-factors` overlapped enrichment +
    Stage 2 (its row started right after the competitors gate) rather than serializing after them.

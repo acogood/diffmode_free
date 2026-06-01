@@ -79,8 +79,8 @@ bakes in, restated here so the contract is explicit:
   Judge the output as a set of 7-9 novel demand-gen tactic IDEAS: novelty (unconventional
   ratio), demand-gen purity, no deception, category diversity, and that each tactic is
   traceable to a vector combination in `growth-factors.json`. Do not require Week-1
-  day-by-day depth, a global "Technical Capabilities" table, or any artifact the pass2
-  skill does not emit (the rubric scores only the pass2 template's actual fields).
+  day-by-day depth, a global "Technical Capabilities" table, or any artifact the synthesis-build
+  skill does not emit (the rubric scores only the synthesis-build template's actual fields).
 
 ## Return shape (machine-readable — this is what the orchestrator consumes)
 

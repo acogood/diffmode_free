@@ -5,6 +5,23 @@ build-log table live in [`README.md`](./README.md); this file tracks current sta
 
 Last updated: **2026-06-01**
 
+> **Round-4 speed + simplicity pass (2026-06-01, plugin v2.3.0).** Faster + cheaper + simpler,
+> quality held: (1) **synthesis 5→3 calls** — fused step1+step2 → `synthesis-explore` (sonnet,
+> structural-check-only) and pass1+pass2 → `synthesis-build` (opus, reviewer-gated); the hard
+> phase walls (blind-draw ordering, Stripped-Core-Action / Reframing tests, verb-group dedup,
+> Preserve-the-Unconventional-Core, purity + deception vetoes, the exact final output template)
+> carry over verbatim. (2) **Reviewers 7→2** — only enrichment `competitors` and the final
+> `synthesis-build` stay gated; audience + acquisition-tactics + the 3 think-tanks are
+> structural-check-only. (3) **Reliable think-tank parallelism** — one message, exactly three
+> Agent calls, `platform-arbitrage` launched first; removes the ~18-min serialization. (4)
+> **Stage-1.5 retry-in-place** (`resume_partial`) — a socket-death respawn resumes mining
+> instead of re-running the deep-research passes (≈8 duplicate Perplexity calls saved). (5)
+> **Perplexity caps** — search-first, ≤~1-2 deep `perplexity_research` calls/stage. (6)
+> **Channel-Menu-2026** bundled (replaces 2025). Counts: skills 14→12, reviewer **gates** 7→2
+> (the 7 rubric files are retained, just unused for the dropped stages). Ships only if the
+> theona re-test holds the quality bars (revert = `git revert`; partial-revert = re-split
+> `explore` back into its two former skills).
+
 > **Round-3 speed pass (2026-06-01, plugin v2.2.0).** Cut the 2.5–3h run without changing
 > output quality: (1) **per-stage timing** instrumented in the run-ledger (`started_at` +
 > `duration_s`) and printed in the final report; (2) **`growth-factors-mining` hoisted to a
@@ -38,24 +55,24 @@ studies (`growth-factors-mining` → `growth-factors.json`) and a skill replaces
 constraints generator (`lite-constraints`). The 4-step synthesis was ported and IP-scrubbed to
 read that LIGHT DB. Paid Diffmode keeps prioritization, implementation guides, and the real DB.
 
-**This work is written and validated (all 14 skills pass `quick_validate.py`), but not yet
-run end-to-end live, and untracked on `main`.**
+**This work is written and validated (all 12 skills pass `quick_validate.py`); v2.3.0 ships
+only after the theona re-test holds the quality bars (see *Open items*).**
 
 ## Status at a glance
 
 | Component | State |
 |-----------|-------|
-| 2 manifests (`plugin.json` v2.2.0 + repo-root `marketplace.json`) | ✅ done |
+| 2 manifests (`plugin.json` v2.3.0 + repo-root `marketplace.json`) | ✅ done |
 | `diagnostics-intake` skill (URL prefill / minimal Q&A) | ✅ done |
 | 3 enrichment dimension skills | ✅ done (carried from v1; demographics removed 2026-05-28, purchase-objections removed 2026-06-01) |
 | 3 think-tank research skills (competitor-gaps, cross-industry, platform-arbitrage) | ✅ done |
 | `growth-factors-mining` (per-run clean-room LIGHT DB) | ✅ done — ⚠ moat-critical |
 | `lite-constraints` (no-Python synthesis-constraints) | ✅ done |
-| 4 synthesis skills (step1 → step2 → pass1 → pass2) | ✅ done — IP-scrubbed |
+| 2 synthesis skills (`synthesis-explore` → `synthesis-build`) | ✅ done — fused from 4 (v2.3.0), IP-scrubbed |
 | `growth-reviewer` (parameterized, 7 rubrics) | ✅ done |
 | 4 worker sub-agents (research / analysis / synthesis / reviewer) | ✅ done |
 | Orchestrator (`run-growth-tactics.md`) + standalone `run-enrichment.md` | ✅ done |
-| All 14 skills pass `quick_validate.py` | ✅ done |
+| All 12 skills pass `quick_validate.py` | ✅ done |
 | Clean-room verified (nothing reads `tactics_DB/`) | ✅ done (grep + skill prohibitions) |
 | End-to-end live run | ⬜ not started |
 | Git commit (untracked on `main`) | ⬜ not started |
@@ -73,7 +90,7 @@ Legend: ✅ done · 🟡 built not verified · ⬜ not started.
   enrichment → think-tanks ‖ LIGHT-DB mining → lite-constraints → 4-step synthesis → STOP).
 - `run-enrichment.md` — standalone enrichment-only entry, under the new namespace.
 
-**14 skills** ([`skills/`](./skills/)) — passive instruction docs:
+**12 skills** ([`skills/`](./skills/)) — passive instruction docs:
 
 | Stage | Skills | Produces |
 |-------|--------|----------|
@@ -82,7 +99,7 @@ Legend: ✅ done · 🟡 built not verified · ⬜ not started.
 | Think-tank | `competitor-gaps`, `cross-industry`, `platform-arbitrage` | `03-think-tanks/demand-generation/<name>.md` |
 | LIGHT DB | `growth-factors-mining` | `…/growth-factors.json` (20-40 clean-room vectors) |
 | Constraints | `lite-constraints` | `…/synthesis-constraints.json` |
-| Synthesis | `synthesis-step1-combinations` → `synthesis-step2-mechanisms` → `synthesis-pass1-whitespace` → `synthesis-pass2-founder` | `…/synthesis.md` (7-9 tactics, STOP) |
+| Synthesis | `synthesis-explore` (blind combinations → emergent mechanisms) → `synthesis-build` (white-space → founder-fit → merge) | `…/synthesis.md` (7-9 tactics, STOP) |
 | Review | `growth-reviewer` (+ 7 rubrics in `references/`) | JSON verdict |
 
 **4 worker sub-agents** ([`agents/`](./agents/)) — thin runners:
@@ -91,8 +108,8 @@ Legend: ✅ done · 🟡 built not verified · ⬜ not started.
   growth-factors mining.
 - `analysis-worker` — **no research MCP**: audience, competitor-gaps, cross-industry.
 - `synthesis-worker` — **no MCP, clean-room; default opus** but model-tiered per dispatch
-  (lite-constraints/step1/step2 → sonnet, pass1/pass2 → opus): lite-constraints + the 4
-  synthesis steps.
+  (lite-constraints + `explore` → sonnet, `build` → opus): lite-constraints + the 2
+  synthesis stages.
 - `reviewer` — read-only; runs `growth-reviewer` and returns the verdict.
 
 **2 manifests:** `plugin/.claude-plugin/plugin.json` (`name: diffmode-growth-tactics`) and
@@ -102,12 +119,13 @@ the repo-root `.claude-plugin/marketplace.json` (marketplace `diffmode-free`, `s
 
 Filesystem state is the contract between stages. Each generating stage runs: dispatch worker
 → existence/structural check → (where it has a rubric) reviewer loop, score **≥ 7**, **max 3**
-retries with blocking issues injected. **Reviewer-gated:** the 3 enrichment dims, the 3
-think-tanks, and the final `pass2` synthesis. **Structural check only:** `growth-factors.json`
-(JSON + schema + counts + clean-room; mined at Stage 1.5, collected at the Stage-3 boundary),
-`synthesis-constraints.json` (schema + every ID exists in the LIGHT DB), and synthesis
-step1/step2/pass1 (required sections + the step's own validity gates). Wave 1 (competitors) and
-the LIGHT DB are blocking gates for everything downstream.
+retries with blocking issues injected. **Reviewer-gated (v2.3.0): only** enrichment
+`competitors` and the final `synthesis-build`. **Structural check only:** enrichment `audience`
++ `acquisition-tactics`, the 3 think-tanks, `growth-factors.json` (JSON + schema + counts +
+clean-room; mined at Stage 1.5, collected at the Stage-3 boundary), `synthesis-constraints.json`
+(schema + every ID exists in the LIGHT DB), and synthesis `explore` (required sections +
+blind-draw ordering + verb-group validity). Wave 1 (competitors) and the LIGHT DB are blocking
+gates for everything downstream.
 
 ## Key decisions
 
@@ -125,19 +143,22 @@ the LIGHT DB are blocking gates for everything downstream.
   pairs, synergy / founder-fit pools, prohibited conventional patterns, category diversity,
   anti_patterns) — dropping the proprietary intelligence layer's internal pair-scoring
   (scaffolding, not a consumed field).
-- **Full 4-step synthesis, IP-scrubbed.** step1 (blind vector-first combinations) → step2
-  (emergent mechanism derivation) → pass1 (white-space exploration) → pass2 (founder-fit merge
-  → final). Proprietary vector IDs/examples were genericized to category-level patterns + the
-  `{prefix}-NNN-slug` format; vector definitions come from `growth-factors.json`. pass2's
-  proprietary anti-vector-tracking read was dropped (uses the lite `anti_patterns`); no
-  proprietary vector-validation post-step. The blind step1→step2 split is the novelty engine
-  and is independent of the removed intelligence layer.
+- **Synthesis: 4 IP-scrubbed steps, fused to 2 stages (v2.3.0).** `synthesis-explore` (Phase 1
+  blind vector-first combinations → Phase 2 emergent mechanism derivation) → `synthesis-build`
+  (Phase 1 white-space exploration → Phases 2-3 founder-fit merge → final). Proprietary vector
+  IDs/examples were genericized to category-level patterns + the `{prefix}-NNN-slug` format;
+  vector definitions come from `growth-factors.json`. The proprietary anti-vector-tracking read
+  was dropped (uses the lite `anti_patterns`); no proprietary vector-validation post-step. The
+  blind-draw → mechanism wall inside `explore` is the novelty engine and is independent of the
+  removed intelligence layer.
 - **Generalized workers (3→4).** Stage-neutral `research`/`analysis`/`synthesis`/`reviewer`;
   synthesis-worker is opus + no-MCP for reasoning-heavy clean-room synthesis.
-- **One parameterized reviewer, 7 rubrics.** 3 enrichment (SR-ENR) + 3 think-tank + the
-  demand-gen-synthesis rubric, bundled in `growth-reviewer/references/`, reached via
-  `${CLAUDE_PLUGIN_ROOT}`. The synthesis rubric carries a clean-room note: score against the
-  per-run LIGHT DB, and synthesis is the final stage (no Week-1 depth required).
+- **One parameterized reviewer, 7 rubric files (2 used in v2.3.0).** 3 enrichment (SR-ENR) +
+  3 think-tank + the demand-gen-synthesis rubric, bundled in `growth-reviewer/references/`,
+  reached via `${CLAUDE_PLUGIN_ROOT}`. v2.3.0 dispatches only the `competitors` +
+  `demand-gen-synthesis` rubrics; the other five are retained but unused (no churn). The
+  synthesis rubric carries a clean-room note: score against the per-run LIGHT DB, and synthesis
+  is the final stage (no Week-1 depth required).
 - **Reviewer threshold ≥ 7, max 3 retries** — faithful to the pipeline's enrichment config.
 
 ## Open items / next steps

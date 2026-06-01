@@ -8,7 +8,7 @@ into a `./<slug>/` workspace **in the user's current directory** — no host rep
 
 > This is the **shipped plugin**. `marketplace.json` at the repo root declares
 > `source: ./plugin`, so Claude Code copies **only this directory** to its plugin cache. The
-> bundled channel menu (`reference/`) and the 14 skills travel with it; the repo's `docs/`,
+> bundled channel menu (`reference/`) and the 12 skills travel with it; the repo's `docs/`,
 > `codex/`, and root README do **not** ship. Internal design notes live in the repo's
 > `docs/` (architecture, eval methodology, build log) and are not part of the install.
 
@@ -33,7 +33,7 @@ think-tank research (×3, ‖)     │
         ↓                       ↓
         └────────────┬──────────  lite-constraints (skill, replaces the Python script)
                      ↓
-        synthesis  step1 → step2 → pass1 → pass2  →  synthesis.md  (7-9 tactic ideas, STOP)
+        synthesis  explore → build  →  synthesis.md   (7-9 tactic ideas, STOP)
 ```
 
 **The moat is DB breadth + paid downstream — not the method.** The synthesis *method* is
@@ -62,27 +62,28 @@ in-context reasoning. Nothing here reads the proprietary `tactics_DB/`.
    only a small JSON summary + output path, keeping orchestrator context lean.
 4. The **reviewer→retry quality gate is a main-thread loop** (re-dispatch the worker with
    the reviewer's blocking issues injected), capped at 3 iterations — the threshold-7 /
-   max-3 norm. Enrichment dimensions, the 3 think-tanks, and the final synthesis (`pass2`)
-   are reviewer-gated; the LIGHT-DB / constraints / intermediate-synthesis stages get
-   structural checks instead.
+   max-3 norm. In v2.3.0 only **enrichment `competitors`** and the **final synthesis
+   (`build`)** are reviewer-gated; everything else (audience + acquisition-tactics, the 3
+   think-tanks, the LIGHT-DB / constraints / intermediate `explore` stage) gets a structural
+   check instead.
 
 ## What's here
 
 ```
 plugin/                          ← the shipped Claude Code plugin (source: ./plugin)
   README.md                      ← this file
-  .claude-plugin/plugin.json     ← plugin manifest (name: diffmode-growth-tactics, v2.2.0)
+  .claude-plugin/plugin.json     ← plugin manifest (name: diffmode-growth-tactics, v2.3.0)
   reference/
-    Marketing-Channel-Menu-2025-Extended.md   ← BUNDLED channel taxonomy (98 channels)
-  skills/                        ← the 14 SKILL.md sources (single source of truth)
+    Marketing-Channel-Menu-2026.md   ← BUNDLED channel taxonomy (100+ channels, 2026 edition)
+  skills/                        ← the 12 SKILL.md sources (single source of truth)
     diagnostics-intake/                              (entry: URL prefill or minimal Q&A)
     enrichment-competitors|audience|acquisition-tactics/
     competitor-gaps | cross-industry | platform-arbitrage/   (think-tank research)
     growth-factors-mining/                           (⚠ moat-critical clean-room LIGHT DB)
     lite-constraints/                                (no-Python synthesis-constraints generator)
-    synthesis-step1-combinations | synthesis-step2-mechanisms/
-    synthesis-pass1-whitespace   | synthesis-pass2-founder/   (final → synthesis.md)
-    growth-reviewer/  (+ references/ — 7 reviewer rubrics: 3 enrichment + 3 think-tank + synthesis)
+    synthesis-explore/                               (blind combinations → emergent mechanisms)
+    synthesis-build/                                 (white-space ideation → founder-fit → final synthesis.md)
+    growth-reviewer/  (+ references/ — 7 rubrics bundled; v2.3.0 gates only competitors + synthesis)
   agents/                        ← 4 sub-agent workers
     research-worker.md           tools: Read,Write,Edit,Glob,Grep,Skill,WebFetch,perplexity_research,_search; sonnet
     analysis-worker.md           tools: Read,Write,Edit,Glob,Grep,Skill (NO research MCP)
@@ -136,7 +137,7 @@ re-run unless `--remine`, and research breadth is bounded.
   pipeline; the plugin reviewer is Sonnet. Scores may calibrate slightly differently — lean
   on `blocking_issues` over the raw number near the gate.
 - **Per-run cost/latency** of the LIGHT DB (above) — worth measuring on the first real run.
-- **Codex port** is scaffolded-not-built — see the repo's `codex/CODEX.md`. The 14 skill
+- **Codex port** is scaffolded-not-built — see the repo's `codex/CODEX.md`. The 12 skill
   bodies are runtime-neutral and consumed unchanged by Codex; only the orchestration layer
   is Claude-specific.
 

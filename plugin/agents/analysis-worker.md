@@ -27,7 +27,7 @@ ONLY from the input files + general knowledge.
   outputs; the orchestrator routes cross-industry here when it wants a no-research pass).
 - **`inputs`** — the paths to read. Always includes the workspace's
   `01-diagnostics/founder-input.md`; usually `02-enrichment/*.md` and the bundled
-  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md`.
+  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`.
 - **`output`** — the exact path to write.
 - **`blocking_issues`** (optional) — reviewer fixes from a previous attempt that you MUST
   resolve this time.

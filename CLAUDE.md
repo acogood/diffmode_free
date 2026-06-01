@@ -31,7 +31,7 @@ MUST NOT read anything under `tactics_DB/`. Mentions of `tactics_DB/` in this re
 
 ## Architecture — single source of truth + what ships
 
-- **One repo, one physical copy of the skills.** The 14 skills live **once** in
+- **One repo, one physical copy of the skills.** The 12 skills live **once** in
   `plugin/skills/`. **Edit them there.** `codex/.agents/skills/*` are relative symlinks
   (`../../../plugin/skills/<name>`) — Codex reads the same files; do NOT create a second copy.
 - **Only `plugin/` ships to Claude users.** `marketplace.json` (repo root) declares
@@ -43,10 +43,10 @@ MUST NOT read anything under `tactics_DB/`. Mentions of `tactics_DB/` in this re
 
 | Path | Role | Ships to Claude? |
 |------|------|------------------|
-| `plugin/skills/` | 14 SKILL.md — canonical methodology | yes |
+| `plugin/skills/` | 12 SKILL.md — canonical methodology | yes |
 | `plugin/agents/` | 4 worker sub-agents (research/analysis/synthesis/reviewer) | yes |
 | `plugin/commands/` | `run-growth-tactics`, `run-enrichment` orchestrators | yes |
-| `plugin/reference/` | bundled `Marketing-Channel-Menu-2025-Extended.md` | yes |
+| `plugin/reference/` | bundled `Marketing-Channel-Menu-2026.md` | yes |
 | `codex/` | `AGENTS.md` + worker `.toml` + symlinked skills + `CODEX.md` | no |
 | `docs/` | architecture, eval-methodology, STATUS, full-pipeline-map | no |
 
@@ -71,12 +71,13 @@ MUST NOT read anything under `tactics_DB/`. Mentions of `tactics_DB/` in this re
 diagnostics-intake → enrichment (competitors → audience ‖ acq-tactics)
   → think-tank ×3 (competitor-gaps · cross-industry · platform-arbitrage)
   ‖ growth-factors-mining (LIGHT DB; starts right after the competitors gate, overlaps enrichment + think-tanks)
-  → lite-constraints → synthesis (step1 → step2 → pass1 → pass2) → synthesis.md  (STOP)
+  → lite-constraints → synthesis (explore → build) → synthesis.md  (STOP)
 ```
 
-A parameterized **reviewer** gates the 3 enrichment dims, the 3 think-tanks, and final `pass2`
-(score ≥ 7, max 3 retries, `blocking_issues` injected into a FRESH worker). Non-gated stages
-get structural checks. Workers are **single-shot and stateless** — every retry is a fresh
+A parameterized **reviewer** gates **two stages** (v2.3.0): enrichment `competitors` and the
+final synthesis (`build`) — score ≥ 7, max 3 retries, `blocking_issues` injected into a FRESH
+worker. Every other generating stage (audience + acquisition-tactics, the 3 think-tanks,
+growth-factors, lite-constraints, the intermediate `explore`) gets a structural check. Workers are **single-shot and stateless** — every retry is a fresh
 spawn; never `SendMessage` a returned worker. Research stages need a **Perplexity MCP**;
 analysis + synthesis run with **no MCP** by design (structurally enforces no-web-search).
 
@@ -89,7 +90,7 @@ analysis + synthesis run with **no MCP** by design (structurally enforces no-web
 - **Check nothing external leaked back in** →
   `grep -rn "prompts/\|ai-cmo-workspace\|repo root" plugin/` should return nothing but the
   README's references to this repo's own root.
-- **Confirm Codex symlinks resolve** → `ls -L codex/.agents/skills/` lists all 14.
+- **Confirm Codex symlinks resolve** → `ls -L codex/.agents/skills/` lists all 12.
 
 ## Pointers
 

@@ -23,7 +23,7 @@ under the **current working directory** (slug from the product name, else the UR
 `theona.ai`). Create `WS/01-diagnostics`, `WS/02-enrichment`,
 `WS/03-think-tanks/demand-generation`. No host repo is required.
 
-The bundled **channel menu** is at `../plugin/reference/Marketing-Channel-Menu-2025-Extended.md`
+The bundled **channel menu** is at `../plugin/reference/Marketing-Channel-Menu-2026.md`
 relative to this directory (i.e. `plugin/reference/…` from the repo root). The skill bodies
 refer to it as `${CLAUDE_PLUGIN_ROOT}/reference/…` — that is a Claude-runtime token; under
 Codex the orchestrator simply passes the checkout-relative path as an input. Skills treat the
@@ -31,7 +31,7 @@ channel menu as **invoker-supplied**, so no skill edit is needed.
 
 ## Skills (single source of truth)
 
-The 14 skills are symlinked into `.agents/skills/` from `../plugin/skills/`. Load a skill by
+The 12 skills are symlinked into `.agents/skills/` from `../plugin/skills/`. Load a skill by
 reading `.agents/skills/<skill>/SKILL.md` and following it step-by-step — the skill is the
 authority on scope, frameworks, output template, and validation. Reviewer rubrics live at
 `.agents/skills/growth-reviewer/references/<dimension>.md`.
@@ -56,7 +56,7 @@ authority on scope, frameworks, output template, and validation. Reviewer rubric
 |--------------------------------|-----------|----------|
 | `research-worker` | Perplexity MCP | diagnostics-intake (URL), enrichment research dims, platform-arbitrage, growth-factors-mining |
 | `analysis-worker` | **none (enforced)** | enrichment-audience, competitor-gaps, cross-industry (analysis mode) |
-| `synthesis-worker` | **none (enforced)** | lite-constraints, synthesis step1 → step2 → pass1 → pass2 |
+| `synthesis-worker` | **none (enforced)** | lite-constraints, synthesis explore → build |
 | `reviewer-worker`  | none | every reviewer-gated stage |
 
 The no-web workers deliberately have **no `mcp_servers`** — that structurally enforces the
@@ -67,22 +67,22 @@ The no-web workers deliberately have **no `mcp_servers`** — that structurally 
 ```
 Stage 0    diagnostics-intake        → WS/01-diagnostics/founder-input.md
 Stage 1    enrichment (2 waves):
-             Wave 1 (gate):  competitors
-             Wave 2 (‖):     audience ‖ acquisition-tactics    (depend on competitors)
+             Wave 1 (reviewer gate):            competitors
+             Wave 2 (‖, structural check only): audience ‖ acquisition-tactics    (depend on competitors)
 Stage 1.5  growth-factors mining     → …/growth-factors.json (LIGHT DB)
              starts right after Wave-1 competitors is APPROVED; runs concurrently through
              the rest of enrichment + Stage 2; structural-check-only; collected at the Stage-3 boundary
-Stage 2    think-tank ×3             (parallel, after enrichment)
-             competitor-gaps · cross-industry · platform-arbitrage
+Stage 2    think-tank ×3             (parallel, after enrichment; structural check only)
+             platform-arbitrage (research) · competitor-gaps · cross-industry
 Stage 3    lite-constraints          → WS/03-think-tanks/demand-generation/synthesis-constraints.json
              precondition: growth-factors.json present + valid
-Stage 4    synthesis  step1 → step2 → pass1 → pass2   → synthesis.md   (STOP)
+Stage 4    synthesis  explore → build   → synthesis.md   (STOP)
 ```
 
 ## The quality gate (reviewer → retry loop)
 
-For each **reviewer-gated** stage (the 3 enrichment dimensions, the 3 think-tanks, and the
-final `pass2` synthesis): after the worker writes its output, dispatch `reviewer-worker` with
+For each **reviewer-gated** stage (in v2.3.0: enrichment `competitors` and the final synthesis
+`build`): after the worker writes its output, dispatch `reviewer-worker` with
 `{dimension, spec_path, output_path, context_paths}`. Read the JSON verdict.
 
 - **APPROVED** (score ≥ 7, format PASS) → done.
@@ -90,10 +90,10 @@ final `pass2` synthesis): after the worker writes its output, dispatch `reviewer
   `blocking_issues` injected verbatim; re-check; increment.
 - **REJECTED** at iteration 3 → mark the stage FAILED, record blocking_issues, stop dependents.
 
-The non-gated stages (growth-factors-mining, lite-constraints, synthesis step1/step2/pass1) get
-a **structural check only** (file exists, non-empty, required sections present, JSON parses with
-expected keys/counts, referenced vector IDs exist in `growth-factors.json`). Re-dispatch once on
-a structural failure.
+The non-gated stages (growth-factors-mining, lite-constraints, synthesis `explore`, enrichment
+`audience` + `acquisition-tactics`, and the 3 think-tanks) get a **structural check only** (file
+exists, non-empty, required sections present, JSON parses with expected keys/counts, referenced
+vector IDs exist in `growth-factors.json`). Re-dispatch once on a structural failure.
 
 ## Clean-room rule (moat-critical)
 

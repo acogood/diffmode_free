@@ -47,7 +47,7 @@ The three dimensions: `competitors`, `audience`, `acquisition-tactics`.
    Confirm `WS/01-diagnostics/founder-input.md` exists and is non-empty. If missing, abort with
    `missing-founder-input` (diagnostics must run first). **No host repo is required** — the
    plugin is self-contained.
-2. **Confirm the channel menu** — `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md`
+2. **Confirm the channel menu** — `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`
    exists (bundled in the plugin; required by competitors, acquisition-tactics, audience).
    `${CLAUDE_PLUGIN_ROOT}` expands to the plugin's install directory at runtime.
 3. **Resolve the output dir** — `OUT = WS/02-enrichment` (or `WS/02-enrichment-scratch`
@@ -57,14 +57,17 @@ The three dimensions: `competitors`, `audience`, `acquisition-tactics`.
    is enabled, so no install step is needed here. If a worker dispatch later reports an
    unknown agent, the plugin is not enabled — run `/plugin` and enable `diffmode-growth-tactics`
    (or `claude plugin install diffmode-growth-tactics@diffmode-free`).
-5. **Confirm the reviewer threshold** — score **≥ 7**, **max 3** iterations per
-   dimension (the pipeline norm).
+5. **Confirm the reviewer threshold** — score **≥ 7**, **max 3** iterations, applied to
+   **`competitors` only** (the Wave-1 blocker). `audience` + `acquisition-tactics` get a
+   **structural completeness check only**, no reviewer (v2.3.0 reviewer cut — they proved
+   reliable enough in the field that gating them added latency + retry risk without changing
+   the result).
 
 ## The DAG (waves)
 
 ```
-Wave 1 (blocking gate):  competitors
-Wave 2 (parallel):       audience          ‖ acquisition-tactics      (both depend_on competitors)
+Wave 1 (blocking reviewer gate):           competitors
+Wave 2 (parallel, structural check only):  audience          ‖ acquisition-tactics   (both depend_on competitors)
 ```
 
 `acquisition-tactics` is a leaf (nothing downstream in enrichment consumes it). Wave 2 is the
@@ -74,11 +77,11 @@ removal history.)
 
 ### Per-dimension input wiring (the worker's `inputs`)
 
-| Dimension | Worker (plugin-namespaced) | Inputs | Reviewer spec_path |
-|-----------|--------|--------|--------------------|
-| competitors | `diffmode-growth-tactics:research-worker` | `WS/01-diagnostics/founder-input.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-competitors/SKILL.md` |
-| audience | **`diffmode-growth-tactics:analysis-worker`** (no MCP) | `WS/01-diagnostics/founder-input.md`; `OUT/competitors-analysis.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-audience/SKILL.md` |
-| acquisition-tactics | `diffmode-growth-tactics:research-worker` | `WS/01-diagnostics/founder-input.md`; `OUT/competitors-analysis.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` | `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-acquisition-tactics/SKILL.md` |
+| Dimension | Worker (plugin-namespaced) | Inputs | Gate |
+|-----------|--------|--------|------|
+| competitors | `diffmode-growth-tactics:research-worker` | `WS/01-diagnostics/founder-input.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md` | **reviewer-gated** — spec `${CLAUDE_PLUGIN_ROOT}/skills/enrichment-competitors/SKILL.md` |
+| audience | **`diffmode-growth-tactics:analysis-worker`** (no MCP) | `WS/01-diagnostics/founder-input.md`; `OUT/competitors-analysis.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md` | structural check only (no reviewer) |
+| acquisition-tactics | `diffmode-growth-tactics:research-worker` | `WS/01-diagnostics/founder-input.md`; `OUT/competitors-analysis.md`; `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md` | structural check only (no reviewer) |
 
 Output filenames in `OUT/`: `competitors-analysis.md`, `audience-jtbd.md`,
 `acquisition-tactics.md`.
@@ -121,7 +124,11 @@ If the file is missing/empty/structurally incomplete and the worker returned `ok
 treat as a failed attempt and re-dispatch once with the specific gap noted; if the
 worker returned `error`, surface its `reason` and stop this dimension's branch.
 
-### 3. Reviewer loop (score ≥ 7, max 3 iterations)
+### 3. Reviewer loop — `competitors` only (score ≥ 7, max 3 iterations)
+
+**Run this loop ONLY for `competitors`** (the Wave-1 blocker). `audience` +
+`acquisition-tactics` skip the reviewer entirely — their step-2 structural existence check IS
+their gate (re-dispatch once on a structural gap, then accept). For `competitors`:
 
 ```
 iter = 1
@@ -157,9 +164,11 @@ max-3 norm.
    **single message containing two Agent tool uses** so they run concurrently:
    - `diffmode-growth-tactics:analysis-worker` for `audience` (no MCP),
    - `diffmode-growth-tactics:research-worker` for `acquisition-tactics`.
-   Then run each dimension's existence-check + reviewer loop. (Reviewer dispatches for
-   the two may also be batched in one message.) `acquisition-tactics` is a leaf; nothing in
-   enrichment depends on it. Wave 2 is the last enrichment wave — there is no Wave 3.
+   Then run each dimension's **existence-check only** — there is **no reviewer loop** for
+   Wave-2 dims in v2.3.0 (structural check only); if a dim's structural check fails,
+   re-dispatch it once with the gap noted, then accept. `acquisition-tactics` is a leaf;
+   nothing in enrichment depends on it. Wave 2 is the last enrichment wave — there is no
+   Wave 3.
 
 ## Output / report
 
@@ -185,7 +194,7 @@ For any FAILED dimension, list its final `blocking_issues`.
 | `competitors-gate-failed` | Wave 1 | competitors REJECTED after 3 iterations | inspect blocking_issues; the 2 downstream dims cannot run |
 | `worker-error` | any | a worker returned `{status:"error"}` | surface `reason`; fix the input it named |
 | `output-missing` | existence check | worker returned ok but file missing/empty/incomplete | re-dispatched once; if still bad, stop that branch |
-| `dimension-failed` | reviewer loop | a dim REJECTED after 3 iterations | list final blocking_issues; dependents skipped |
+| `dimension-failed` | Wave-2 structural check | `audience`/`acquisition-tactics` still structurally incomplete after the single re-dispatch (no reviewer loop for Wave-2 dims in v2.3.0) | list the gap in the run summary |
 
 ## Idempotency
 
@@ -196,7 +205,9 @@ preserve known-good originals (dry-runs / output-parity checks).
 ## Acceptance check (user runs after the orchestrator finishes)
 
 1. All three `OUT/*.md` exist, non-empty, with the required sections.
-2. Each dimension reached APPROVED (score ≥ 7); note any that needed 2-3 passes.
+2. `competitors` reached APPROVED (score ≥ 7); `audience` + `acquisition-tactics` passed
+   their structural completeness check (required sections present). Note anything that needed
+   a re-dispatch.
 3. Spot-check `OUT/*.md` for completeness — every required section present, every
    required field populated, sources cited where the skill demands them.
 4. Confirm the audience worker performed **no** web lookups (no research MCP available

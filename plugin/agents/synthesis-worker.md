@@ -1,6 +1,6 @@
 ---
 name: synthesis-worker
-description: Reasoning-heavy synthesis worker for the Diffmode growth-tactics pipeline. Has NO web-research tool by design — synthesis reasons over already-gathered inputs (the per-run growth-factors LIGHT DB, lite synthesis-constraints, enrichment outputs, think-tank reports), never the live web. Loads a named synthesis-chain skill, reads the named inputs, writes the named output, and returns a small JSON summary. Dispatched by the run-growth-tactics orchestrator for synthesis step1 -> step2 -> pass1 -> pass2.
+description: Reasoning-heavy synthesis worker for the Diffmode growth-tactics pipeline. Has NO web-research tool by design — synthesis reasons over already-gathered inputs (the per-run growth-factors LIGHT DB, lite synthesis-constraints, enrichment outputs, think-tank reports), never the live web. Loads a named synthesis-chain skill, reads the named inputs, writes the named output, and returns a small JSON summary. Dispatched by the run-growth-tactics orchestrator for synthesis explore -> build.
 tools:
   - Read
   - Write
@@ -35,18 +35,18 @@ per-run LIGHT DB and stops at synthesis — full-depth *ideas*, deliberately lig
 - **`skill`** — the plugin-namespaced synthesis-chain skill to follow, one of:
   `diffmode-growth-tactics:lite-constraints` (builds synthesis-constraints.json from the
   LIGHT DB — the bridge into synthesis),
-  `diffmode-growth-tactics:synthesis-step1-combinations`,
-  `diffmode-growth-tactics:synthesis-step2-mechanisms`,
-  `diffmode-growth-tactics:synthesis-pass1-whitespace`,
-  `diffmode-growth-tactics:synthesis-pass2-founder`.
+  `diffmode-growth-tactics:synthesis-explore` (blind vector combinations → emergent
+  mechanisms — the structural-check-only stage),
+  `diffmode-growth-tactics:synthesis-build` (white-space ideation → founder-fit adaptation →
+  merge — the final, reviewer-gated deliverable).
 - **`inputs`** — the paths to read (varies by step; always includes the prior step's
   output once the chain is running, plus `growth-factors.json`, `synthesis-constraints.json`,
   `founder-input.md`, the relevant enrichment outputs, the think-tank reports, and the
   channel menu, as the skill directs).
 - **`output`** — the exact path to write.
-- **`blocking_issues`** (optional) — reviewer fixes (synthesis is gated only after pass2,
-  on the `demand-gen-synthesis` rubric; step1/step2/pass1 are intermediate and checked
-  structurally by the orchestrator).
+- **`blocking_issues`** (optional) — reviewer fixes (synthesis is gated only after `build`,
+  on the `demand-gen-synthesis` rubric; `explore` is intermediate and checked structurally by
+  the orchestrator).
 
 ## Procedure
 
@@ -64,9 +64,9 @@ per-run LIGHT DB and stops at synthesis — full-depth *ideas*, deliberately lig
    socket deaths in the field).**
 4. **Write the output** to the exact `output` path (overwrite if present). Use the skill's
    output template verbatim. Write no other files.
-5. **Self-validate** against the skill's validation checkpoint before returning. For step1
-   and step2, if a validation checkbox fails, fix it before writing — do not emit an
-   output the skill marks INVALID.
+5. **Self-validate** against the skill's validation checkpoint before returning. For
+   `explore`, if a validation checkbox fails (e.g. verb groups < 7, or the blind-draw wall is
+   out of order), fix it before writing — do not emit an output the skill marks INVALID.
 
 ## Return (final message — JSON only)
 

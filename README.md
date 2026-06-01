@@ -42,12 +42,13 @@ think-tank research (×3, ‖)        of enrichment + the think-tanks
         ↓
 lite-constraints              (in-context constraints generator, no Python)
         ↓
-synthesis  step1 → step2 → pass1 → pass2  →  synthesis.md   (7-9 tactic ideas, STOP)
+synthesis  explore → build  →  synthesis.md   (7-9 tactic ideas, STOP)
 ```
 
-A parameterized **reviewer** gates every generating stage (score ≥ 7, max 3 retries).
-Research stages need a **Perplexity MCP server**; analysis + synthesis stages run with no MCP
-by design. Every run writes into a `./<slug>/` workspace **in your current directory** — no
+A parameterized **reviewer** gates **two stages** — enrichment `competitors` and the final
+synthesis (`build`) — at score ≥ 7, max 3 retries; every other generating stage gets a
+structural check. Research stages need a **Perplexity MCP server**; analysis + synthesis
+stages run with no MCP by design. Every run writes into a `./<slug>/` workspace **in your current directory** — no
 host repo required.
 
 ## Repo layout
@@ -55,7 +56,7 @@ host repo required.
 ```
 .claude-plugin/marketplace.json   ← Claude marketplace (source: ./plugin)
 plugin/                           ← the Claude Code plugin (the only thing Claude installs)
-  skills/                         ← the 14 SKILL.md sources — SINGLE SOURCE OF TRUTH
+  skills/                         ← the 12 SKILL.md sources — SINGLE SOURCE OF TRUTH
   agents/  commands/  reference/  README.md
 codex/                            ← Codex scaffold (reads the same skills via symlink)
   .agents/skills/* → ../../plugin/skills/*
@@ -64,7 +65,7 @@ docs/                             ← internal design notes (not shipped to eith
 LICENSE                           ← Apache-2.0
 ```
 
-The 14 skills live **once**, in `plugin/skills/`. Codex consumes them through relative
+The 12 skills live **once**, in `plugin/skills/`. Codex consumes them through relative
 symlinks under `codex/.agents/skills/`, so there is no second copy and no drift.
 
 ## Install — Claude Code

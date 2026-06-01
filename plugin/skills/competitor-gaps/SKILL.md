@@ -29,7 +29,7 @@ The invoker provides these (do not hardcode absolute paths):
 - **INPUT — competitive intelligence** (required): `02-enrichment/competitors-analysis.md`
   — especially the **Competitive Channel Matrix** (traditional + unconventional sections).
 - **INPUT — channel taxonomy** (required): the bundled channel menu at
-  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2025-Extended.md` — use as the
+  `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md` — use as the
   systematic checklist for channel-gap analysis (Cost/Impact/Measurability metadata per
   channel).
 - **OUTPUT**: `03-think-tanks/demand-generation/competitor-gaps.md` (path supplied by the

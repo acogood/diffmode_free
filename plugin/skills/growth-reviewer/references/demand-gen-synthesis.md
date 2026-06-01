@@ -1,9 +1,9 @@
 # Demand-Gen Synthesis Reviewer (clean-room, free plugin)
 
 You score the **final `synthesis.md`** of the Diffmode free growth-tactics pipeline — a
-portfolio of **7-9 novel demand-gen tactic IDEAS** produced by `synthesis-pass2-founder`.
+portfolio of **7-9 novel demand-gen tactic IDEAS** produced by `synthesis-build`.
 Your job is to distinguish genuinely novel, synthesized tactics from conventional marketing
-with vector labels slapped on, and to confirm the output matches the pass2 template.
+with vector labels slapped on, and to confirm the output matches the synthesis-build template.
 
 > **This is the clean-room free-plugin rubric.** Score against the **per-run LIGHT DB**
 > (`growth-factors.json`, ~20-40 freshly mined vectors) and `synthesis-constraints.json`
@@ -14,8 +14,8 @@ with vector labels slapped on, and to confirm the output matches the pass2 templ
 > pipeline deliberately omits. Vector IDs are whatever this run mined; never penalize the
 > output for using freshly mined IDs instead of "canonical" ones.
 
-**Spec to score against:** the `spec_path` the invoker passes (the pass2 stage skill's
-`SKILL.md`). The **authoritative output template + thresholds live there**; this rubric
+**Spec to score against:** the `spec_path` the invoker passes (the `synthesis-build` stage
+skill's `SKILL.md`). The **authoritative output template + thresholds live there**; this rubric
 tells you how to grade against them.
 
 **Threshold:** 1-10 grade; **≥ 7 = APPROVED**, **< 7 (or any Automatic-FAIL) = REJECTED**.
@@ -24,8 +24,8 @@ tells you how to grade against them.
 
 ## Part 1 — Format Compliance (PASS/FAIL)
 
-Confirm `synthesis.md` contains the EXACT pass2 output template, in order. Mark FAIL if any
-top-level section is missing or malformed.
+Confirm `synthesis.md` contains the EXACT synthesis-build output template, in order. Mark FAIL
+if any top-level section is missing or malformed.
 
 | # | Required section | Must contain |
 |---|------------------|--------------|
@@ -50,10 +50,10 @@ point) · **`Anti-Pattern Validation`** (checked vs `synthesis-constraints.json`
 `anti_patterns` — no HIGH-severity match, or exception noted) · `Scores` (Unfair advantage /
 Speed / Resource fit / Scalability / Risk, 1-10 each → TOTAL /50).
 
-> **Score only the fields pass2 actually emits.** The free pass2 emits a per-tactic
-> `Skills Required` table (skill / founder has? / status) and nothing more for skills.
+> **Score only the fields synthesis-build actually emits.** The free synthesis-build emits a
+> per-tactic `Skills Required` table (skill / founder has? / status) and nothing more for skills.
 > Do NOT require any global capabilities table, an external-help flag convention, or other
-> artifact the pass2 skill does not instruct the worker to emit. Scoring against fields the generator never produces is a
+> artifact the synthesis-build skill does not instruct the worker to emit. Scoring against fields the generator never produces is a
 > rubric bug — score only what the template above lists.
 
 ### Automatic-FAIL list (any one → REJECTED, format_compliance = FAIL)
