@@ -84,7 +84,7 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 | Clean-room verified (nothing reads `tactics_DB/`) | ✅ done (grep + skill prohibitions) |
 | End-to-end live run | ✅ v2.3.0 theona.ai re-test PASSED (2026-06-02): 8 tactics, 88% unconv, 100% white-space, 0 phantom, build reviewer 9, 85 min, think-tanks 0s-parallel |
 | Git commit (untracked on `main`) | ⬜ not started |
-| Per-run cost/latency measured | ⬜ not started |
+| Per-run cost/latency measured | ✅ v2.3.0 theona (2026-06-02): ~85 min wall-clock (~75–80 clean); ~5 deep + ~51 search Perplexity calls ≈ $2–3 |
 | Light-DB vs proprietary-DB moat comparison | ⬜ not started |
 | Reviewer-model calibration (Gemini→Sonnet) | ⬜ open (carried) |
 | Codex / OpenClaw ports | ⬜ not started (specified, deferred) |
@@ -174,8 +174,12 @@ gates for everything downstream.
 1. **Live end-to-end run** — `/diffmode-growth-tactics:run-growth-tactics --url <site>
    --scratch` on a known workspace (e.g. `theona.ai`); confirm `synthesis.md` has 7-9 tactics,
    ≥50% unconventional, each traceable to a `growth-factors.json` vector.
-2. **Measure per-run cost/latency** of `growth-factors-mining` (the deliberate "fresh per run"
-   tradeoff); confirm caching + `--remine` behave.
+2. ✅ **Per-run cost/latency measured** (v2.3.0 theona, 2026-06-02): **~85 min** wall-clock
+   (~75–80 clean; one synthesis socket-death respawn added ~8 min) and **~5 deep
+   `perplexity_research` + ~51 `perplexity_search` ≈ $2–3** (deep-research-dominated;
+   `growth-factors-mining` ran ~10 min concurrent, off the critical path). Caching + `--remine`
+   behaved (the explore respawn did NOT re-mine growth-factors). See `README.md` "Cost &
+   runtime" for the per-stage table.
 3. **Moat comparison** — diff a light-DB synthesis vs a proprietary-DB run for the same
    workspace; confirm the free output is *useful but visibly weaker*.
 4. **Reviewer-model calibration** — Gemini→Sonnet, same as the enrichment pilot; confirm

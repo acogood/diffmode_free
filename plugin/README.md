@@ -136,7 +136,12 @@ re-run unless `--remine`, and research breadth is bounded.
 - **Reviewer-model calibration.** The rubrics ran on gemini-pro/claude in the source
   pipeline; the plugin reviewer is Sonnet. Scores may calibrate slightly differently — lean
   on `blocking_issues` over the raw number near the gate.
-- **Per-run cost/latency** of the LIGHT DB (above) — worth measuring on the first real run.
+- **Per-run cost/latency (measured, theona.ai v2.3.0, 2026-06-02):** **~75–85 min** wall-clock
+  (85 min including one transient synthesis socket-death respawn; ~75–80 min clean) and
+  **~5 deep `perplexity_research` + ~50 `perplexity_search` calls ≈ $2–3** (Perplexity-plan
+  dependent; the deep-research calls dominate, hence the search-first ≤1–2-deep/stage cap).
+  `growth-factors` mining (~10 min) and the 3 think-tanks (~12 min) overlap, so they stay off
+  the critical path. See the repo `README.md` "Cost & runtime" for the per-stage table.
 - **Codex port** is scaffolded-not-built — see the repo's `codex/CODEX.md`. The 12 skill
   bodies are runtime-neutral and consumed unchanged by Codex; only the orchestration layer
   is Claude-specific.

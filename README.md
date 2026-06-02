@@ -51,6 +51,35 @@ structural check. Research stages need a **Perplexity MCP server**; analysis + s
 stages run with no MCP by design. Every run writes into a `./<slug>/` workspace **in your current directory** — no
 host repo required.
 
+## Cost & runtime (measured)
+
+Measured end-to-end on **theona.ai** (v2.3.0, `--fast-intake`, 2026-06-02):
+
+- **Runtime: ~75–85 min** wall-clock. The reference run took **85 min** *including* one transient
+  socket-death respawn on synthesis; a clean run is **~75–80 min**. Stages overlap heavily —
+  `growth-factors` mining (~10 min) and Wave-2 enrichment run concurrently and stay off the
+  critical path, and the 3 think-tanks run in **parallel** (~12 min, not ~36).
+- **Perplexity: ~5 deep `perplexity_research` + ~50 `perplexity_search` calls** per run
+  (**≈ $2–3**, depending on your Perplexity plan/model). The few **deep-research calls dominate
+  the cost**, so the pipeline is search-first and caps deep research at ~1–2 calls/stage. Only
+  the research stages (diagnostics URL prefill, competitors, acquisition-tactics, growth-factors
+  mining, platform-arbitrage) call Perplexity; analysis + synthesis use no MCP.
+
+Rough per-stage wall-clock (overlapping stages share a start time):
+
+| Stage | ~Time | Notes |
+|-------|-------|-------|
+| diagnostics intake | 8 min | URL research + prefill |
+| enrichment: competitors (gate) | 15 min | the one reviewer-gated enrichment dim |
+| enrichment: audience ‖ acquisition-tactics | 4 / 17 min | concurrent (Wave 2) |
+| growth-factors mining | 10 min | concurrent — hidden under the critical path |
+| think-tanks ×3 | 12 min | parallel, not 3× |
+| lite-constraints | 4 min | |
+| synthesis: explore → build | 12 + 7 min | +~8 min if a socket death respawns |
+
+Point-in-time numbers from one product — treat as rough. `growth-factors.json` is cached
+(re-mined only on `--remine`), so a `--from synthesis` re-run is minutes, not the full hour.
+
 ## Repo layout
 
 ```
