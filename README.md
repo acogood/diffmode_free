@@ -132,12 +132,12 @@ for the full command reference.
 The skill bodies are **runtime-neutral** — Codex reads the same `SKILL.md` files Claude does.
 The Codex orchestration layer is **scaffolded, not yet built** (Codex's surface moves fast;
 treat it as runnable-soon). To try a single skill today, clone the repo and follow
-[`codex/CODEX.md`](codex/CODEX.md): it covers registering the Perplexity MCP
-(`codex mcp add perplexity …`), the **`KEY`/`TOKEN` env-stripping gotcha**, how the Claude
-orchestrator maps to an `AGENTS.md` + `PLANS.md` ExecPlan, and how to load
-`.agents/skills/`. *(The WebSearch fallback is currently **Claude-only** — the Codex
-`research-worker` still requires Perplexity; mirroring the fallback there is a planned
-follow-up.)*
+[`codex/CODEX.md`](codex/CODEX.md): it covers the **(optional)** Perplexity MCP
+(`codex mcp add perplexity …`) and its `KEY`/`TOKEN` env-stripping gotcha, the **native
+`web_search` fallback** + the per-invocation `web_search` clean-room model, how the Claude
+orchestrator maps to an `AGENTS.md` + `PLANS.md` ExecPlan, and how to load `.agents/skills/`.
+**Both runtimes are now Perplexity-optional** (Claude → built-in `WebSearch`; Codex → native
+`web_search`), each with the same citation-integrity re-fetch on the fallback path.
 
 ## License
 

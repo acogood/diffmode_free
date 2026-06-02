@@ -5,8 +5,10 @@
 name = "analysis-worker"
 description = "Analysis-only worker for the Diffmode growth-tactics pipeline. Has NO web-research access by design, so any 'no new web search' rule is structurally enforced. Loads a named analysis-stage skill from .agents/skills/, reads the input files + general knowledge only, writes the named output, returns a small JSON summary. Used for the audience-JTBD enrichment dimension and the analysis-mode think-tanks (competitor-gaps; cross-industry without research)."
 
-# IMPORTANT: do NOT add mcp_servers here. The lack of a research MCP is what structurally
-# enforces the no-web-search rule for these stages.
+# IMPORTANT: do NOT add mcp_servers here, AND dispatch this worker with web_search = "disabled".
+# BOTH are required on Codex: "no mcp_servers" alone is insufficient because the native
+# `web_search` tool defaults to `cached` (web-cache results, NOT "no web"). The absent research
+# MCP + web_search="disabled" pair is what structurally enforces the no-web-search rule here.
 
 # model / model_reasoning_effort: set at build time.
 # model = "gpt-5-codex"

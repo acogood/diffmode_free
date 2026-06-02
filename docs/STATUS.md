@@ -5,6 +5,43 @@ build-log table live in [`README.md`](./README.md); this file tracks current sta
 
 Last updated: **2026-06-02**
 
+> **Round-6 — Codex parity: Perplexity-optional on the Codex runtime too (2026-06-02).** Brought the
+> Codex `research-worker` to the same Perplexity-optional posture the Claude plugin reached in
+> Round-5 / v2.4.0: it now **prefers the Perplexity MCP when registered and otherwise falls back to
+> Codex's native `web_search` tool**, gated by the same universal **citation-source rule** + a
+> **citation-integrity re-fetch** (re-fetch every cited URL on the fallback path, drop/re-ground
+> NXDOMAIN/404, report `citationsVerified`/`citationsDropped`). **No `plugin.json` bump, no new
+> tag** — `codex/` does not ship to Claude users (marketplace `source: ./plugin`) and `plugin/` is
+> byte-unchanged; this completes the v2.4.0 "Codex follow-up."
+>
+> **Grounding facts (verified against codex-cli 0.130 + `codex --help`):** native web search is
+> per-invocation via the top-level `web_search` config key — `disabled` / `cached` (default) /
+> `live`; on `codex exec` it is enabled with **`-c web_search="live"`** (the bare `--search` flag is
+> interactive-only: `codex exec --search` errors; `codex --search exec …` works). Because the
+> default `cached` still serves web-cache results, the no-web workers (analysis / synthesis /
+> reviewer) are dispatched with an explicit **`web_search="disabled"` baseline** — "no `mcp_servers`"
+> alone is insufficient. Custom agents live at **`~/.codex/agents/*.toml`** and are **silently
+> ignored if malformed**; the scaffold's `mcp_servers = ["perplexity"]` (an array) is rejected
+> (`invalid type: sequence, expected a map` — the field is a *map* keyed by server name with a
+> transport), so the worker now declares **no** `mcp_servers` and **inherits a globally-registered
+> Perplexity MCP** instead, with native `web_search` as the keyless default.
+>
+> **✅ Live smoke validated (theona.ai competitors stage, native `web_search`, Perplexity OFF).** A
+> headless `codex exec` (`-c web_search="live"`, no Perplexity, `--sandbox workspace-write` +
+> `sandbox_workspace_write.network_access=true`) ran `enrichment-competitors` end-to-end:
+> **30 `web_search` calls · 0 Perplexity · 4 `curl` citation re-fetches**; output had both required
+> sections (`## Competitor Overview`, `## Competitive Channel Matrix`) + 6 competitors with a correct
+> tier mix (4 market_leader + 2 indie_direct); worker reported **`citationsVerified=24,
+> citationsDropped=0`**; **independent sweep of 26 cited URLs / 15 hosts → 0 NXDOMAIN, 0 hard-404**
+> (the 5 non-200s are 403/WAF/anti-bot on real hosts — g2, make.com, producthunt, linkedin-999 —
+> correctly kept). The agent file loaded with **no warning** (schema-valid). *Honesty note:* a first
+> pass **without** shell network exposed that a domain-only re-fetch misses deep-path 404s (2 stale
+> deep links slipped through on real domains, `citationsDropped=0`); the fix was to tighten
+> `citation_integrity_check` to verify **full URLs** and to grant the research dispatch shell network
+> for the `curl` re-fetch — the re-run was clean. Changed: `codex/agents/*.toml`, `codex/CODEX.md`,
+> `codex/AGENTS.md`, `docs/architecture.md`, `README.md`. Skills byte-identical; 12 symlinks intact.
+> Smoke installs `~/.codex/agents/research-worker.toml` (additive, reversible) and removes it after.
+
 > **Round-5 — Perplexity-optional / WebSearch fallback (2026-06-02, plugin v2.4.0).** Made the
 > Perplexity MCP **optional**: the `research-worker` now **prefers Perplexity when present and
 > falls back to the built-in `WebSearch`** (zero setup, no API key) across all 5 research stages,
@@ -21,8 +58,8 @@ Last updated: **2026-06-02**
 > orchestrators print a one-line **WebSearch-fallback-mode banner** when no Perplexity MCP is
 > detected (no hard gate — there never was one). The 5 research skills, both READMEs, `CLAUDE.md`,
 > `architecture.md`, and `eval-methodology.md` §4c were softened/updated to backend-neutral;
-> `plugin.json` 2.3.0 → **2.4.0**. **Codex side is unchanged** — its `research-worker` still
-> requires Perplexity; mirroring the fallback there is a planned follow-up.
+> `plugin.json` 2.3.0 → **2.4.0**. **Codex side was unchanged in this round** — its
+> `research-worker` still required Perplexity; **mirrored in Round-6 below** (Codex parity).
 >
 > **✅ Targeted re-validation PASSED (theona.ai competitors stage, 2026-06-02; `--plugin-dir` on
 > the edited tree, no reinstall):**
@@ -119,7 +156,7 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 | Per-run cost/latency measured | ✅ v2.3.0 theona (2026-06-02): ~85 min wall-clock (~75–80 clean); ~5 deep + ~51 search Perplexity calls ≈ $2–3 |
 | Light-DB vs proprietary-DB moat comparison | ⬜ not started |
 | Reviewer-model calibration (Gemini→Sonnet) | ⬜ open (carried) |
-| Codex / OpenClaw ports | ⬜ not started (specified, deferred) |
+| Codex / OpenClaw ports | 🟡 Codex `research-worker` Perplexity-optional + live-smoke-validated (Round-6, codex-cli 0.130); full Codex orchestrator + OpenClaw still deferred |
 
 Legend: ✅ done · 🟡 built not verified · ⬜ not started.
 

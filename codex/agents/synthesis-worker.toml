@@ -5,7 +5,10 @@
 name = "synthesis-worker"
 description = "Reasoning-heavy synthesis worker for the Diffmode growth-tactics pipeline. Has NO web-research access by design — synthesis reasons over already-gathered inputs (the per-run growth-factors LIGHT DB, lite synthesis-constraints, enrichment outputs, think-tank reports), never the live web. Loads a named synthesis-chain skill from .agents/skills/, reads the named inputs, writes the named output, returns a small JSON summary. Used for synthesis explore -> build."
 
-# IMPORTANT: no mcp_servers. Synthesis must not touch the web.
+# IMPORTANT: no mcp_servers, AND dispatch with web_search = "disabled". Synthesis must not touch
+# the web — and on Codex both are required: the native `web_search` tool defaults to `cached`
+# (web!), so omitting mcp_servers alone is insufficient; web_search="disabled" closes the cache
+# path too.
 
 # This is the reasoning-heavy stage — pin your strongest reasoning model + high effort here.
 # model = "gpt-5-codex"

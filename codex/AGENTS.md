@@ -41,7 +41,12 @@ authority on scope, frameworks, output template, and validation. Reviewer rubric
 1. **One level of agents.** The orchestrator (you, driving a `PLANS.md` ExecPlan) runs at the
    top and dispatches worker agents (`codex/agents/*.toml`). Workers do NOT spawn workers.
    Codex spawns sub-agents only when explicitly asked — request them per stage from the
-   ExecPlan.
+   ExecPlan. **Each dispatch is a separate `codex exec` call that scopes its own web access:**
+   the `research-worker` dispatch adds `-c web_search="live"` (and attaches Perplexity if
+   registered) plus `-c sandbox_workspace_write.network_access=true` so its citation-integrity
+   re-fetch can `curl` full URLs; every other dispatch adds nothing and inherits the
+   `web_search = "disabled"` baseline (CODEX.md §4). There is no `codex exec --agent` flag — agents are delegated in-prompt,
+   one `codex exec` per worker.
 2. **Workers are stateless and single-shot.** A worker loads one skill, reads inputs, writes
    one output, returns a small JSON summary `{status, outputPath, summary}`. It is not
    addressable after it returns. Every retry is a FRESH worker with the same brief plus any
@@ -54,13 +59,19 @@ authority on scope, frameworks, output template, and validation. Reviewer rubric
 
 | Worker (`codex/agents/*.toml`) | Web access | Used for |
 |--------------------------------|-----------|----------|
-| `research-worker` | Perplexity MCP | diagnostics-intake (URL), enrichment research dims, platform-arbitrage, growth-factors-mining |
+| `research-worker` | native `web_search` (built-in) + Perplexity MCP (optional) | diagnostics-intake (URL), enrichment research dims, platform-arbitrage, growth-factors-mining |
 | `analysis-worker` | **none (enforced)** | enrichment-audience, competitor-gaps, cross-industry (analysis mode) |
 | `synthesis-worker` | **none (enforced)** | lite-constraints, synthesis explore → build |
 | `reviewer-worker`  | none | every reviewer-gated stage |
 
-The no-web workers deliberately have **no `mcp_servers`** — that structurally enforces the
-"no new web search" rules. Only `research-worker` declares `mcp_servers = ["perplexity"]`.
+The no-web workers deliberately have **no `mcp_servers`** **and are dispatched with
+`web_search = "disabled"`** — both halves are required on Codex (the native `web_search` tool
+defaults to `cached`, i.e. web-cache, so "no `mcp_servers`" alone would still leave a web path
+open). `research-worker` declares **no** `mcp_servers` array — on Codex that field is a *map* keyed
+by server name (a bare list silently voids the whole agent file); instead it **inherits a
+globally-registered Perplexity MCP** (`codex mcp add perplexity`) when present, and is the only
+worker dispatched with web enabled (`-c web_search="live"`). Absent Perplexity it falls back to the
+native `web_search` tool — Perplexity-optional on Codex, mirroring the Claude plugin (v2.4.0).
 
 ## The DAG
 
@@ -107,5 +118,6 @@ this repo ships.
 ## Acceptance check
 
 `synthesis.md` has 7-9 tactics, ≥50% unconventional, each traceable to a vector combination from
-`growth-factors.json`; the LIGHT DB is clean-room (20-40 vectors, real source URLs, nothing
-traceable to a proprietary DB); enrichment + think-tank outputs reached APPROVED (≥7).
+`growth-factors.json`; the LIGHT DB is clean-room (20-40 vectors, **real, resolvable source URLs**
+— Perplexity- or native-`web_search`-sourced, 0 NXDOMAIN/404 — nothing traceable to a proprietary
+DB); enrichment + think-tank outputs reached APPROVED (≥7).
