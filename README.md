@@ -104,8 +104,8 @@ The repo root is a plugin marketplace named `diffmode-free`.
 ```bash
 # from a local clone …
 claude plugin marketplace add /path/to/growth_tactics_plugin
-# … or directly from GitHub once published:
-claude plugin marketplace add <owner>/<repo>
+# … or directly from GitHub:
+claude plugin marketplace add acogood/diffmode_free
 
 claude plugin install diffmode-growth-tactics@diffmode-free
 ```
