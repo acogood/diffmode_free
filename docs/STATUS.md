@@ -1,7 +1,8 @@
 # STATUS — diffmode-growth-tactics plugin
 
-*Living "where things stand + what's left" view. The charter, the DAG, and the dated
-build-log table live in [`README.md`](./README.md); this file tracks current state.*
+*Living "where things stand + what's left" view — this file is the dated build log (the Round
+notes below) and tracks current state. For onboarding + install see [`README.md`](./README.md);
+for the design (orchestrator + skills + workers) see [`architecture.md`](./architecture.md).*
 
 Last updated: **2026-06-02**
 
@@ -115,8 +116,7 @@ Last updated: **2026-06-02**
 > clean-room-native and aligned to pass2's actual output; `design/` relocated out of the
 > shipped plugin to `../docs/pipeline-skills-design/` + residual IP scrubbed; gate hardening
 > (`constraints-stale` precheck, block-level `must_include`, truncation completeness check);
-> an orchestrator run-ledger; and the moat framing reconciled. See the README build-log
-> (2026-05-29 row) for the full list.
+> an orchestrator run-ledger; and the moat framing reconciled.
 
 ## TL;DR (plain language)
 
@@ -159,6 +159,26 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 | Codex / OpenClaw ports | 🟡 Codex `research-worker` Perplexity-optional + live-smoke-validated (Round-6, codex-cli 0.130); full Codex orchestrator + OpenClaw still deferred |
 
 Legend: ✅ done · 🟡 built not verified · ⬜ not started.
+
+## Measured cost & runtime (per-stage)
+
+Point-in-time, measured end-to-end on **theona.ai** (v2.3.0, `--fast-intake`, 2026-06-02).
+Aggregate: **~75–85 min** wall-clock (~75–80 clean; one synthesis socket-death respawn added
+~8 min) and **~5 deep `perplexity_research` + ~51 `perplexity_search` ≈ $2–3** — or free on the
+built-in WebSearch fallback. Overlapping stages share a start time:
+
+| Stage | ~Time | Notes |
+|-------|-------|-------|
+| diagnostics intake | 8 min | URL research + prefill |
+| enrichment: competitors (gate) | 15 min | the one reviewer-gated enrichment dim |
+| enrichment: audience ‖ acquisition-tactics | 4 / 17 min | concurrent (Wave 2) |
+| growth-factors mining | 10 min | concurrent — hidden under the critical path |
+| think-tanks ×3 | 12 min | parallel, not 3× |
+| lite-constraints | 4 min | |
+| synthesis: explore → build | 12 + 7 min | +~8 min if a synthesis socket death respawns |
+
+Treat as rough — one product, one run. `growth-factors.json` is cached (re-mined only on
+`--remine`), so a `--from synthesis` re-run is minutes, not the full hour.
 
 ## What's in the package
 
@@ -247,8 +267,8 @@ gates for everything downstream.
    (~75–80 clean; one synthesis socket-death respawn added ~8 min) and **~5 deep
    `perplexity_research` + ~51 `perplexity_search` ≈ $2–3** (deep-research-dominated;
    `growth-factors-mining` ran ~10 min concurrent, off the critical path). Caching + `--remine`
-   behaved (the explore respawn did NOT re-mine growth-factors). See `README.md` "Cost &
-   runtime" for the per-stage table.
+   behaved (the explore respawn did NOT re-mine growth-factors). See **Measured cost & runtime**
+   above for the per-stage table.
 3. **Moat comparison** — diff a light-DB synthesis vs a proprietary-DB run for the same
    workspace; confirm the free output is *useful but visibly weaker*.
 4. **Reviewer-model calibration** — Gemini→Sonnet, same as the enrichment pilot; confirm
@@ -263,7 +283,7 @@ gates for everything downstream.
 
 | Doc | What it covers |
 |-----|----------------|
-| [`README.md`](./README.md) | Charter, DAG, dated build-log, install, cost note, caveats |
+| [`README.md`](./README.md) | Onboarding: what it is, quickstart + install, what you get, how it works |
 | [`../docs/pipeline-skills-design/architecture.md`](../docs/pipeline-skills-design/architecture.md) | Orchestration model, one-level-deep constraint, state contract (internal; not shipped in the plugin) |
 | [`../docs/pipeline-skills-design/full-pipeline-map.md`](../docs/pipeline-skills-design/full-pipeline-map.md) | Original mapping of think-tank / prioritization / implementation stages (internal; not shipped) |
 | [`../docs/MODULES.md`](../docs/MODULES.md) | The pipeline-skills module entry in the repo module map |

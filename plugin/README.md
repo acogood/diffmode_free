@@ -1,107 +1,48 @@
 # diffmode-growth-tactics (Claude Code plugin)
 
-The **Diffmode free growth-ideation pipeline**, expressed as **agent skills + sub-agents**
-that run inside a coding-agent runtime — portable, invokable, and composable. This directory
-is the Claude Code plugin: a `/run-growth-tactics` orchestrator drives the full DAG, web
-research routed through a **Perplexity MCP** when present (falling back to the built-in
-**WebSearch** otherwise — model- and backend-agnostic by design), and every run writes into a
-`./<slug>/` workspace **in the user's current directory** — no host repo required.
+The **Diffmode free growth-ideation pipeline**, packaged as a Claude Code plugin. One command —
+`/diffmode-growth-tactics:run-growth-tactics` — takes a product from a **2-minute intake** to a
+`synthesis.md` of **7–9 novel demand-gen tactic ideas**, then stops. Every run writes into a
+`./<slug>/` folder in your current directory; no host repo, no account, no API key.
 
-> This is the **shipped plugin**. `marketplace.json` at the repo root declares
-> `source: ./plugin`, so Claude Code copies **only this directory** to its plugin cache. The
-> bundled channel menu (`reference/`) and the 12 skills travel with it; the repo's `docs/`,
-> `codex/`, and root README do **not** ship. Internal design notes live in the repo's
-> `docs/` (architecture, eval methodology, build log) and are not part of the install.
+> **This is the shipped plugin.** `marketplace.json` at the repo root declares `source: ./plugin`,
+> so Claude Code copies **only this directory** to its plugin cache. The bundled channel menu
+> (`reference/`) and the 12 skills travel with it; the repo's `docs/`, `codex/`, and root README do
+> **not** ship.
 
-## What it does — and where it stops
+## What you get
 
-`/diffmode-growth-tactics:run-growth-tactics` takes a founder from a **2-minute intake** to a
-final `synthesis.md` of **7-9 novel demand-gen tactic IDEAS**, then **STOPS at synthesis**.
+A final `synthesis.md` with **7–9 demand-gen tactics** — each with what it is, why it fits the
+founder's constraints, the first steps to run it, and the week-1 signal to watch. The run also
+leaves its full research in the workspace (competitors, audience, the think-tank findings). It
+**stops at synthesis** — prioritization and a week-by-week rollout are the paid product (see the
+bottom of this file).
+
+## The pipeline
 
 ```
-diagnostics-intake            (URL research → prefill founder-input.md, else minimal Q&A)
+diagnostics-intake     URL research → prefill, else a 2-minute Q&A
         ↓
-enrichment                    (2-wave DAG: competitors → audience ‖ acq-tactics)
-        ↓                  ╲
-        │                   ╲  growth-factors mining (‖, starts right after the competitors
-        │                    ╲ gate and runs concurrently through enrichment + the think-tanks)
-        │                     ╲  deep-research public case studies → distill ~20-40 atomic
-        │                      ╲ vectors → growth-factors.json  (per-run LIGHT DB, clean-room)
-think-tank research (×3, ‖)     │
-  competitor-gaps               │
-  cross-industry                │
-  platform-arbitrage            │
-        ↓                       ↓
-        └────────────┬──────────  lite-constraints (skill, replaces the Python script)
-                     ↓
-        synthesis  explore → build  →  synthesis.md   (7-9 tactic ideas, STOP)
+enrichment             competitors → audience ‖ acquisition-tactics
+        ↓              ↘ growth-factors mining runs concurrently from right here
+think-tank research     three angles in parallel — competitor gaps · cross-industry ·
+        ↓               platform opportunities
+lite-constraints       in-context constraints generator (no Python)
+        ↓
+synthesis  explore → build  →  synthesis.md   (7–9 tactic ideas, then STOP)
 ```
 
-**The moat is DB breadth + paid downstream — not the method.** The synthesis *method* is
-free; what's paid (and what defends the product) is the **proprietary 576-vector database**
-(breadth) + intelligence layer + saturation/anti-vector tracking, **and** the downstream
-**prioritization + week-by-week implementation** stages. This free plugin runs the same
-method on a deliberately weaker **per-run LIGHT DB** mined fresh from public case studies and
-**stops at synthesis** — full-depth *ideas*, but visibly lighter than the paid product.
+Research stages use a **Perplexity MCP server** when present and **fall back to the built-in
+WebSearch** otherwise (zero setup; fallback citations are auto-verified for reachability); the
+analysis and synthesis stages run with **no MCP** by design. A parameterized reviewer gates two
+stages — enrichment `competitors` and the final synthesis `build` — and every other generating
+stage gets a structural check. The orchestration model (a main-thread orchestrator, passive
+skills, and thin worker sub-agents, and why each runs where it does) is documented in
+[`../docs/architecture.md`](../docs/architecture.md).
 
-**The novelty engine** is the synthesis chain — it cross-references the per-run LIGHT vector
-DB against the founder's constraints and combines 2-3 vectors at a time into tactics that
-didn't exist in any single playbook. Because a public plugin ships every file to the user's
-disk, it **cannot** bundle the proprietary DB; instead, `growth-factors-mining` builds a
-**clean-room, per-run substitute** (a deliberately weaker LIGHT DB) from freshly researched
-public case studies, and `lite-constraints` replaces the Python constraints generator with
-in-context reasoning. Nothing here reads the proprietary `tactics_DB/`.
+## Install and run
 
-## Design constraints (see the repo's `docs/architecture.md`)
-
-1. The orchestrator runs in the **main thread**, never as a sub-agent (sub-agents are one
-   level deep and could not then spawn workers). It is also the only place that talks to the
-   human (AskUserQuestion, for intake).
-2. **Skills are passive** instruction docs. Fan-out, waiting, and retry are the
-   orchestrator's job, via Agent-tool calls.
-3. **State passes through the filesystem** (`./<slug>/…` in the user's cwd). Workers return
-   only a small JSON summary + output path, keeping orchestrator context lean.
-4. The **reviewer→retry quality gate is a main-thread loop** (re-dispatch the worker with
-   the reviewer's blocking issues injected), capped at 3 iterations — the threshold-7 /
-   max-3 norm. In v2.3.0 only **enrichment `competitors`** and the **final synthesis
-   (`build`)** are reviewer-gated; everything else (audience + acquisition-tactics, the 3
-   think-tanks, the LIGHT-DB / constraints / intermediate `explore` stage) gets a structural
-   check instead.
-
-## What's here
-
-```
-plugin/                          ← the shipped Claude Code plugin (source: ./plugin)
-  README.md                      ← this file
-  .claude-plugin/plugin.json     ← plugin manifest (name: diffmode-growth-tactics, v2.4.0)
-  reference/
-    Marketing-Channel-Menu-2026.md   ← BUNDLED channel taxonomy (100+ channels, 2026 edition)
-  skills/                        ← the 12 SKILL.md sources (single source of truth)
-    diagnostics-intake/                              (entry: URL prefill or minimal Q&A)
-    enrichment-competitors|audience|acquisition-tactics/
-    competitor-gaps | cross-industry | platform-arbitrage/   (think-tank research)
-    growth-factors-mining/                           (⚠ moat-critical clean-room LIGHT DB)
-    lite-constraints/                                (no-Python synthesis-constraints generator)
-    synthesis-explore/                               (blind combinations → emergent mechanisms)
-    synthesis-build/                                 (white-space ideation → founder-fit → final synthesis.md)
-    growth-reviewer/  (+ references/ — 7 rubrics bundled; v2.3.0 gates only competitors + synthesis)
-  agents/                        ← 4 sub-agent workers
-    research-worker.md           tools: Read,Write,Edit,Glob,Grep,Skill,WebFetch,WebSearch,perplexity_research,_search; sonnet
-    analysis-worker.md           tools: Read,Write,Edit,Glob,Grep,Skill (NO research MCP)
-    synthesis-worker.md          tools: Read,Write,Edit,Glob,Grep,Skill (NO MCP); model: opus
-    reviewer.md                  tools: Read,Glob,Grep,Skill
-  commands/                      ← the orchestrators
-    run-growth-tactics.md        (full DAG — the main entry)
-    run-enrichment.md            (standalone enrichment-only entry)
-```
-
-All external paths the skills/agents need are resolved at runtime via
-`${CLAUDE_PLUGIN_ROOT}` (the plugin's install dir) — the bundled channel menu and the
-reviewer rubrics travel inside this directory, so the plugin is self-contained.
-
-## Install
-
-The repo root is a Claude Code plugin marketplace. Add it, then install:
+The repo root is a Claude Code plugin marketplace named `diffmode-free`.
 
 ```bash
 # from a local clone …
@@ -116,41 +57,37 @@ Or interactively: `/plugin` → marketplace `diffmode-free` → install `diffmod
 Restart Claude Code, then from **any directory** (the run writes into your cwd):
 
 ```
-/diffmode-growth-tactics:run-growth-tactics --url https://your-product.com
-/diffmode-growth-tactics:run-growth-tactics --product <slug>          # use an existing workspace
-/diffmode-growth-tactics:run-enrichment    --product <slug>           # enrichment only
+/diffmode-growth-tactics:run-growth-tactics --url https://your-product.com   # full run from a URL
+/diffmode-growth-tactics:run-growth-tactics --product <slug>                 # reuse an existing workspace
+/diffmode-growth-tactics:run-enrichment    --product <slug>                  # enrichment only
 ```
 
-The research stages (enrichment research dims, `platform-arbitrage`, `growth-factors-mining`,
-`diagnostics-intake` URL mode) use a **Perplexity MCP server** when present and **fall back to
-the built-in WebSearch** otherwise (zero setup; fallback citations are auto-verified for
-reachability); the audience, think-tank-analysis, and synthesis stages run with **no MCP** by
-design.
+## What's in this directory
 
-## Cost / latency note (per-run LIGHT DB)
+```
+plugin/
+  README.md                      this file
+  .claude-plugin/plugin.json     plugin manifest (name: diffmode-growth-tactics)
+  reference/                     bundled 2026 marketing-channel menu (100+ channels)
+  skills/                        the 12 skill files — the single source of truth
+  agents/                        4 worker sub-agents (research / analysis / synthesis / reviewer)
+  commands/                      the orchestrators (run-growth-tactics, run-enrichment)
+```
 
-`growth-factors-mining` does a bounded deep-research sweep (12-20 public case studies, one
-pass) **every run** — the deliberate price of "fresh, clean-room, no proprietary DB." It is
-the slowest/priciest stage. Mitigations: it **caches** `growth-factors.json` and reuses it on
-re-run unless `--remine`, and research breadth is bounded.
+All paths the skills and agents need are resolved at runtime via `${CLAUDE_PLUGIN_ROOT}` (the
+plugin's install dir), so the plugin is self-contained.
 
-## Caveats / open items
+## Notes
 
-- **Reviewer-model calibration.** The rubrics ran on gemini-pro/claude in the source
-  pipeline; the plugin reviewer is Sonnet. Scores may calibrate slightly differently — lean
-  on `blocking_issues` over the raw number near the gate.
-- **Per-run cost/latency (measured, theona.ai v2.3.0, 2026-06-02):** **~75–85 min** wall-clock
-  (85 min including one transient synthesis socket-death respawn; ~75–80 min clean) and
-  **~5 deep `perplexity_research` + ~50 `perplexity_search` calls ≈ $2–3** (Perplexity-plan
-  dependent; the deep-research calls dominate, hence the search-first ≤1–2-deep/stage cap).
-  **With no Perplexity MCP**, the research stages fall back to the built-in `WebSearch` (**no
-  API cost**) and the `research-worker` auto-verifies fallback citations; a measured no-MCP run
-  on the same fixture (2026-06-02) matched the quality bars and finished a touch faster (see
-  `../docs/eval-methodology.md` §4c). `growth-factors` mining (~10 min) and the 3 think-tanks
-  (~12 min) overlap, so they stay off the critical path. See the repo `README.md` "Cost &
-  runtime" for the per-stage table.
-- **Codex port** is scaffolded-not-built — see the repo's `codex/CODEX.md`. The 12 skill
-  bodies are runtime-neutral and consumed unchanged by Codex; only the orchestration layer
-  is Claude-specific.
+- **Cost / runtime:** about **1–1.5 hours** per run; free on the built-in web search, or roughly
+  **$2–3** with Perplexity (a few deep-research calls are the only paid part). Measured runtimes
+  and the per-stage breakdown live in [`../docs/STATUS.md`](../docs/STATUS.md).
+- **Codex:** the skill bodies are runtime-neutral and Codex reads them unchanged; only the
+  orchestration layer is Claude-specific. See the repo's [`../codex/CODEX.md`](../codex/CODEX.md).
 
-For full version history, see the repo's `docs/STATUS.md`.
+## Free vs. the full Diffmode
+
+This plugin gives you the **ideas**. [**Diffmode**](https://diffmode.app) ranks them and turns the
+top picks into a **week-by-week rollout plan**, drawn from a much larger, curated growth-mechanism
+database than the fresh, per-run research each run does here. Free audit, no credit card; full plan
+with a **30-day money-back guarantee** → **[diffmode.app](https://diffmode.app)**.
