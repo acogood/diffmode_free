@@ -3,8 +3,9 @@
 The **Diffmode free growth-ideation pipeline**, expressed as **agent skills + sub-agents**
 that run inside a coding-agent runtime — portable, invokable, and composable. This directory
 is the Claude Code plugin: a `/run-growth-tactics` orchestrator drives the full DAG, web
-research routed through **Perplexity MCP** (model-agnostic by design), and every run writes
-into a `./<slug>/` workspace **in the user's current directory** — no host repo required.
+research routed through a **Perplexity MCP** when present (falling back to the built-in
+**WebSearch** otherwise — model- and backend-agnostic by design), and every run writes into a
+`./<slug>/` workspace **in the user's current directory** — no host repo required.
 
 > This is the **shipped plugin**. `marketplace.json` at the repo root declares
 > `source: ./plugin`, so Claude Code copies **only this directory** to its plugin cache. The
@@ -72,7 +73,7 @@ in-context reasoning. Nothing here reads the proprietary `tactics_DB/`.
 ```
 plugin/                          ← the shipped Claude Code plugin (source: ./plugin)
   README.md                      ← this file
-  .claude-plugin/plugin.json     ← plugin manifest (name: diffmode-growth-tactics, v2.3.0)
+  .claude-plugin/plugin.json     ← plugin manifest (name: diffmode-growth-tactics, v2.4.0)
   reference/
     Marketing-Channel-Menu-2026.md   ← BUNDLED channel taxonomy (100+ channels, 2026 edition)
   skills/                        ← the 12 SKILL.md sources (single source of truth)
@@ -85,7 +86,7 @@ plugin/                          ← the shipped Claude Code plugin (source: ./p
     synthesis-build/                                 (white-space ideation → founder-fit → final synthesis.md)
     growth-reviewer/  (+ references/ — 7 rubrics bundled; v2.3.0 gates only competitors + synthesis)
   agents/                        ← 4 sub-agent workers
-    research-worker.md           tools: Read,Write,Edit,Glob,Grep,Skill,WebFetch,perplexity_research,_search; sonnet
+    research-worker.md           tools: Read,Write,Edit,Glob,Grep,Skill,WebFetch,WebSearch,perplexity_research,_search; sonnet
     analysis-worker.md           tools: Read,Write,Edit,Glob,Grep,Skill (NO research MCP)
     synthesis-worker.md          tools: Read,Write,Edit,Glob,Grep,Skill (NO MCP); model: opus
     reviewer.md                  tools: Read,Glob,Grep,Skill
@@ -121,8 +122,10 @@ Restart Claude Code, then from **any directory** (the run writes into your cwd):
 ```
 
 The research stages (enrichment research dims, `platform-arbitrage`, `growth-factors-mining`,
-`diagnostics-intake` URL mode) require a **Perplexity MCP server** in the host; the audience,
-think-tank-analysis, and synthesis stages run with **no MCP** by design.
+`diagnostics-intake` URL mode) use a **Perplexity MCP server** when present and **fall back to
+the built-in WebSearch** otherwise (zero setup; fallback citations are auto-verified for
+reachability); the audience, think-tank-analysis, and synthesis stages run with **no MCP** by
+design.
 
 ## Cost / latency note (per-run LIGHT DB)
 
@@ -140,8 +143,12 @@ re-run unless `--remine`, and research breadth is bounded.
   (85 min including one transient synthesis socket-death respawn; ~75–80 min clean) and
   **~5 deep `perplexity_research` + ~50 `perplexity_search` calls ≈ $2–3** (Perplexity-plan
   dependent; the deep-research calls dominate, hence the search-first ≤1–2-deep/stage cap).
-  `growth-factors` mining (~10 min) and the 3 think-tanks (~12 min) overlap, so they stay off
-  the critical path. See the repo `README.md` "Cost & runtime" for the per-stage table.
+  **With no Perplexity MCP**, the research stages fall back to the built-in `WebSearch` (**no
+  API cost**) and the `research-worker` auto-verifies fallback citations; a measured no-MCP run
+  on the same fixture (2026-06-02) matched the quality bars and finished a touch faster (see
+  `../docs/eval-methodology.md` §4c). `growth-factors` mining (~10 min) and the 3 think-tanks
+  (~12 min) overlap, so they stay off the critical path. See the repo `README.md` "Cost &
+  runtime" for the per-stage table.
 - **Codex port** is scaffolded-not-built — see the repo's `codex/CODEX.md`. The 12 skill
   bodies are runtime-neutral and consumed unchanged by Codex; only the orchestration layer
   is Claude-specific.

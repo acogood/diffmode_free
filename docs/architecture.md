@@ -98,13 +98,17 @@ big markdown outputs into its own context except when it must inject a path.
 
 ## Model-agnostic research seam
 
-Skills describe a **capability** ("use the web-research backend; Perplexity by
-default"), never a vendor. The concrete tool is chosen by the **worker's `tools:`
-list**:
+Skills describe a **capability** ("use the web-research backend; Perplexity when present,
+else the built-in WebSearch fallback"), never a vendor. The concrete tool is chosen by the
+**worker's `tools:` list**:
 
-- Claude Code: `mcp__perplexity__perplexity_research` / `_search` on
-  `enrichment-research-worker`.
-- Codex: declare the Perplexity MCP server in the custom agent's `mcp_servers`.
+- Claude Code: `mcp__perplexity__perplexity_research` / `_search` **plus `WebSearch`** on the
+  `research-worker` — it **prefers Perplexity when present and falls back to the built-in
+  `WebSearch`** otherwise, with a Step-6 citation-integrity re-fetch on the fallback path that
+  drops any non-resolving (NXDOMAIN / hard-404) cited URL (shipped in plugin **v2.4.0**).
+- Codex: declare the Perplexity MCP server in the custom agent's `mcp_servers`. **The Codex
+  `research-worker` still requires Perplexity** — mirroring the WebSearch fallback there is a
+  planned follow-up (it would add fallback MCP registration + the same worker procedure).
 
 The **audience** dimension is the exception (ENR-001 forbids new web searches). It is
 served by a dedicated **no-MCP worker** (`enrichment-analysis-worker`, `tools: [Read,

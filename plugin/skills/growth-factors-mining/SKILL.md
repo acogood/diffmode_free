@@ -34,8 +34,9 @@ The invoker provides (do not hardcode absolute paths):
   `WS/02-enrichment/competitors-analysis.md` and `WS/02-enrichment/acquisition-tactics.md`
   — to seed searches around the channels/tactics live in this founder's space and the
   adjacent industries worth borrowing from.
-- **WEB RESEARCH** (required capability): your web-research tool (Perplexity via MCP — deep
-  multi-source research + targeted search). This is the ONLY source of vectors.
+- **WEB RESEARCH** (required capability): your web-research backend (Perplexity MCP when
+  present, else the built-in WebSearch fallback — deep multi-source research + targeted
+  search). This is the ONLY source of vectors.
 - **OUTPUT**: write `WS/03-think-tanks/demand-generation/growth-factors.json`.
 
 ## Caching & bounded research (cost control — surface this tradeoff)
@@ -54,13 +55,15 @@ than a static asset. Mitigate:
   verbatim, and mine ONLY the remainder** needed to reach the target count + category spread.
   Continue each prefix's sequential numbering from where the partial file left off; do NOT
   re-run the deep-research passes that produced the vectors already on disk — that duplication
-  (≈8 Perplexity calls) is exactly what this flag exists to avoid. `resume_partial` is **never
+  (≈8 deep research calls) is exactly what this flag exists to avoid. `resume_partial` is **never
   combined with `--remine`** (which forces a full fresh re-mine); if both somehow appear,
   `--remine` wins and you re-research from scratch.
 - **Bound breadth + cap deep research (the run's biggest cost lever):** review **12-20
-  public case studies** using **at most ~1-2 `perplexity_research` (deep) calls** — seed
+  public case studies** using **at most ~1-2 deep-research passes** (a `perplexity_research`
+  call when Perplexity is present; otherwise iterate your search tool + `WebFetch`) — seed
   them from the founder context for the initial case-study landscape, then gather the
-  remaining case studies + their specific metrics with cheaper `perplexity_search` calls.
+  remaining case studies + their specific metrics with cheaper search-tool calls
+  (`perplexity_search`, or the built-in WebSearch fallback).
   Do NOT open-ended crawl. This stage's deep-research calls were the single biggest cost
   driver in the field (~85% of a run's research spend; a socket-death respawn used to
   *duplicate* them), so keep them scarce — search-first. Stop when you have enough distinct
@@ -161,8 +164,9 @@ fabricate); `source_url` is a real, reachable URL; `time_to_signal_weeks` option
    short partial file exists (and no `--remine`), load it, keep its vectors, and mine only the
    remainder — skip the deep-research passes for what's already there.
 3. **Deep research pass (search-first, ≤~1-2 deep calls):** run a bounded set of web-research
-   calls — at most ~1-2 deep `perplexity_research` calls for the initial landscape, then
-   cheaper `perplexity_search` calls — on growth case studies across those themes + 2-3
+   calls — at most ~1-2 deep-research passes (`perplexity_research` when present) for the
+   initial landscape, then cheaper search-tool calls (`perplexity_search`, or the built-in
+   WebSearch fallback) — on growth case studies across those themes + 2-3
    deliberately *different* industries (for transferable mechanisms). Capture source URLs +
    the specific result/metric for each story.
 4. **Distill** each case study → 1-3 atomic vectors using the method above. Assign category

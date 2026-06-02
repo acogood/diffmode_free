@@ -1,6 +1,6 @@
 ---
 name: diagnostics-intake
-description: Fast founder-input capture for the Diffmode growth-tactics pipeline (the diagnostics stage). Produces WS/01-diagnostics/founder-input.md in the exact schema the enrichment + synthesis stages read. Two modes — (A) URL mode researches a product's website (homepage/pricing/about) plus a Perplexity pass to prefill the researchable fields, then marks founder-only gaps for confirmation; (B) Q&A mode formats a minimal (~2-minute) answer set into the schema. Use as the entry point of run-growth-tactics, or whenever a workspace needs a founder-input.md before enrichment.
+description: Fast founder-input capture for the Diffmode growth-tactics pipeline (the diagnostics stage). Produces WS/01-diagnostics/founder-input.md in the exact schema the enrichment + synthesis stages read. Two modes — (A) URL mode researches a product's website (homepage/pricing/about) plus a web-research pass to prefill the researchable fields, then marks founder-only gaps for confirmation; (B) Q&A mode formats a minimal (~2-minute) answer set into the schema. Use as the entry point of run-growth-tactics, or whenever a workspace needs a founder-input.md before enrichment.
 metadata:
   version: "1.0.0"
 ---
@@ -37,7 +37,7 @@ If neither `url` nor `answers` is present, write the schema with every must-ask 
 | Product description, what it does, who it's for | RESEARCHABLE (homepage/about) |
 | Business model + pricing (tiers, free trial) | RESEARCHABLE (pricing page) |
 | Target-audience hypothesis (segments, ICP) | RESEARCHABLE (site copy) + confirm |
-| Competitive alternatives (direct + indirect) | RESEARCHABLE (Perplexity) |
+| Competitive alternatives (direct + indirect) | RESEARCHABLE (web research) |
 | Product complexity ("explains itself" vs "needs a demo") | RESEARCHABLE + confirm |
 | **Stage + current metrics** (visitors, signups, MRR, paying customers) | **MUST ASK** |
 | **Current acquisition sources / what's working** (Q8 demand-gen signal) | **MUST ASK** |
@@ -81,8 +81,9 @@ Keep each question answerable in a phrase. Never block on the optional one.
    if available) on the homepage, the pricing page, and the about/product page. Extract:
    what the product does, who it's for, business model, pricing tiers, free trial,
    positioning language.
-2. **Research the company + market** with your web-research tool (Perplexity via MCP —
-   deep research + targeted search): confirm the category, find direct + indirect
+2. **Research the company + market** with your web-research backend (Perplexity MCP when
+   present, else the built-in WebSearch fallback — deep research + targeted search): confirm
+   the category, find direct + indirect
    competitors/alternatives, note stage signals if public (funding, team size, launch
    date). Cite URLs + access dates in a Research Notes footer.
 3. **Fill researchable fields** from steps 1-2. For confirmable judgment calls (audience

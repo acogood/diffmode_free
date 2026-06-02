@@ -71,7 +71,14 @@ the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
    whenever the plugin is enabled. If a dispatch reports an unknown agent/skill, the plugin
    isn't enabled — run `/plugin` → enable `diffmode-growth-tactics` (or
    `claude plugin install diffmode-growth-tactics@diffmode-free`).
-4. **Reviewer gate** — score **≥ 7**, **max 3** iterations, applied at the **two gated stages
+4. **Detect the research backend (capability note — no hard gate).** Check whether a
+   Perplexity MCP server is available (the `mcp__perplexity__*` tools resolve). If it is, the
+   research stages use it. **If no Perplexity MCP is detected, print one line —** *"WebSearch
+   fallback mode — no Perplexity MCP detected; research quality slightly lower, citations
+   auto-verified."* **— and proceed.** There is no hard gate: the `research-worker` falls back
+   to the built-in `WebSearch` (see its Step 3 + its Step-6 citation-integrity check), so the
+   pipeline runs either way. Only the genuine absence of *both* backends is a research failure.
+5. **Reviewer gate** — score **≥ 7**, **max 3** iterations, applied at the **two gated stages
    only**: enrichment **`competitors`** (the Wave-1 blocker) and the **final synthesis
    deliverable** (`synthesis.md`). Every other generating stage gets a **structural check
    only** — see *The per-stage routine*. (v2.3.0 cut the gates from 7 → 2: the dropped gates
@@ -200,7 +207,8 @@ Recommended batching (≤4 questions/call; founders pick "Other" to free-type):
 
 Then dispatch **`research-worker`** with skill `diffmode-growth-tactics:diagnostics-intake`:
 - URL mode: pass `--url <site>` + the collected `answers`. The worker scrapes homepage/
-  pricing/about + a Perplexity pass to fill researchable fields, folds in `answers`, marks
+  pricing/about + a research-backend pass (Perplexity if present, else WebSearch) to fill
+  researchable fields, folds in `answers`, marks
   any remaining gaps, writes `founder-input.md`.
 - No-URL mode: pass the `answers` (incl. product/model/audience). The worker formats them
   into the schema (light research allowed to enrich product description + competitive
@@ -264,7 +272,8 @@ before moving on to Wave 2 / Stage 2):
   if `growth-factors.json` already exists and `--remine` is absent, the worker reuses it.
 - **Socket-death respawn = retry-in-place, NOT re-mine (cost fix).** This stage's deep-research
   passes are the priciest in the pipeline, and a mid-mine socket death used to make the fresh
-  respawn re-run them all from scratch (≈8 duplicated Perplexity calls — the single biggest
+  respawn re-run them all from scratch (≈8 duplicated research-backend calls, Perplexity if
+  present else WebSearch — the single biggest
   avoidable cost in the field). So whenever you re-spawn a **dead** growth-factors worker (per
   the worker-lifecycle rule / the Stage-3-boundary `died` path) **and a partial
   `growth-factors.json` already exists at the output path**, set **`resume_partial: true`** in
@@ -288,7 +297,8 @@ After enrichment outputs exist, **dispatch all three think-tanks in a SINGLE mes
 containing exactly three Agent tool calls** so they run concurrently (alongside the
 still-running Stage-1.5 mining branch). **Order them platform-arbitrage → competitor-gaps →
 cross-industry within that one message:** `platform-arbitrage` is the slowest branch and the
-only one that needs Perplexity (it runs on `research-worker`), so launching it first lets the
+only one that needs a research backend (Perplexity if present, else WebSearch; it runs on
+`research-worker`), so launching it first lets the
 two no-MCP analysis branches finish under its cover. **Do NOT split them across messages** —
 separate messages serialize the batch (the field bug that cost ~18 min); "single message,
 exactly three Agent calls" is load-bearing, and with the per-branch reviewer loops removed

@@ -3,7 +3,39 @@
 *Living "where things stand + what's left" view. The charter, the DAG, and the dated
 build-log table live in [`README.md`](./README.md); this file tracks current state.*
 
-Last updated: **2026-06-01**
+Last updated: **2026-06-02**
+
+> **Round-5 — Perplexity-optional / WebSearch fallback (2026-06-02, plugin v2.4.0).** Made the
+> Perplexity MCP **optional**: the `research-worker` now **prefers Perplexity when present and
+> falls back to the built-in `WebSearch`** (zero setup, no API key) across all 5 research stages,
+> removing the single biggest adoption barrier — a new user can run the full pipeline with **no
+> MCP at all**. The one degradation the measure-first experiment found (the WebSearch path
+> fabricated **1** source domain — `digitalailiens.com`, NXDOMAIN — where Perplexity fabricated
+> 0, and the no-web reviewer structurally can't catch a hallucinated URL) is **gated by a
+> citation-integrity mitigation** in `agents/research-worker.md`: (a) a universal
+> **citation-source rule** ("cite only URLs you actually retrieved this run; never reconstruct,
+> recall, or invent a domain"), and (b) a new **Step-6 citation-integrity re-fetch** that
+> `WebFetch`-verifies every distinct cited domain on the fallback path and **drops/re-grounds any
+> NXDOMAIN / hard-404** before returning (reporting `citationsVerified` / `citationsDropped`); the
+> Perplexity path **skips** the re-fetch (its URLs are already grounded → no added latency). Both
+> orchestrators print a one-line **WebSearch-fallback-mode banner** when no Perplexity MCP is
+> detected (no hard gate — there never was one). The 5 research skills, both READMEs, `CLAUDE.md`,
+> `architecture.md`, and `eval-methodology.md` §4c were softened/updated to backend-neutral;
+> `plugin.json` 2.3.0 → **2.4.0**. **Codex side is unchanged** — its `research-worker` still
+> requires Perplexity; mirroring the fallback there is a planned follow-up.
+>
+> **✅ Targeted re-validation PASSED (theona.ai competitors stage, 2026-06-02; `--plugin-dir` on
+> the edited tree, no reinstall):**
+> - **(a) Citation gate, Perplexity-OFF** (`--strict-mcp-config '{"mcpServers":{}}'`): ran fully
+>   on the fallback — **75 WebSearch + 28 WebFetch, 0 Perplexity**; the worker ran Step 6 and
+>   reported **`citationsVerified=8, citationsDropped=0`** (correctly treating a G2 403/WAF block
+>   as real, not a fabrication); independent sweep **81/81 cited hosts resolve (0 NXDOMAIN)** +
+>   **62/62 clickable URLs reachable (0 hard-404)** — the old `digitalailiens.com` fabrication is
+>   **gone**; reviewer **APPROVED score 8**.
+> - **(b) Regression smoke, Perplexity-ON** (perplexity-only MCP): the worker still prefers
+>   Perplexity exclusively — **21 `perplexity_*` calls, 0 WebSearch**, no citation re-fetch
+>   (correct); reviewer **APPROVED score 9**.
+> - **(c)** `claude plugin validate` → green.
 
 > **Round-4 speed + simplicity pass (2026-06-01, plugin v2.3.0).** Faster + cheaper + simpler,
 > quality held: (1) **synthesis 5→3 calls** — fused step1+step2 → `synthesis-explore` (sonnet,
@@ -70,7 +102,7 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 
 | Component | State |
 |-----------|-------|
-| 2 manifests (`plugin.json` v2.3.0 + repo-root `marketplace.json`) | ✅ done |
+| 2 manifests (`plugin.json` v2.4.0 + repo-root `marketplace.json`) | ✅ done |
 | `diagnostics-intake` skill (URL prefill / minimal Q&A) | ✅ done |
 | 3 enrichment dimension skills | ✅ done (carried from v1; demographics removed 2026-05-28, purchase-objections removed 2026-06-01) |
 | 3 think-tank research skills (competitor-gaps, cross-industry, platform-arbitrage) | ✅ done |
@@ -83,7 +115,7 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 | All 12 skills pass `quick_validate.py` | ✅ done |
 | Clean-room verified (nothing reads `tactics_DB/`) | ✅ done (grep + skill prohibitions) |
 | End-to-end live run | ✅ v2.3.0 theona.ai re-test PASSED (2026-06-02): 8 tactics, 88% unconv, 100% white-space, 0 phantom, build reviewer 9, 85 min, think-tanks 0s-parallel |
-| Git commit (untracked on `main`) | ⬜ not started |
+| Git commit on `main` | ✅ v2.4.0 — Perplexity-optional (2026-06-02) |
 | Per-run cost/latency measured | ✅ v2.3.0 theona (2026-06-02): ~85 min wall-clock (~75–80 clean); ~5 deep + ~51 search Perplexity calls ≈ $2–3 |
 | Light-DB vs proprietary-DB moat comparison | ⬜ not started |
 | Reviewer-model calibration (Gemini→Sonnet) | ⬜ open (carried) |

@@ -47,9 +47,10 @@ synthesis  explore → build  →  synthesis.md   (7-9 tactic ideas, STOP)
 
 A parameterized **reviewer** gates **two stages** — enrichment `competitors` and the final
 synthesis (`build`) — at score ≥ 7, max 3 retries; every other generating stage gets a
-structural check. Research stages need a **Perplexity MCP server**; analysis + synthesis
-stages run with no MCP by design. Every run writes into a `./<slug>/` workspace **in your current directory** — no
-host repo required.
+structural check. Research stages use a **Perplexity MCP server** when present and **fall back
+to the built-in WebSearch** otherwise (zero setup; fallback citations are auto-verified for
+reachability); analysis + synthesis stages run with no MCP by design. Every run writes into a
+`./<slug>/` workspace **in your current directory** — no host repo required.
 
 ## Cost & runtime (measured)
 
@@ -59,11 +60,16 @@ Measured end-to-end on **theona.ai** (v2.3.0, `--fast-intake`, 2026-06-02):
   socket-death respawn on synthesis; a clean run is **~75–80 min**. Stages overlap heavily —
   `growth-factors` mining (~10 min) and Wave-2 enrichment run concurrently and stay off the
   critical path, and the 3 think-tanks run in **parallel** (~12 min, not ~36).
-- **Perplexity: ~5 deep `perplexity_research` + ~50 `perplexity_search` calls** per run
-  (**≈ $2–3**, depending on your Perplexity plan/model). The few **deep-research calls dominate
-  the cost**, so the pipeline is search-first and caps deep research at ~1–2 calls/stage. Only
-  the research stages (diagnostics URL prefill, competitors, acquisition-tactics, growth-factors
-  mining, platform-arbitrage) call Perplexity; analysis + synthesis use no MCP.
+- **Research backend — Perplexity (preferred) or the built-in WebSearch (zero-setup fallback).**
+  *With Perplexity:* **~5 deep `perplexity_research` + ~50 `perplexity_search` calls** per run
+  (**≈ $2–3**, depending on your plan/model). The few **deep-research calls dominate the cost**,
+  so the pipeline is search-first and caps deep research at ~1–2 calls/stage. *With no Perplexity
+  MCP:* the research stages fall back to the built-in `WebSearch` — **no API cost** (free search;
+  the deep passes become `WebSearch`+`WebFetch` iterations) — and the `research-worker`
+  auto-verifies fallback citations for reachability. A measured no-MCP run on the same fixture
+  matched the Perplexity quality bars and finished a touch faster (see `docs/eval-methodology.md`
+  §4c). Only the research stages (diagnostics URL prefill, competitors, acquisition-tactics,
+  growth-factors mining, platform-arbitrage) use the backend; analysis + synthesis use no MCP.
 
 Rough per-stage wall-clock (overlapping stages share a start time):
 
@@ -116,8 +122,10 @@ Restart Claude Code, then from **any directory** (the run writes into your cwd):
 /diffmode-growth-tactics:run-growth-tactics --url https://your-product.com
 ```
 
-You'll need a **Perplexity MCP server** configured in Claude Code for the research stages.
-See `plugin/README.md` for the full command reference.
+**Perplexity is optional.** Configure a **Perplexity MCP server** for the highest-quality
+research stages; without one, those stages fall back to the built-in `WebSearch` (zero setup,
+free) and the worker auto-verifies fallback citations for reachability. See `plugin/README.md`
+for the full command reference.
 
 ## Install — OpenAI Codex (scaffolded, verify-at-build-time)
 
@@ -127,7 +135,9 @@ treat it as runnable-soon). To try a single skill today, clone the repo and foll
 [`codex/CODEX.md`](codex/CODEX.md): it covers registering the Perplexity MCP
 (`codex mcp add perplexity …`), the **`KEY`/`TOKEN` env-stripping gotcha**, how the Claude
 orchestrator maps to an `AGENTS.md` + `PLANS.md` ExecPlan, and how to load
-`.agents/skills/`.
+`.agents/skills/`. *(The WebSearch fallback is currently **Claude-only** — the Codex
+`research-worker` still requires Perplexity; mirroring the fallback there is a planned
+follow-up.)*
 
 ## License
 

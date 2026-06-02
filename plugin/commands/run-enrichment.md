@@ -57,7 +57,15 @@ The three dimensions: `competitors`, `audience`, `acquisition-tactics`.
    is enabled, so no install step is needed here. If a worker dispatch later reports an
    unknown agent, the plugin is not enabled — run `/plugin` and enable `diffmode-growth-tactics`
    (or `claude plugin install diffmode-growth-tactics@diffmode-free`).
-5. **Confirm the reviewer threshold** — score **≥ 7**, **max 3** iterations, applied to
+5. **Detect the research backend (capability note — no hard gate).** Check whether a
+   Perplexity MCP server is available (the `mcp__perplexity__*` tools resolve). The research
+   dims (`competitors`, `acquisition-tactics`) use it when present. **If no Perplexity MCP is
+   detected, print one line —** *"WebSearch fallback mode — no Perplexity MCP detected;
+   research quality slightly lower, citations auto-verified."* **— and proceed.** The
+   `research-worker` falls back to the built-in `WebSearch` (see its Step 3 + Step-6
+   citation-integrity check); there is no hard gate. `audience` runs on `analysis-worker`
+   (no MCP) regardless.
+6. **Confirm the reviewer threshold** — score **≥ 7**, **max 3** iterations, applied to
    **`competitors` only** (the Wave-1 blocker). `audience` + `acquisition-tactics` get a
    **structural completeness check only**, no reviewer (v2.3.0 reviewer cut — they proved
    reliable enough in the field that gating them added latency + retry risk without changing
@@ -211,4 +219,4 @@ preserve known-good originals (dry-runs / output-parity checks).
 3. Spot-check `OUT/*.md` for completeness — every required section present, every
    required field populated, sources cited where the skill demands them.
 4. Confirm the audience worker performed **no** web lookups (no research MCP available
-   to it) and that a research worker actually cited Perplexity-sourced URLs.
+   to it) and that a research worker actually cited real, retrieved URLs.

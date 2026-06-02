@@ -59,7 +59,8 @@ MUST NOT read anything under `tactics_DB/`. Mentions of `tactics_DB/` in this re
    runtime): the channel menu is `${CLAUDE_PLUGIN_ROOT}/reference/…`; reviewer `spec_path`s are
    `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/SKILL.md`. Never point at `prompts/…`.
 3. **Skill bodies stay runtime-neutral** — no Claude-only tool ids baked in (say "your
-   web-research tool (Perplexity via MCP)", not `mcp__perplexity__*`). The concrete tool
+   web-research backend (Perplexity MCP when present, else the built-in WebSearch)", not
+   `mcp__perplexity__*`). The concrete tool
    binding belongs in `plugin/agents/*.md` (Claude) / `codex/agents/*.toml` (Codex). Skills
    treat input paths (incl. the channel menu) as **invoker-supplied**.
 4. **Plugin name stays `diffmode-growth-tactics`** — the `diffmode-growth-tactics:*` namespaced
@@ -78,8 +79,9 @@ A parameterized **reviewer** gates **two stages** (v2.3.0): enrichment `competit
 final synthesis (`build`) — score ≥ 7, max 3 retries, `blocking_issues` injected into a FRESH
 worker. Every other generating stage (audience + acquisition-tactics, the 3 think-tanks,
 growth-factors, lite-constraints, the intermediate `explore`) gets a structural check. Workers are **single-shot and stateless** — every retry is a fresh
-spawn; never `SendMessage` a returned worker. Research stages need a **Perplexity MCP**;
-analysis + synthesis run with **no MCP** by design (structurally enforces no-web-search).
+spawn; never `SendMessage` a returned worker. Research stages use a **Perplexity MCP** when
+present and **fall back to the built-in WebSearch** otherwise; analysis + synthesis run with
+**no MCP** by design (structurally enforces no-web-search).
 
 ## Common tasks
 

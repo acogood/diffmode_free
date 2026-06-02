@@ -9,7 +9,7 @@
     {
       "name": "diffmode-growth-tactics",
       "source": "./plugin",
-      "description": "Diffmode free growth-ideation pipeline: a /run-growth-tactics orchestrator + diagnostics intake, enrichment, think-tank research, a per-run clean-room LIGHT vector DB, lite synthesis constraints, and a 2-stage synthesis (explore → build) that stops at 7-9 novel demand-gen tactic ideas. Parameterized reviewer + worker sub-agents. Self-contained: writes runs into ./<slug>/ in the user's cwd, no host repo required.",
+      "description": "Diffmode free growth-ideation pipeline: a /run-growth-tactics orchestrator + diagnostics intake, enrichment, think-tank research, a per-run clean-room LIGHT vector DB, lite synthesis constraints, and a 2-stage synthesis (explore → build) that stops at 7-9 novel demand-gen tactic ideas. Parameterized reviewer + worker sub-agents. Research stages use a Perplexity MCP server when present and fall back to the built-in WebSearch otherwise (fallback citations auto-verified for reachability); analysis + synthesis run with no MCP. Self-contained: writes runs into ./<slug>/ in the user's cwd, no host repo required.",
       "category": "marketing"
     }
   ]

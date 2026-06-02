@@ -192,6 +192,41 @@ baseline · when you'd run it.*
   research MCP by design** (ENR-001 forbids new web search; the no-MCP worker enforces it
   structurally). There is no backend to degrade, so this axis is undefined for audience.
 
+- **✅ Measured (2026-06-02, fixture `theona.ai`) — full-pipeline run, zero MCP servers.** The
+  plugin ran **end-to-end on the built-in `WebSearch`/`WebFetch` alone** and **matched or beat**
+  the Perplexity v2.3.0 baseline on every ship bar:
+
+  | Metric | Perplexity (baseline) | WebSearch fallback |
+  |---|---|---|
+  | Pipeline completed | ✅ | ✅ |
+  | Tactics | 8 | 8 |
+  | Unconventional ratio | **88%** | 75% |
+  | White-space retention | 60% | **80%** |
+  | `synthesis-build` reviewer | 9 | 9 |
+  | `enrichment-competitors` reviewer | 9 | 9 |
+  | Wall-clock | 85 min | **64 min** (~25% faster) |
+  | **Fabricated source domains** | **0 / 30 hosts** | **1 / 73 hosts** (`digitalailiens.com`) |
+
+  Net: quality is comparable — WebSearch trades ~13pp of unconventional ratio for higher
+  white-space retention and a ~25% speedup (118 of 119 cited URLs on the fallback path
+  resolved). The **one real degradation** is grounded-citation integrity: the fallback
+  fabricated **1** source (`digitalailiens.com`, NXDOMAIN) where Perplexity fabricated **0** —
+  Perplexity hands the model grounded result URLs while the fallback makes it assemble
+  citations, the expected failure mode of dropping a grounded-citation backend, and one the
+  no-web reviewer structurally cannot catch.
+
+- **Decision (shipped in plugin v2.4.0): "require Perplexity" is RETIRED — conditioned on a
+  citation-integrity check.** The `research-worker` now prefers Perplexity when present and
+  **falls back to the built-in `WebSearch`** otherwise. To kill the 0→1 fabrication failure
+  mode, the fallback path carries (a) a universal **citation-source rule** — "cite only URLs you
+  actually retrieved this run; never reconstruct, recall, or invent a domain" — and (b) a
+  **Step-6 citation-integrity re-fetch** that `WebFetch`-verifies every distinct cited domain
+  not already landed on this run and **drops or re-grounds any NXDOMAIN / hard-404 URL** before
+  returning (reporting `citationsVerified` / `citationsDropped`). The Perplexity path skips the
+  re-fetch (its URLs are already grounded). This is the measure-first experiment that informed
+  the ship (2026-06-02 FINDINGS); the shipped plugin + public `main` were untouched during
+  measurement.
+
 ### 4d. Self-grading trust
 
 - **Measures:** is the *shipped self-grading gate* trustworthy? Generate on model A, then
