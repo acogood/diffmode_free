@@ -14,9 +14,10 @@ The **Diffmode free growth-ideation pipeline**, packaged as a Claude Code plugin
 
 A final `synthesis.md` with **7–9 demand-gen tactics** — each with what it is, why it fits the
 founder's constraints, the first steps to run it, and the week-1 signal to watch. The run also
-leaves its full research in the workspace (competitors, audience, the think-tank findings). It
-**stops at synthesis** — prioritization and a week-by-week rollout are the paid product (see the
-bottom of this file).
+leaves its **full research workspace** behind — a competitor teardown, an audience map, an
+acquisition-tactics audit, and three strategy reports — each a brief you can hand to a freelancer,
+drop in a deck, or build a content calendar from. It **stops at synthesis** — prioritization and a
+week-by-week rollout are the paid product (see the bottom of this file).
 
 ## The pipeline
 

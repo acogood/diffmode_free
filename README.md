@@ -61,9 +61,16 @@ Here's the *kind* of tactic a run produces:
 > - *Week-1 signal:* a reply rate above ~10% means the angle lands; below that, tighten your
 >   job-title list.
 
-The run also leaves the **full research** behind in the same folder — who your real competitors
-are, who your audience is and what they're trying to get done, and where rivals are weak — so
-you can check the thinking behind every tactic.
+And you keep the **whole research workspace** it built to get there — not scratch notes, but
+briefs you can reuse on their own:
+
+- a **competitor teardown** — who you're really up against, the channels they lean on, where they're weak;
+- an **audience map** — who your buyers are and the job they're hiring you to do, segment by segment;
+- an **acquisition-tactics audit** — 25–35 plays already working in your space, each rated by effort and how fast you'd see a signal;
+- **three strategy reports** — where your size is the advantage, plays worth borrowing from other industries, and fresh openings on the big platforms.
+
+Hand any of them to a freelancer as a brief, drop them into a deck, or build your content calendar
+straight off them. The tactics get spent in a few months; the research keeps working.
 
 ## How it works
 
