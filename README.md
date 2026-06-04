@@ -1,16 +1,24 @@
 # Diffmode Growth Tactics
 
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-d97757.svg)](https://claude.com/claude-code)
+[![OpenAI Codex](https://img.shields.io/badge/OpenAI_Codex-ready-412991.svg)](https://developers.openai.com/codex)
+
 > **Always outcrowded, never outgunned.**
 
-A free, open growth-ideation tool for teams that can't outspend their competitors — solo
-founders, first marketing hires, small bootstrapped teams. Point it at your product and it
-hands back **7–9 specific, unconventional tactics built for *your* constraints** — your budget,
-your stage, your team size — not a generic channel checklist.
+**Install (Claude Code):** `claude plugin marketplace add acogood/diffmode_free` then `claude plugin install diffmode-growth-tactics@diffmode-free` — or [run it on Codex](#run-it-on-codex). Free, no account, no API key.
 
-What makes it different: it doesn't just list the channels you already know. It takes proven
-growth *mechanisms* from real case studies and **combines two or three at a time** into tactics
-your better-funded competitors haven't thought to copy — because they didn't exist in any single
-playbook before.
+Diffmode builds a **growth strategy** for startups that can't outspend their competitors. It
+researches who your buyers are and how your rivals win them, then hands you unconventional ways
+to win them yourself — in about **90 minutes**, free, inside your AI agent.
+
+Built for solo founders, first marketing hires, and small bootstrapped teams — people who can
+build the product but find marketing foreign. If you've never mapped an audience or sized up a
+competitor before, the run does that *with* you, and leaves the work behind so you can see how
+it got there.
+
+Why it's different: each tactic combines two or three proven growth mechanisms from real case
+studies — not channels off a checklist.
 
 ## Quickstart
 
@@ -39,14 +47,29 @@ web search for free.
 
 ## What you get
 
-One file lands in that folder — **`synthesis.md`** — with **7–9 tactics**. Each one spells out:
+A run builds your growth strategy in three parts — a read on your competition, a map of your
+buyers, and unconventional ways to get users. Each part is written to be acted on, even if
+you've never built a growth plan before.
+
+**1. A read on your competition.** Who you're really up against, and how each rival *actually*
+gets users — the channels they lean on, and the ones they're ignoring. That gap is where you get
+in. (A real run mapped **9 competitors** and the acquisition channels behind each.)
+
+**2. A map of your buyers.** Your real segments and the job each one is hiring you to do, plus
+the moments that make someone switch. Most founders have never written this down — and it's the
+part generic tools skip.
+
+**3. Unconventional ways to get users yourself.** The sharp end of the strategy — **`synthesis.md`**,
+with **7–9 specific tactics** built for your budget, stage, and team. Each one spells out:
 
 - **what it is**, in plain language;
 - **why it fits a team like yours** (your budget, stage, and team size are baked in);
 - the **first three steps** to run it; and
 - the **week-1 signal** that tells you whether it's working.
 
-Here's the *kind* of tactic a run produces:
+They come from an audit of **25–35 plays** already working in your space, then bent into angles
+your better-funded competitors haven't thought to copy. Here's the *kind* of tactic a run
+produces:
 
 > **The Hiring-Signal Pitch**
 > When a company posts a job to hire a person for the exact manual task your product removes,
@@ -61,29 +84,24 @@ Here's the *kind* of tactic a run produces:
 > - *Week-1 signal:* a reply rate above ~10% means the angle lands; below that, tighten your
 >   job-title list.
 
-And you keep the **whole research workspace** it built to get there — not scratch notes, but
-briefs you can reuse on their own:
-
-- a **competitor teardown** — who you're really up against, the channels they lean on, where they're weak;
-- an **audience map** — who your buyers are and the job they're hiring you to do, segment by segment;
-- an **acquisition-tactics audit** — 25–35 plays already working in your space, each rated by effort and how fast you'd see a signal;
-- **three strategy reports** — where your size is the advantage, plays worth borrowing from other industries, and fresh openings on the big platforms.
-
-Hand any of them to a freelancer as a brief, drop them into a deck, or build your content calendar
-straight off them. The tactics get spent in a few months; the research keeps working.
+All three parts are **yours to reuse** — not scratch notes, but briefs in their own right. Hand
+the competitor read to a freelancer, drop the buyer map into a deck, or build your content
+calendar off the acquisition audit. The run also leaves three short strategy reports behind —
+where your size is an advantage, plays worth borrowing from other industries, and fresh openings
+on the big platforms. The tactics get spent in a few months. The research keeps working.
 
 ## How it works
 
 ```
 1. Tell it your product   →  a URL (it researches the site) or a 2-minute Q&A
-2. Research your market    →  competitors, audience, where rivals are weak
+2. Research your market    →  your competitors and your buyers, and where rivals are weak
 3. Mine proven mechanisms  →  growth mechanisms pulled fresh from public case studies
 4. Combine into tactics    →  fuse 2–3 mechanisms into tactics that fit your constraints
 ```
 
-It runs locally on your machine, start to finish in about **1–1.5 hours**. It also **checks its
-own work** — a reviewer re-runs a stage until it clears the quality bar. The full design,
-including how those quality gates work, is in [`docs/architecture.md`](docs/architecture.md).
+It runs locally, start to finish in about **1–1.5 hours**, and **checks its own work** — a
+reviewer re-runs a stage until it clears the quality bar. The full design, including those
+quality gates, is in [`docs/architecture.md`](docs/architecture.md).
 
 ## Requirements
 
@@ -96,10 +114,9 @@ including how those quality gates work, is in [`docs/architecture.md`](docs/arch
 
 ## Run it on Codex
 
-The skills are runtime-neutral — Codex reads the same skill files Claude does, and both runtimes
-are Perplexity-optional (Codex falls back to its own native web search). The full pipeline runs as
-a small Python driver. With the `codex` CLI installed and logged in (plus Python 3), from any
-folder:
+On Codex, the same pipeline runs as a small Python driver, Perplexity-optional too (it falls back
+to Codex's native web search). With the `codex` CLI installed and logged in (plus Python 3), from
+any folder:
 
 ```bash
 python3 codex/orchestrate.py --url https://your-product.com
@@ -112,12 +129,13 @@ in [`codex/CODEX.md`](codex/CODEX.md).
 
 ## Free vs. the full Diffmode
 
-This free tool gives you the **ideas** — a portfolio of tactics built for your constraints.
+This free tool builds the **strategy** — the competitor read, the buyer map, and the
+unconventional ideas. It stops there, at ideas.
 
 [**Diffmode**](https://diffmode.app) picks up from there: it **ranks the tactics** so you know
 what to do first, and turns the top picks into a **week-by-week rollout plan** — drawn from a
 much larger, curated database of growth mechanisms than the fresh, per-run research behind this
-free tool. Start with a **free audit (no credit card)**; the full plan comes with a **30-day
+free tool. Start with a **free audit (no credit card)**. The full plan comes with a **30-day
 money-back guarantee**.
 
 → **[diffmode.app](https://diffmode.app)**

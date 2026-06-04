@@ -9,7 +9,7 @@
     {
       "name": "diffmode-growth-tactics",
       "source": "./plugin",
-      "description": "Free growth-ideation for teams that can't outspend their competitors. Point /run-growth-tactics at your product URL and get 7-9 specific, unconventional growth tactics built for your constraints — plus the whole research workspace behind them: a competitor teardown, an audience jobs-to-be-done map, an acquisition-tactics audit, and three strategy reports, each one a brief you can reuse. It combines proven growth mechanisms from fresh case-study research instead of a generic channel list. Runs locally into ./<slug>/ in your cwd; no account or API key; Perplexity optional, with free built-in web search otherwise.",
+      "description": "Free growth-strategy builder for startups that can't outspend their competitors. Point /run-growth-tactics at your product URL and Diffmode researches who your buyers are and how your rivals win them, then builds 7-9 unconventional ways to get users — calibrated to your budget, stage, and team. You keep the competitor read, the buyer map, and the acquisition audit as briefs you can reuse. Runs locally into ./<slug>/ in your cwd; no account or API key; Perplexity optional, with free built-in web search otherwise.",
       "category": "marketing"
     }
   ]
