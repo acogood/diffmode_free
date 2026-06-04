@@ -6,6 +6,11 @@ RUN-LOG.md
 **/01-diagnostics/
 **/02-enrichment/
 **/03-think-tanks/
+**/.codex-out/
+
+# Python bytecode (the codex/ driver is stdlib Python — never stage its caches).
+__pycache__/
+*.pyc
 
 # OS / editor cruft
 .DS_Store
