@@ -12,7 +12,13 @@ growth *mechanisms* from real case studies and **combines two or three at a time
 your better-funded competitors haven't thought to copy — because they didn't exist in any single
 playbook before.
 
-## Quickstart (Claude Code)
+## Quickstart
+
+It runs on **two runtimes, off the same skill files** — **Claude Code** and **OpenAI Codex**. The
+method is identical on both, and each has a one-command run. The Claude Code install is below; for
+the Codex command see [run it on Codex](#run-it-on-codex).
+
+### Claude Code
 
 ```bash
 # add the marketplace (straight from GitHub)
@@ -84,9 +90,18 @@ including how those quality gates work, is in [`docs/architecture.md`](docs/arch
 ## Run it on Codex
 
 The skills are runtime-neutral — Codex reads the same skill files Claude does, and both runtimes
-are Perplexity-optional (Codex falls back to its own native web search). The single-skill path is
-proven and documented today; the single-command full pipeline is in progress. See
-[`codex/CODEX.md`](codex/CODEX.md) to run a skill on Codex now.
+are Perplexity-optional (Codex falls back to its own native web search). The full pipeline runs as
+a small Python driver. With the `codex` CLI installed and logged in (plus Python 3), from any
+folder:
+
+```bash
+python3 codex/orchestrate.py --url https://your-product.com
+```
+
+It writes everything into a `./<your-product>/` folder and stops at `synthesis.md`, exactly like
+the Claude run. Add `--fast-intake` to skip the founder Q&A (hands-off; lower quality). Full setup
+— making the worker agents discoverable, the optional Perplexity backend, the dispatch flags — is
+in [`codex/CODEX.md`](codex/CODEX.md).
 
 ## Free vs. the full Diffmode
 
@@ -106,7 +121,7 @@ money-back guarantee**.
 plugin/     the Claude Code plugin — the only thing Claude installs
   skills/   the 12 skill files — the single source of truth
   agents/  commands/  reference/
-codex/      Codex scaffold — reads the same skills through symlinks (no second copy)
+codex/      Codex driver — runs the same skills through symlinks (no second copy)
 docs/       design notes + build history (not shipped to either runtime)
 ```
 

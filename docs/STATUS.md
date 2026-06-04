@@ -4,7 +4,37 @@
 notes below) and tracks current state. For onboarding + install see [`README.md`](./README.md);
 for the design (orchestrator + skills + workers) see [`architecture.md`](./architecture.md).*
 
-Last updated: **2026-06-02**
+Last updated: **2026-06-04**
+
+> **Round-7 — Full Codex orchestrator built + Stage 0 URL intake + A/B-validated (2026-06-04).** The
+> Codex runtime is no longer a scaffold. A stdlib-only Python driver — **`codex/orchestrate.py`**
+> (the DAG) + **`codex/checks.py`** (deterministic structural gates) + **`codex/codex_dispatch.py`**
+> (the single `codex exec` boundary) — runs the **full DAG, Stage 0 → 4**, exactly as
+> `run-growth-tactics.md` → `AGENTS.md` specify: reviewer→retry on the two gated stages
+> (`competitors`, synthesis `build`), structural checks on the rest, the Stage-1.5 growth-factors
+> hoist with background overlap, the Stage-4 `constraints-stale` precheck, and block-level
+> `must_include` enforcement. This round also closed the last MVP scope cut — **Stage 0 URL
+> intake**: `--url` now researches the site headlessly through the `diagnostics-intake` skill,
+> asking the founder the must-ask fields **up front** (each worker is a non-interactive `codex exec`
+> batch call, so the driver asks before the run rather than pausing mid-run); `--fast-intake` — and
+> any non-TTY / backgrounded run, by an `isatty` fallback — skips the Q&A and accepts the researched
+> prefill with `[NEEDS FOUNDER INPUT]` placeholders.
+>
+> **✅ Full-DAG A/B-validated (theona.ai, gpt-5.5, Perplexity OFF, 2026-06-04).** Matched the Claude
+> v2.3.0 baseline: **9 tactics · 78% unconventional · 0 phantom vectors · build reviewer APPROVED
+> 8.0 first-pass · 25-vector clean-room LIGHT DB · 18/18 cited URLs live · ~51 min**. Calibration
+> note: gpt-5.5 writes markedly more compactly than the Claude/theona-lite3 fixtures (a complete
+> 4-segment audience analysis came in at ~39 non-blank lines), so the per-stage **min-line floors in
+> `codex/checks.py` were recalibrated downward** — low enough never to false-positive on a
+> complete-but-terse output, with the LAST-required-section anchor staying the primary
+> non-truncation signal.
+>
+> **No `plugin.json` bump, no tag** — `codex/` does not ship to Claude users (marketplace
+> `source: ./plugin`) and `plugin/` is byte-unchanged; consistent with the Round-6 codex-parity
+> commit. Changed: `codex/orchestrate.py` (Stage 0), `codex/checks.py`, `codex/codex_dispatch.py`,
+> `.gitignore`, `codex/AGENTS.md`, `codex/CODEX.md`, `README.md`, `docs/STATUS.md`. The dispatch
+> flags + `.toml` schema notes are verified against **codex-cli 0.136** (Round-6's worker smoke was
+> 0.130).
 
 > **Round-6 — Codex parity: Perplexity-optional on the Codex runtime too (2026-06-02).** Brought the
 > Codex `research-worker` to the same Perplexity-optional posture the Claude plugin reached in
@@ -156,7 +186,7 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 | Per-run cost/latency measured | ✅ v2.3.0 theona (2026-06-02): ~85 min wall-clock (~75–80 clean); ~5 deep + ~51 search Perplexity calls ≈ $2–3 |
 | Light-DB vs proprietary-DB moat comparison | ⬜ not started |
 | Reviewer-model calibration (Gemini→Sonnet) | ⬜ open (carried) |
-| Codex / OpenClaw ports | 🟡 Codex `research-worker` Perplexity-optional + live-smoke-validated (Round-6, codex-cli 0.130); full Codex orchestrator + OpenClaw still deferred |
+| Codex / OpenClaw ports | ✅ Codex full-DAG orchestrator built + A/B-validated (Round-7, `codex/orchestrate.py` + `checks.py` + `codex_dispatch.py`, codex-cli 0.136); OpenClaw port still deferred |
 
 Legend: ✅ done · 🟡 built not verified · ⬜ not started.
 
@@ -275,7 +305,8 @@ gates for everything downstream.
    Sonnet's scores land in range during the smoke-test.
 5. **Commit on a branch** — everything under `pipeline-skills/` + repo-root `.claude-plugin/`
    is untracked on `main`.
-6. **Codex / OpenClaw ports** — specified in `research/`, not built.
+6. **OpenClaw port** — still deferred. (The Codex full-DAG orchestrator is **built + A/B-validated**
+   as of Round-7 — `codex/orchestrate.py`; OpenClaw is the remaining runtime port.)
 7. **Cross-repo bundling** (optional) — bundle the channel menu + spec prompts so the plugin
    can run outside the ai-cmo tree.
 

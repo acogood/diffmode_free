@@ -5,21 +5,22 @@ methodology IP, ~90% of the content) are runtime-neutral and read **byte-for-byt
 by Claude Code and Codex. Only the orchestration layer differs per runtime. This guide covers
 the Codex side.
 
-> ## ⚠ Status: scaffolded, not yet built — verify at build time
+> ## ✅ Status: built + A/B-validated (2026-06-04)
 >
-> What is **done**: the skills are runtime-neutral and symlinked into `.agents/skills/`; the
-> worker stubs (`agents/*.toml`) and the orchestration spec (`AGENTS.md`) are written; the
-> `research-worker` is **Perplexity-optional** (prefers Perplexity when registered, else the native
-> `web_search` tool, with a citation-integrity re-fetch) and has been **schema-validated and
-> live-smoke-validated** against codex-cli 0.130 — see the smoke test below and `../docs/STATUS.md`
-> Round-6.
+> The full DAG runs end-to-end as a deterministic Python driver — **`codex/orchestrate.py`**
+> (Stage 0 URL intake → enrichment → think-tanks → per-run LIGHT DB → synthesis), dispatching
+> each stage as a `codex exec` worker and gating it with the structural checks in
+> `codex/checks.py`. It **passed a full A/B quality test on theona.ai** (2026-06-04, gpt-5.5,
+> Perplexity OFF): **9 tactics, 78% unconventional, 0 phantom vectors, build reviewer APPROVED 8.0
+> first-pass, a 25-vector clean-room LIGHT DB, 18/18 cited URLs live, ~51 min** — on par with the
+> Claude v2.3.0 baseline. See **Running the full pipeline** below + `../docs/STATUS.md` Round-7.
 >
-> What is **not done**: a turnkey Codex run of the *full* DAG. Codex's agent/skill/plugin
-> surface moves fast, so before a production run, **verify** the `.toml` field names, the
-> skill-preload mechanism, and the sub-agent dispatch API against the current Codex docs (the
-> schema notes in §3 + the worker headers reflect 0.130). The single-skill smoke test below is
-> **proven** (Round-6) — it confirms the shared-skill seam + the native-`web_search` research
-> path without depending on the full orchestrator.
+> The skills are runtime-neutral and symlinked into `.agents/skills/`; the `research-worker` is
+> **Perplexity-optional** (prefers Perplexity when registered, else the native `web_search` tool,
+> with a citation-integrity re-fetch). The `.toml` field names + `codex exec` dispatch flags in
+> §3–§4 are verified against **codex-cli 0.136** (the worker-schema smoke in Round-6 was 0.130) —
+> re-confirm against your installed Codex if it has drifted. The single-skill smoke test below
+> remains the fastest way to prove the shared-skill seam in isolation.
 
 ## How the runtimes map
 
@@ -153,11 +154,35 @@ loop from `AGENTS.md` into a `PLANS.md` ExecPlan.
 > network missed two stale deep-link 404s) that drove the full-URL citation check + the
 > network-access dispatch flag.
 
-## Building the full orchestrator (next pass)
+## Running the full pipeline
 
-Re-express `../plugin/commands/run-growth-tactics.md` as a `PLANS.md` ExecPlan that owns: the
-DAG (Stage 0→4), the parallel fan-outs (Wave-2 enrichment; the 4-way think-tank + growth-factors
-batch), the reviewer→retry gate (score ≥ 7, max 3, blocking_issues injected into a fresh
-worker), the structural checks for the non-gated stages, and the Stage-4 `constraints-stale`
-precheck + block-level `must_include` enforcement. `AGENTS.md` is the durable companion to that
-ExecPlan. Keep workers single-shot and stateless; keep the clean-room rule absolute.
+The orchestration spec above (`run-growth-tactics.md` → `AGENTS.md`) is implemented by
+**`codex/orchestrate.py`** — a stdlib-only Python driver that owns the DAG (Stage 0→4), the
+parallel fan-outs (Wave-2 enrichment; the think-tank + growth-factors batch), the reviewer→retry
+gate (score ≥ 7, max 3, blocking_issues injected into a fresh worker), the structural checks for
+the non-gated stages (`codex/checks.py`), and the Stage-4 `constraints-stale` precheck +
+block-level `must_include` enforcement. Workers stay single-shot and stateless; the clean-room
+rule is absolute.
+
+**Prerequisites:** Python 3, the `codex` CLI installed + logged in, and the worker stubs
+discoverable (`~/.codex/agents/*.toml`, see §3). Then, from any directory:
+
+```bash
+# from a URL — Stage 0 researches the site, asking the must-ask founder fields up front:
+python3 /path/to/codex/orchestrate.py --url https://yourproduct.com
+# hands-off (no Q&A; researched prefill with [NEEDS FOUNDER INPUT] placeholders):
+python3 /path/to/codex/orchestrate.py --url https://yourproduct.com --fast-intake
+# or from a pre-seeded founder-input.md (skip-if-valid — the A/B / resume path):
+python3 /path/to/codex/orchestrate.py --product <slug> --out-dir /path/to/parent
+```
+
+It writes the run into `./<slug>/` (slug derived from the URL host unless `--product` is given)
+and **stops at `synthesis.md`**. `--max-concurrency 2` (the default) overlaps growth-factors
+mining with enrichment + the think-tanks. On a backgrounded / piped run the driver auto-falls
+back to `--fast-intake` rather than hang on the founder Q&A.
+
+**✅ A/B-validated (theona.ai, 2026-06-04, gpt-5.5, Perplexity OFF).** A full-DAG run matched the
+Claude v2.3.0 baseline: **9 tactics · 78% unconventional · 0 phantom vectors · build reviewer
+APPROVED 8.0 first-pass · 25-vector clean-room LIGHT DB · 18/18 cited URLs live · ~51 min**. See
+`../docs/STATUS.md` Round-7 for the full result (incl. the gpt-5.5-compact min-line-floor
+recalibration in `codex/checks.py`).

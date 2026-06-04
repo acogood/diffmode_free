@@ -4,11 +4,15 @@ Durable instructions for running the **Diffmode free growth-ideation pipeline** 
 Codex. Codex merges `AGENTS.md` files walking the tree (nearest wins), so keep this scoped to
 the pipeline.
 
-> **STATUS: scaffold, verify-at-build-time.** The skill bodies (`.agents/skills/`) are the
-> real IP and are runtime-neutral — Codex consumes them unchanged. The *orchestration* below
-> is re-expressed from the proven Claude orchestrator (`../plugin/commands/run-growth-tactics.md`),
-> but Codex's agent/skill surface moves fast — confirm field names and invocation mechanics
-> against current Codex docs before a production run. See `CODEX.md` for setup.
+> **STATUS: built + A/B-validated (2026-06-04).** The skill bodies (`.agents/skills/`) are the
+> real IP and are runtime-neutral — Codex consumes them unchanged. The *orchestration* below is
+> re-expressed from the proven Claude orchestrator (`../plugin/commands/run-growth-tactics.md`)
+> and now runs end-to-end as a deterministic Python driver, **`codex/orchestrate.py`** — the full
+> DAG from Stage 0 URL intake through synthesis, dispatching each stage as a `codex exec` worker
+> and gating it with the structural checks in `codex/checks.py`. It passed a full A/B quality test
+> on theona.ai (2026-06-04, gpt-5.5, Perplexity OFF) on par with the Claude baseline. The `.toml`
+> field names + `codex exec` dispatch flags reflect **codex-cli 0.136** — re-confirm against your
+> installed Codex if it has drifted. See `CODEX.md` for setup + the run command.
 
 ## What this produces — and where it stops
 
@@ -38,10 +42,10 @@ authority on scope, frameworks, output template, and validation. Reviewer rubric
 
 ## Orchestration model
 
-1. **One level of agents.** The orchestrator (you, driving a `PLANS.md` ExecPlan) runs at the
+1. **One level of agents.** The orchestrator (the `codex/orchestrate.py` driver) runs at the
    top and dispatches worker agents (`codex/agents/*.toml`). Workers do NOT spawn workers.
-   Codex spawns sub-agents only when explicitly asked — request them per stage from the
-   ExecPlan. **Each dispatch is a separate `codex exec` call that scopes its own web access:**
+   Each worker is its own `codex exec` batch call — requested per stage by the driver, never
+   self-spawned. **Each dispatch is a separate `codex exec` call that scopes its own web access:**
    the `research-worker` dispatch adds `-c web_search="live"` (and attaches Perplexity if
    registered) plus `-c sandbox_workspace_write.network_access=true` so its citation-integrity
    re-fetch can `curl` full URLs; every other dispatch adds nothing and inherits the
