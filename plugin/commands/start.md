@@ -1,8 +1,8 @@
 ---
-description: Full Diffmode free growth-ideation pipeline — intake → enrichment → think-tanks → per-run clean-room LIGHT vector DB → 4-step synthesis of 7-9 novel demand-gen tactic ideas. Writes to ./<slug>/ in your cwd; stops at synthesis.
+description: Build your growth plan — researches your market and builds 7–9 unconventional tactics (~1.5h, free). Type /diffmode-growth-tactics:start your-site.com
 ---
 
-# Run Growth Tactics
+# Start — build your growth plan
 
 Main-thread orchestrator for the **Diffmode free growth-ideation pipeline** — from a fast
 founder intake all the way to a final `synthesis.md` of **7-9 novel demand-gen tactic
@@ -11,7 +11,8 @@ IDEAS**, and it **STOPS there**. Prioritization, implementation guides, and the 
 
 It runs the workflow as skills + worker sub-agents. It owns the DAG, the parallel fan-out,
 the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
-`run-enrichment.md` (which remains a standalone entry for running enrichment alone).
+`run-enrichment.md` (which remains a standalone entry for running enrichment alone — an
+advanced/testing tool, not advertised to founders).
 
 > **This command runs in the main thread.** It dispatches worker sub-agents via the
 > Agent/Task tool, and it is the only place that may talk to the human (via AskUserQuestion,
@@ -20,7 +21,7 @@ the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
 > notes, not shipped in the plugin.)
 
 > **Naming under the plugin.** Ships in the `diffmode-growth-tactics` plugin; invoked as
-> `/diffmode-growth-tactics:run-growth-tactics`. Use these exact plugin-namespaced ids in
+> `/diffmode-growth-tactics:start`. Use these exact plugin-namespaced ids in
 > Agent-tool dispatches:
 > - skills: `diffmode-growth-tactics:diagnostics-intake`,
 >   `diffmode-growth-tactics:enrichment-<dimension>`,
@@ -65,8 +66,10 @@ markdown renders reliably).
 > **Total: usually 1.5–2 hours.** You only need to be here for the questions at the
 > start; results open in your browser at the end.
 
-(Fill in nothing; the block is static. If `--from`/`--only` resumes a run mid-way, you
-may shorten it to the first paragraph + the time estimate for the remaining stages.)
+(Fill in nothing; the block is static, and it always prints in full — auto-resume
+detection needs tool calls, so it happens after (Pre-flight step 1). When the founder
+picks **Continue** there, follow the choice with one short line: what's already done +
+the time estimate for the remaining stages.)
 
 ## User-facing voice (applies to EVERYTHING you print during the run)
 
@@ -95,56 +98,93 @@ this section wins.
 - **On a gate retry print exactly one line:** "Quality check asked for one fix —
   re-running, a few extra minutes." (Same shape for a structural re-dispatch.)
 - **Pre-flight is silent unless something fails.** At most one line: "✓ Setup checks
-  passed". The WebSearch-fallback notice (pre-flight step 4) stays — it's one line and
+  passed". The WebSearch-fallback notice (pre-flight step 5) stays — it's one line and
   the founder should know research runs on the built-in search.
 - Stage *failures* are the exception: report them plainly with the resume command, as
   the failure-modes table specifies.
 
 ## Arguments
 
-`$ARGUMENTS`:
+`$ARGUMENTS` is free-form — founders never need a flag:
 
-- `--url <site>` — research a website to prefill diagnostics (e.g.
-  `--url https://theona.ai`). The workspace slug is derived from the host (`theona.ai`)
-  unless `--product` is also given.
-- `--product <slug>` — names the workspace at `./<slug>/` in the current directory. Required
-  if no `--url`. With both, `--url` feeds intake and `--product` names the workspace.
-- `--from <stage>` — resume from a stage, reusing earlier outputs on disk.
-- `--only <stage>` — run just one stage (its inputs must already exist).
-- `--remine` — force `growth-factors-mining` to re-research instead of reusing a cached
-  `growth-factors.json`.
-- `--scratch` — write stage outputs to `*-scratch/` sibling dirs, preserving known-good
-  originals (honors the "never edit originals" rule for dry-runs / parity checks).
-- `--fast-intake` — in URL mode, skip the founder Q&A and accept the researched prefill
-  with `[NEEDS FOUNDER INPUT]` placeholders left in (useful for demos; quality is lower).
+- **A URL or domain** (`theona.ai`, `https://theona.ai` — anything that looks like a
+  host, scheme optional) → **URL mode**: research the website to prefill diagnostics.
+  The workspace slug is derived from the host (`theona.ai`).
+- **Bare word(s), no domain shape** (e.g. `my-product`) → a workspace/product name:
+  names the workspace at `./<name>/` and runs the **no-website Q&A intake** (product
+  one-liner, business model, audience are asked in Stage 0).
+- **Empty** → ask, AFTER the welcome block (and only when the auto-resume scan in
+  Pre-flight step 1 didn't already resolve a workspace), via `AskUserQuestion`:
+  *"What's your product's website?"* — options **[type it via "Other"]** /
+  **[I don't have a site yet]**. The second option asks for the product name instead
+  and proceeds in no-website Q&A mode.
+- `--fast` — the only flag. In URL mode, skip the founder Q&A and accept the researched
+  prefill with `[NEEDS FOUNDER INPUT]` placeholders left in (useful for demos; quality
+  is lower). **Auto-enabled on non-interactive runs** (headless `-p` mode — never hang
+  on a question nobody can answer).
 
-**Stage names** (for `--from` / `--only`): `diagnostics`, `enrichment`, `think-tanks`,
-`growth-factors`, `lite-constraints`, `synthesis` (or finer synthesis steps `explore`,
-`build`).
+**Legacy tolerance** (older docs / muscle memory — never an error dump): `--url X` and
+`--product X` are understood as their positional equivalents; `--fast-intake` means
+`--fast`. If `--from`, `--only`, `--remine`, or `--scratch` appear, print ONE polite
+line — *"this version resumes automatically — just run the command again"* — and
+otherwise ignore them (auto-resume replaces `--from`/`--only`; **Start fresh** replaces
+`--remine`; scratch-dir dry-runs are no longer a launch option).
+
+**Stage names** (internal — used in the run-ledger and failure rows; the founder never
+types them): `diagnostics`, `enrichment`, `think-tanks`, `growth-factors`,
+`lite-constraints`, `synthesis` (or finer synthesis steps `explore`, `build`).
 
 ## Pre-flight
 
-1. **Resolve the workspace** — `WS = ./<slug>` under the user's **current working directory**
-   (slug from `--product`, else derived from the `--url` host, e.g. `theona.ai`). Create
-   `WS/01-diagnostics`, `WS/02-enrichment`, `WS/03-think-tanks/demand-generation` as needed
-   (or the `*-scratch` variants under `--scratch`). **No host repo is required** — the plugin
+1. **Auto-resume scan (FIRST — before resolving a new workspace or asking the website
+   question).** Scan the current directory for existing workspaces: any `*/.run-state.json`.
+   A workspace is an **unfinished run** when its ledger exists but the final `synthesis`
+   stage has no APPROVED row (when the ledger and the on-disk outputs disagree, trust the
+   on-disk outputs — the existing rule). Then:
+   - the typed URL/name resolves to a workspace with an unfinished run, **or** the command
+     was run bare and exactly ONE unfinished run exists → `AskUserQuestion`: *"Found an
+     unfinished run for `<slug>` (stopped at: <human stage name>). Continue where it left
+     off, or start fresh?"* **[Continue / Start fresh]**. Use the plain stage descriptions
+     from the *User-facing voice* table for `<human stage name>` (e.g. "researching your
+     competitors"), never internal codes.
+   - bare command + MULTIPLE unfinished runs → one `AskUserQuestion` listing each
+     `<slug> (stopped at: …)` as a Continue option, plus a **"Start a new run"** option.
+   - no unfinished run (or the founder picked "Start a new run") → fresh launch; continue
+     with step 2.
+
+   **Continue** → derive the resume point from the ledger + the on-disk stage outputs:
+   read the ledger FIRST, then confirm each "done" stage's output actually passes its
+   completeness check (a stage whose output is missing, truncated, or stale — e.g. the
+   Stage-4 `constraints-stale` mismatch — does NOT count as done). Re-enter the DAG at the
+   first stage that isn't done. The per-stage routine, completeness checks, and ledger
+   rules below are unchanged; the cached `growth-factors.json` is reused as always.
+
+   **Start fresh** → a full re-run of every stage **including re-mining**: discard the
+   cached `growth-factors.json` and set `remine: true` on the mining brief (fresh means
+   fresh). Only Start fresh re-mines; Continue and within-run retries keep reusing the
+   cache.
+2. **Resolve the workspace** — `WS = ./<slug>` under the user's **current working directory**
+   (slug from the positional argument — a bare name, or derived from the URL/domain host,
+   e.g. `theona.ai` — or from the website-question answer). Create
+   `WS/01-diagnostics`, `WS/02-enrichment`, `WS/03-think-tanks/demand-generation` as needed.
+   **No host repo is required** — the plugin
    is self-contained and writes the run into the cwd.
-2. **Confirm the channel menu** — `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`
+3. **Confirm the channel menu** — `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md`
    exists (it is bundled in the plugin; `${CLAUDE_PLUGIN_ROOT}` expands to the plugin's
    install directory at runtime). All stages that need the channel taxonomy read it from
    there.
-3. **Confirm the plugin is active** — its skills/agents (`diffmode-growth-tactics:*`) exist
+4. **Confirm the plugin is active** — its skills/agents (`diffmode-growth-tactics:*`) exist
    whenever the plugin is enabled. If a dispatch reports an unknown agent/skill, the plugin
    isn't enabled — run `/plugin` → enable `diffmode-growth-tactics` (or
    `claude plugin install diffmode-growth-tactics@diffmode-free`).
-4. **Detect the research backend (capability note — no hard gate).** Check whether a
+5. **Detect the research backend (capability note — no hard gate).** Check whether a
    Perplexity MCP server is available (the `mcp__perplexity__*` tools resolve). If it is, the
    research stages use it. **If no Perplexity MCP is detected, print one line —** *"WebSearch
    fallback mode — no Perplexity MCP detected; research quality slightly lower, citations
    auto-verified."* **— and proceed.** There is no hard gate: the `research-worker` falls back
    to the built-in `WebSearch` (see its Step 3 + its Step-6 citation-integrity check), so the
    pipeline runs either way. Only the genuine absence of *both* backends is a research failure.
-5. **Reviewer gate** — score **≥ 7**, **max 3** iterations, applied at the **two gated stages
+6. **Reviewer gate** — score **≥ 7**, **max 3** iterations, applied at the **two gated stages
    only**: enrichment **`competitors`** (the Wave-1 blocker) and the **final synthesis
    deliverable** (`synthesis.md`). Every other generating stage gets a **structural check
    only** — see *The per-stage routine*. (v2.3.0 cut the gates from 7 → 2: the dropped gates
@@ -208,8 +248,9 @@ dimension `D` + spec `Spec`:
    - **dispatch failed / worker died mid-run** (API/socket error, no JSON returned at all) →
      **re-spawn a FRESH worker** with the identical brief, up to **2×** (transient socket
      deaths usually clear on a fresh spawn). If it still dies after 2 fresh spawns, mark `S`
-     FAILED with code **`worker-dispatch-failed`** and **print the exact resume command**
-     (`--from <stage>` or `--only <stage>`) so the user can resume cheaply from disk. Do NOT
+     FAILED with code **`worker-dispatch-failed`** and tell the founder: *"run
+     `/diffmode-growth-tactics:start` again — it picks up from this point"* (the auto-resume
+     pre-flight resumes cheaply from what's already on disk). Do NOT
      do the worker's content work in the main thread.
 2. **Stage-boundary completeness check** (replaces Python `verify_outputs`): confirm `O`
    exists and is non-empty (`test -s`), AND — critically — that it is **not truncated**.
@@ -254,8 +295,9 @@ deliverable** (`synthesis.md`).
 
 ## Stage 0 — Diagnostics intake (the entry point)
 
-Goal: produce `WS/01-diagnostics/founder-input.md`. If it already exists and `--from` is
-past `diagnostics`, skip. **Human interaction happens HERE, in the main thread.**
+Goal: produce `WS/01-diagnostics/founder-input.md`. If it already exists and an
+auto-resume **Continue** put the resume point past `diagnostics`, skip. **Human
+interaction happens HERE, in the main thread.**
 
 **Collect the must-ask fields** (the things a website can't reveal) via `AskUserQuestion`.
 Recommended batching (≤4 questions/call; founders pick "Other" to free-type):
@@ -266,23 +308,23 @@ Recommended batching (≤4 questions/call; founders pick "Other" to free-type):
   (multiSelect) [landing pages / content / ad campaigns / analytics].
 - *Call 2 (free-form, founders use "Other"):* **Current traction** (visitors/signups/MRR/
   paying customers — or "pre-launch"); **Primary goal + deadline**; **Where users/traffic
-  come from today** (the Q8 acquisition signal); and — **only if no `--url`** — **product
-  one-liner + business model/pricing + target-audience hypothesis**.
+  come from today** (the Q8 acquisition signal); and — **only in no-website Q&A mode** —
+  **product one-liner + business model/pricing + target-audience hypothesis**.
 
-(Skip Call 2 / accept placeholders if `--fast-intake`.)
+(Skip Call 2 / accept placeholders if `--fast`.)
 
 Then dispatch **`research-worker`** with skill `diffmode-growth-tactics:diagnostics-intake`:
-- URL mode: pass `--url <site>` + the collected `answers`. The worker scrapes homepage/
+- URL mode: pass the site URL + the collected `answers`. The worker scrapes homepage/
   pricing/about + a research-backend pass (Perplexity if present, else WebSearch) to fill
   researchable fields, folds in `answers`, marks
   any remaining gaps, writes `founder-input.md`.
-- No-URL mode: pass the `answers` (incl. product/model/audience). The worker formats them
+- No-website Q&A mode: pass the `answers` (incl. product/model/audience). The worker formats them
   into the schema (light research allowed to enrich product description + competitive
   alternatives), writes `founder-input.md`.
 
 **Check:** `founder-input.md` exists, non-empty, has the 7 `## N.` sections (grep
 `## 1. Product`, `## 4. Challenge Separation`, `## 5. Resources`, `## 7. Module Routing`).
-If a `## Confirmation Gaps` block lists must-ask fields and not `--fast-intake`, ask the
+If a `## Confirmation Gaps` block lists must-ask fields and not `--fast`, ask the
 founder those specific gaps (one more `AskUserQuestion`) and patch the file in the main
 thread. No reviewer rubric for diagnostics (it's capture, not analysis).
 
@@ -334,8 +376,10 @@ before moving on to Wave 2 / Stage 2):
 |-------|--------|-------|--------|--------|
 | growth-factors | **research-worker** | `:growth-factors-mining` | founder-input (required); competitors-analysis (seed, ready after Wave 1); acquisition-tactics (optional seed — pass it if Wave 2 has produced it, otherwise omit) | `WS/03-think-tanks/demand-generation/growth-factors.json` |
 
-- Pass `--remine` into the brief if present. Otherwise the skill's **cache rule is unchanged**:
-  if `growth-factors.json` already exists and `--remine` is absent, the worker reuses it.
+- On a **Start-fresh** relaunch (pre-flight step 1), set `remine: true` in the brief — the
+  worker discards the cached `growth-factors.json` and re-researches. Otherwise the skill's
+  **cache rule is unchanged**: if `growth-factors.json` already exists and the brief does
+  NOT set `remine`, the worker reuses it.
 - **Socket-death respawn = retry-in-place, NOT re-mine (cost fix).** This stage's deep-research
   passes are the priciest in the pipeline, and a mid-mine socket death used to make the fresh
   respawn re-run them all from scratch (≈8 duplicated research-backend calls, Perplexity if
@@ -345,9 +389,9 @@ before moving on to Wave 2 / Stage 2):
   `growth-factors.json` already exists at the output path**, set **`resume_partial: true`** in
   the respawn brief. The fresh worker then reads the partial file, KEEPS the vectors already
   distilled, and mines only the remainder to reach the target count — it does NOT re-run the
-  deep-research passes already paid for. **Never combine `resume_partial` with `--remine`**:
-  `--remine` means "discard the cache and re-research from scratch" (the opposite intent), so a
-  respawn under `--remine` re-mines fresh and ignores any partial file.
+  deep-research passes already paid for. **Never combine `resume_partial` with `remine: true`**:
+  `remine` means "discard the cache and re-research from scratch" (the opposite intent), so a
+  respawn under `remine: true` re-mines fresh and ignores any partial file.
 - Record the long-running branch in the run-ledger as `growth-factors` (one row when dispatched,
   one when it resolves, with `started_at`/`duration_s`).
 - The `acquisition-tactics.md` seed is "optional but recommended" — if mining is dispatched
@@ -403,8 +447,9 @@ transferable patterns) and classify + record each in the run-ledger:
 
 **Gate Stage 3 on all three think-tanks RESOLVED + `ok`**: a failed think-tank **blocks
 synthesis** (the synthesis chain reads all three think-tank reports). If any think-tank ends
-`failed`, stop before Stage 3, surface its gap, and print the resume command (`--from
-think-tanks` or `--only <branch>`). The Stage-1.5 `growth-factors` branch is gated separately,
+`failed`, stop before Stage 3, surface its gap, and tell the founder to run
+`/diffmode-growth-tactics:start` again — it picks up from this point (only what's missing
+re-runs). The Stage-1.5 `growth-factors` branch is gated separately,
 at the Stage-3 boundary below.
 
 ## Stage 3 — Lite constraints
@@ -413,12 +458,14 @@ at the Stage-3 boundary below.
 Before dispatching `lite-constraints`, the `growth-factors` branch launched in Stage 1.5 must
 have RESOLVED and passed its check. Classify it like any concurrent branch (record in the
 run-ledger): `ok` if it passes the check below; `died` → re-spawn a FRESH worker up to 2×
-(carry **`resume_partial: true`** when a partial `growth-factors.json` is on disk and
-`--remine` is NOT in play, so the respawn resumes mining the remainder instead of re-paying for
+(carry **`resume_partial: true`** when a partial `growth-factors.json` is on disk and this
+is NOT a Start-fresh re-mine, so the respawn resumes mining the remainder instead of re-paying for
 the deep-research passes — see Stage 1.5); `failed` → still bad after 2 respawns. A failed
 `growth-factors.json` **blocks everything**
 (synthesis needs the LIGHT DB → the constraints), so on `failed`, stop here, surface
-`blocking_issues`, and print the resume command (`--only growth-factors` or `--remine`).
+`blocking_issues`, and tell the founder to run `/diffmode-growth-tactics:start` again — it
+picks up from this point (Continue retries mining from what's on disk; **Start fresh**
+re-mines from scratch).
 
 **growth-factors.json check** (no rubric → **structural + clean-room check only**): it parses
 as JSON; `metadata.total_vectors` matches `vectors.length` and is **15-40**; `category_counts`
@@ -447,17 +494,19 @@ conventional patterns), `anti_patterns`, and `category_diversity_requirements`
 ## Stage 4 — Synthesis chain (explore → build)
 
 **ID-consistency precheck (BLOCKING — run BEFORE explore).** `synthesis-constraints.json` is
-built against a specific `growth-factors.json`. If the LIGHT DB was re-mined (`--remine`)
-without rebuilding constraints — e.g. `--remine` then `--from synthesis`, which skips Stage 3
+built against a specific `growth-factors.json`. If the LIGHT DB was re-mined (a Start-fresh
+relaunch) without rebuilding constraints — e.g. a resume that re-entered the DAG past Stage 3
 — the on-disk constraints reference vector IDs that no longer exist, and synthesis would
 emit broken traceability silently. So before dispatching explore: collect every vector ID
 referenced anywhere in `synthesis-constraints.json` (`diverse_white_space`,
 `mandatory_combinations`, `prohibited_combinations.vectors_if_present`,
 `unconventional_anchors`) and confirm **each one exists in the CURRENT `growth-factors.json`**.
-On ANY mismatch, **ABORT** with code **`constraints-stale`** and the hint: *"`synthesis-constraints.json`
-references vector IDs absent from the current `growth-factors.json` — re-run
-`--from lite-constraints` to rebuild constraints against the current LIGHT DB."* Do not
-proceed to explore with stale constraints.
+On ANY mismatch, do NOT proceed to explore with stale constraints: record
+**`constraints-stale`** in the ledger and **re-run Stage 3 (`lite-constraints`) first** to
+rebuild `synthesis-constraints.json` against the current LIGHT DB — within this run when
+possible (it is a cheap sonnet stage); if the run is stopping anyway, tell the founder to
+run `/diffmode-growth-tactics:start` again — the auto-resume treats stale constraints as
+not-done and re-enters at lite-constraints.
 
 Both on **`synthesis-worker`** (no MCP, clean-room), sequentially — but **model-tiered**
 (see the *Model tiering* note below the table):
@@ -635,13 +684,13 @@ For any FAILED stage, list its final `blocking_issues`.
 |------|-------|---------|----------|
 | `missing-channel-menu` | pre-flight | bundled channel menu absent from `${CLAUDE_PLUGIN_ROOT}/reference/` | reinstall the plugin |
 | `plugin-not-enabled` | any dispatch | a `diffmode-growth-tactics:…` id doesn't resolve | enable the plugin |
-| `worker-dispatch-failed` | any stage | worker died mid-run (API/socket error, no JSON) after 2 fresh re-spawns | stage FAILED; resume with the printed `--from <stage>`/`--only <stage>` — no main-thread fallback |
+| `worker-dispatch-failed` | any stage | worker died mid-run (API/socket error, no JSON) after 2 fresh re-spawns | stage FAILED; run `/diffmode-growth-tactics:start` again — it picks up from this point. No main-thread fallback |
 | `intake-incomplete` | Stage 0 | founder-input has unresolved must-ask gaps | ask the founder the Confirmation Gaps |
 | `competitors-gate-failed` | Wave 1 | competitors REJECTED ×3 | inspect blocking_issues; downstream can't run |
 | `dimension-failed` | enrichment (Wave 2) | `audience`/`acquisition-tactics` structurally incomplete after a single re-dispatch (no reviewer loop in v2.3.0) | list the gap; dependents skipped |
-| `growth-factors-invalid` | Stage 1.5 / Stage-3 boundary | JSON/schema/clean-room check failed ×2 | inspect; synthesis can't run without the LIGHT DB |
+| `growth-factors-invalid` | Stage 1.5 / Stage-3 boundary | JSON/schema/clean-room check failed ×2 | inspect; synthesis can't run without the LIGHT DB — run `/diffmode-growth-tactics:start` again (Start fresh re-mines) |
 | `constraints-invalid` | Stage 3 | synthesis-constraints schema/id check failed | re-dispatch lite-constraints |
-| `constraints-stale` | Stage 4 precheck | `synthesis-constraints.json` references vector IDs absent from the CURRENT `growth-factors.json` (e.g. `--remine` then `--from synthesis`) | re-run `--from lite-constraints` to rebuild constraints against the current LIGHT DB |
+| `constraints-stale` | Stage 4 precheck | `synthesis-constraints.json` references vector IDs absent from the CURRENT `growth-factors.json` (a re-mine without a constraints rebuild) | re-run `lite-constraints` against the current LIGHT DB (in-run; or run `/diffmode-growth-tactics:start` again — auto-resume re-enters there) |
 | `synthesis-failed` | Stage 4 | `build` REJECTED ×3 | list blocking_issues |
 | `clean-room-violation` | Stage 1.5/3/4 | a worker read `tactics_DB/` | re-dispatch; the LIGHT-DB stages must never touch the proprietary DB |
 | `report-render-skipped` | Output step 1 | no usable Python AND the sh fallback failed — HTML report not built (informational; the run itself is fine) | print the `.md` deliverable list + the manual render command (`python3 <plugin>/scripts/render_html.py <WS>`) |
@@ -649,25 +698,26 @@ For any FAILED stage, list its final `blocking_issues`.
 ## Idempotency
 
 Overwrite-on-rerun for stage outputs, EXCEPT `growth-factors.json`, which is **cached and
-reused** unless `--remine` (the deliberate cost mitigation for per-run mining — it is the
-slowest/priciest stage). `--scratch` writes to `*-scratch/` dirs and preserves originals.
+reused** on auto-resume **Continue** and on within-run retries (the deliberate cost
+mitigation for per-run mining — it is the slowest/priciest stage). A **Start-fresh**
+relaunch is the one thing that discards that cache and re-mines: fresh means fresh.
 
-**`--remine` invalidates `synthesis-constraints.json`.** The constraints file is derived from
+**Start fresh invalidates `synthesis-constraints.json`.** The constraints file is derived from
 a specific LIGHT DB, so re-mining makes the cached constraints stale (its vector IDs may no
-longer exist). Whenever `--remine` runs, the orchestrator **must also force `lite-constraints`
-to re-run** (rebuild `synthesis-constraints.json` against the fresh `growth-factors.json`)
-before any synthesis step. The Stage-4 `constraints-stale` precheck is the backstop that
-catches a resume which skipped this (e.g. `--remine` then `--from synthesis`).
+longer exist). Whenever a Start-fresh re-mine runs, the orchestrator **must also force
+`lite-constraints` to re-run** (rebuild `synthesis-constraints.json` against the fresh
+`growth-factors.json`) before any synthesis step. The Stage-4 `constraints-stale` precheck is
+the backstop that catches a resume which skipped this.
 
 **Run-ledger.** The orchestrator maintains a workspace-local `WS/.run-state.json` (see
-*Run-ledger* below) recording each stage attempt's verdict. On a `--from` / `--only` resume,
-read it first to know which stages are done / failed / mid-retry. It is per-run workspace
-state (git-ignored), and is **best-effort** recovery aid, not a hard guarantee.
+*Run-ledger* below) recording each stage attempt's verdict. The auto-resume pre-flight
+(step 1) reads it first to know which stages are done / failed / mid-retry. It is per-run
+workspace state (git-ignored), and is **best-effort** recovery aid, not a hard guarantee.
 
 ## Run-ledger (durability across a multi-hour run)
 
 A full run can take ~2.5h and span context compaction. To survive that and make
-`--from`/`--only` resumes reliable, maintain a small, human-readable, **workspace-local**
+auto-resume reliable, maintain a small, human-readable, **workspace-local**
 ledger at `WS/.run-state.json` and **append to it after every stage attempt**:
 
 ```json
@@ -686,9 +736,9 @@ ledger at `WS/.run-state.json` and **append to it after every stage attempt**:
   total wall-clock are read from — the first instrumented run replaces the rough minute
   estimates in this file with real numbers. (The `growth-factors` branch runs concurrently, so
   its `duration_s` overlaps enrichment + Stage 2 rather than adding to the critical path.)
-- **On resume** (`--from` / `--only`), read the ledger FIRST to learn which stages are done,
-  which failed, and which were mid-retry — then resume from the right point instead of
-  re-deriving state from scratch.
+- **On an auto-resume Continue** (pre-flight step 1), read the ledger FIRST to learn which
+  stages are done, which failed, and which were mid-retry — then resume from the right point
+  instead of re-deriving state from scratch.
 - This is **best-effort durability.** The orchestrator is an LLM following prose, so the
   ledger is a recovery *aid*, not a transactional guarantee — if it and the filesystem
   disagree, trust the on-disk stage outputs (the contract between stages) and reconcile.

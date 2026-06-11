@@ -6,7 +6,7 @@ the pipeline.
 
 > **STATUS: built + A/B-validated (2026-06-04).** The skill bodies (`.agents/skills/`) are the
 > real IP and are runtime-neutral — Codex consumes them unchanged. The *orchestration* below is
-> re-expressed from the proven Claude orchestrator (`../plugin/commands/run-growth-tactics.md`)
+> re-expressed from the proven Claude orchestrator (`../plugin/commands/start.md`)
 > and now runs end-to-end as a deterministic Python driver, **`codex/orchestrate.py`** — the full
 > DAG from Stage 0 URL intake through synthesis, dispatching each stage as a `codex exec` worker
 > and gating it with the structural checks in `codex/checks.py`. It passed a full A/B quality test

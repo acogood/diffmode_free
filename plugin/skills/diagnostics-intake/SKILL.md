@@ -1,6 +1,6 @@
 ---
 name: diagnostics-intake
-description: Fast founder-input capture for the Diffmode growth-tactics pipeline (the diagnostics stage). Produces WS/01-diagnostics/founder-input.md in the exact schema the enrichment + synthesis stages read. Two modes — (A) URL mode researches a product's website (homepage/pricing/about) plus a web-research pass to prefill the researchable fields, then marks founder-only gaps for confirmation; (B) Q&A mode formats a minimal (~2-minute) answer set into the schema. Use as the entry point of run-growth-tactics, or whenever a workspace needs a founder-input.md before enrichment.
+description: Fast founder-input capture for the Diffmode growth-tactics pipeline (the diagnostics stage). Produces WS/01-diagnostics/founder-input.md in the exact schema the enrichment + synthesis stages read. Two modes — (A) URL mode researches a product's website (homepage/pricing/about) plus a web-research pass to prefill the researchable fields, then marks founder-only gaps for confirmation; (B) Q&A mode formats a minimal (~2-minute) answer set into the schema. Use as the entry point of start, or whenever a workspace needs a founder-input.md before enrichment.
 metadata:
   version: "1.0.0"
 ---

@@ -6,6 +6,40 @@ for the design (orchestrator + skills + workers) see [`architecture.md`](./archi
 
 Last updated: **2026-06-11**
 
+> **Round-9 — Simple launch surface (2026-06-11, plugin v2.6.0).** The launch UX collapsed
+> to ONE founder-typeable line. Four changes, all in the launch layer — **no synthesis-chain
+> changes** (full theona re-validation rides the next quality round):
+>
+> 1. **Command rename** — `plugin/commands/run-growth-tactics.md` → **`start.md`**; the
+>    command is now `/diffmode-growth-tactics:start`. File rename only (the plugin name is
+>    unchanged, so installs + the marketplace are unaffected); there is NO alias mechanism,
+>    so the old `:run-growth-tactics` name died instantly with the rename.
+> 2. **Positional + ask-if-empty launch** — `:start your-product.com` (URL/domain token →
+>    URL mode, scheme optional), `:start <name>` (bare word → no-website Q&A workspace), or
+>    bare `:start` → asks *"What's your product's website?"* (with an "I don't have a site
+>    yet" path) AFTER the welcome block.
+> 3. **Auto-resume** — a new pre-flight step scans cwd for `*/.run-state.json`; an
+>    unfinished run (ledger present, no APPROVED `synthesis` row, on-disk outputs trusted
+>    over the ledger) triggers *"Found an unfinished run for `<slug>` (stopped at: …)"* —
+>    **[Continue / Start fresh]**. Continue internalizes the old `--from` derivation
+>    (ledger + completeness checks); **Start fresh = full re-run INCLUDING re-mining**
+>    (discards the `growth-factors.json` cache — the old `--remine`; the mining brief key
+>    is now `remine: true`). The Stage-4 `constraints-stale` precheck stays as backstop and
+>    now self-heals by re-running `lite-constraints` instead of aborting.
+> 4. **Flags 7 → 1** — only `--fast` (renamed from `--fast-intake`) survives;
+>    `--from`/`--only`/`--remine`/`--scratch` are cut (legacy tolerance: `--url X`/
+>    `--product X` map to their positional equivalents, `--fast-intake` means `--fast`, the
+>    cut flags get one polite "this version resumes automatically" line). `run-enrichment`
+>    is **hidden** — description now prefixed "(advanced — pipeline testing)", removed from
+>    README command menus; its own args are untouched.
+>
+> **Deferred / follow-ups:** Codex driver parity (`orchestrate.py` keeps its argparse incl.
+> `--fast-intake` as a dev-facing surface — positional+`--fast` port deferred); **ai-cmo
+> repo sync REQUIRED after ship** — the diffmode.app `/free-plugin` page +
+> `kantent_podjehal/plugin-promo-2026/` copy still show the old command, which no longer
+> resolves; grep that repo for `run-growth-tactics` and update (install commands are
+> unaffected). Parity tests that used `--scratch` now use manual workspace copies.
+
 > **Round-8 — Friendly UX for the marketer persona (2026-06-11, plugin v2.5.0).** A Windows
 > end-to-end run by a marketer (medmastery.com — pipeline fine, experience built for devs)
 > drove four UX workstreams:
@@ -92,7 +126,9 @@ Last updated: **2026-06-11**
 > the only durable path. Both READMEs + the orchestrator's report-open step now say so.
 > In-app checks handed to Anton: repo sync accepts the marketplace; a ~1.5–2 h run
 > survives a Cowork session; `python3` present in the VM for `render_html.py` (sh
-> fallback otherwise); browser-open degrades to the files-panel path. Codex needs no
+> fallback otherwise); browser-open degrades to the files-panel path. (Run that in-app
+> test with the Round-9 command — `/diffmode-growth-tactics:start your-product.com`; the
+> old `:run-growth-tactics` name no longer resolves.) Codex needs no
 > equivalent round — it has first-class persistent Agent Skills (`$CODEX_HOME/skills/`,
 > repo-level `.agents/skills/` — the convention this repo already uses), and the shipped
 > Codex path (clone + `python3 codex/orchestrate.py`) is already durable.
@@ -260,7 +296,7 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 
 | Component | State |
 |-----------|-------|
-| 2 manifests (`plugin.json` v2.4.0 + repo-root `marketplace.json`) | ✅ done |
+| 2 manifests (`plugin.json` v2.6.0 + repo-root `marketplace.json`) | ✅ done |
 | `diagnostics-intake` skill (URL prefill / minimal Q&A) | ✅ done |
 | 3 enrichment dimension skills | ✅ done (carried from v1; demographics removed 2026-05-28, purchase-objections removed 2026-06-01) |
 | 3 think-tank research skills (competitor-gaps, cross-industry, platform-arbitrage) | ✅ done |
@@ -269,7 +305,7 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 | 2 synthesis skills (`synthesis-explore` → `synthesis-build`) | ✅ done — fused from 4 (v2.3.0), IP-scrubbed |
 | `growth-reviewer` (parameterized, 7 rubrics) | ✅ done |
 | 4 worker sub-agents (research / analysis / synthesis / reviewer) | ✅ done |
-| Orchestrator (`run-growth-tactics.md`) + standalone `run-enrichment.md` | ✅ done |
+| Orchestrator (`start.md`, renamed from `run-growth-tactics.md` in Round-9) + standalone `run-enrichment.md` (hidden/dev) | ✅ done |
 | All 12 skills pass `quick_validate.py` | ✅ done |
 | Clean-room verified (nothing reads `tactics_DB/`) | ✅ done (grep + skill prohibitions) |
 | End-to-end live run | ✅ v2.3.0 theona.ai re-test PASSED (2026-06-02): 8 tactics, 88% unconv, 100% white-space, 0 phantom, build reviewer 9, 85 min, think-tanks 0s-parallel |
@@ -298,15 +334,17 @@ built-in WebSearch fallback. Overlapping stages share a start time:
 | lite-constraints | 4 min | |
 | synthesis: explore → build | 12 + 7 min | +~8 min if a synthesis socket death respawns |
 
-Treat as rough — one product, one run. `growth-factors.json` is cached (re-mined only on
-`--remine`), so a `--from synthesis` re-run is minutes, not the full hour.
+Treat as rough — one product, one run. `growth-factors.json` is cached (re-mined only on a
+**Start-fresh** relaunch), so an auto-resume **Continue** near synthesis is minutes, not the
+full hour.
 
 ## What's in the package
 
 **2 orchestrator commands** ([`commands/`](./commands/)):
-- `run-growth-tactics.md` — the main entry; runs the full DAG in the main thread (intake →
+- `start.md` — the main entry; runs the full DAG in the main thread (intake →
   enrichment → think-tanks ‖ LIGHT-DB mining → lite-constraints → 4-step synthesis → STOP).
-- `run-enrichment.md` — standalone enrichment-only entry, under the new namespace.
+- `run-enrichment.md` — standalone enrichment-only entry (hidden/dev — "(advanced —
+  pipeline testing)" in its description), under the new namespace.
 
 **12 skills** ([`skills/`](./skills/)) — passive instruction docs:
 
@@ -348,15 +386,16 @@ gates for everything downstream.
 ## Key decisions
 
 - **Plugin `diffmode-growth-tactics`, marketplace `diffmode-free`.** Command surface
-  `/diffmode-growth-tactics:run-growth-tactics`; skills/workers namespaced
-  `diffmode-growth-tactics:*`.
+  `/diffmode-growth-tactics:start` (Round-9; formerly `:run-growth-tactics`); skills/workers
+  namespaced `diffmode-growth-tactics:*`.
 - **The moat is DB breadth + paid downstream — not the method.** The synthesis method is what
   this plugin demonstrates (free); the moat is the proprietary 576-vector DB (breadth) +
   intelligence layer + the paid prioritization + implementation stages. Free runs the method
   on a weaker per-run LIGHT DB and stops at synthesis.
 - **Per-run clean-room LIGHT DB.** `growth-factors-mining` never reads `tactics_DB/`; it mines
   public case studies fresh each run (mechanism-over-tactic), caches `growth-factors.json`, and
-  re-mines only on `--remine`. `lite-constraints` reasons in-context to emit the same
+  re-mines only on a Start-fresh relaunch (`remine: true` in the mining brief).
+  `lite-constraints` reasons in-context to emit the same
   `synthesis-constraints.json` shape the proprietary Python generator produced (white-space
   pairs, synergy / founder-fit pools, prohibited conventional patterns, category diversity,
   anti_patterns) — dropping the proprietary intelligence layer's internal pair-scoring
@@ -381,8 +420,9 @@ gates for everything downstream.
 
 ## Open items / next steps
 
-1. **Live end-to-end run** — `/diffmode-growth-tactics:run-growth-tactics --url <site>
-   --scratch` on a known workspace (e.g. `theona.ai`); confirm `synthesis.md` has 7-9 tactics,
+1. **Live end-to-end run** — `/diffmode-growth-tactics:start <site>` on a known workspace
+   (e.g. `theona.ai`, in a scratch copy — `--scratch` was cut in Round-9); confirm
+   `synthesis.md` has 7-9 tactics,
    ≥50% unconventional, each traceable to a `growth-factors.json` vector.
 2. ✅ **Per-run cost/latency measured** (v2.3.0 theona, 2026-06-02): **~85 min** wall-clock
    (~75–80 clean; one synthesis socket-death respawn added ~8 min) and **~5 deep

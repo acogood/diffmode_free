@@ -45,9 +45,10 @@ This stage is deliberately "fresh per run," which is slower / pricier / less det
 than a static asset. Mitigate:
 
 - **Cache:** if `growth-factors.json` already exists at the output path AND the brief does
-  NOT include `--remine`, do NOT re-research. Read the existing file, validate it against
+  NOT set `remine: true`, do NOT re-research. Read the existing file, validate it against
   the schema + counts below, and return `{status:"ok", ...,"summary":"reused cached growth-factors.json (N vectors)"}`.
-  Re-mine only when `--remine` is present or the file is missing/invalid.
+  Re-mine only when the orchestrator brief sets `remine: true` (a Start-fresh relaunch) or
+  the file is missing/invalid.
 - **Resume-partial (socket-death recovery — do NOT re-pay for deep research):** if the brief
   includes **`resume_partial: true`** (the orchestrator sets this only when re-spawning after a
   mid-mine death) AND a partial `growth-factors.json` exists that PARSES but is short of target
@@ -56,8 +57,8 @@ than a static asset. Mitigate:
   Continue each prefix's sequential numbering from where the partial file left off; do NOT
   re-run the deep-research passes that produced the vectors already on disk — that duplication
   (≈8 deep research calls) is exactly what this flag exists to avoid. `resume_partial` is **never
-  combined with `--remine`** (which forces a full fresh re-mine); if both somehow appear,
-  `--remine` wins and you re-research from scratch.
+  combined with `remine: true`** (which forces a full fresh re-mine); if both somehow appear,
+  `remine` wins and you re-research from scratch.
 - **Bound breadth + cap deep research (the run's biggest cost lever):** review **12-20
   public case studies** using **at most ~1-2 deep-research passes** (a `perplexity_research`
   call when Perplexity is present; otherwise iterate your search tool + `WebFetch`) — seed
@@ -159,9 +160,10 @@ fabricate); `source_url` is a real, reachable URL; `time_to_signal_weeks` option
 
 1. **Read founder context** (+ competitive context if provided). Derive 4-6 search themes
    (business model, primary channels, industry, adjacent industries to borrow from).
-2. **Check the cache / resume-partial** (see above). If a valid full file exists and no
-   `--remine`, reuse and return. If the brief sets `resume_partial: true` and a parseable but
-   short partial file exists (and no `--remine`), load it, keep its vectors, and mine only the
+2. **Check the cache / resume-partial** (see above). If a valid full file exists and the
+   brief does not set `remine: true`, reuse and return. If the brief sets
+   `resume_partial: true` and a parseable but
+   short partial file exists (and no `remine`), load it, keep its vectors, and mine only the
    remainder — skip the deep-research passes for what's already there.
 3. **Deep research pass (search-first, ≤~1-2 deep calls):** run a bounded set of web-research
    calls — at most ~1-2 deep-research passes (`perplexity_research` when present) for the

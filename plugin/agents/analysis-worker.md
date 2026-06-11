@@ -1,6 +1,6 @@
 ---
 name: analysis-worker
-description: Analysis-only worker for the Diffmode growth-tactics pipeline. Has NO web-research tool by design, so any "no new web search" rule is structurally enforced. Loads a named analysis-stage skill, reads the input files + general knowledge only, writes the named output, and returns a small JSON summary. Dispatched by the run-growth-tactics orchestrator for the audience-JTBD enrichment dimension and the analysis-mode think-tanks (competitor-gaps; cross-industry when run without research).
+description: Analysis-only worker for the Diffmode growth-tactics pipeline. Has NO web-research tool by design, so any "no new web search" rule is structurally enforced. Loads a named analysis-stage skill, reads the input files + general knowledge only, writes the named output, and returns a small JSON summary. Dispatched by the start orchestrator for the audience-JTBD enrichment dimension and the analysis-mode think-tanks (competitor-gaps; cross-industry when run without research).
 tools:
   - Read
   - Write

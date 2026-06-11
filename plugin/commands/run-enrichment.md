@@ -1,5 +1,5 @@
 ---
-description: Run the Diffmode enrichment stage only — competitors → audience ‖ acquisition-tactics, reviewer-gated, into a ./<slug>/ workspace in your cwd.
+description: (advanced — pipeline testing) Run the Diffmode enrichment stage only — competitors → audience ‖ acquisition-tactics, reviewer-gated, into a ./<slug>/ workspace in your cwd.
 ---
 
 # Run Enrichment
@@ -7,7 +7,7 @@ description: Run the Diffmode enrichment stage only — competitors → audience
 Main-thread orchestrator for the **enrichment** stage, run as skills + worker
 sub-agents. Owns the DAG, the parallel fan-out, the reviewer-retry quality gate, and the
 stage-boundary existence checks, following the same single-shot worker / main-thread
-orchestration pattern as the full `run-growth-tactics` pipeline.
+orchestration pattern as the full pipeline (`start.md`).
 
 > **This command runs in the main thread.** It dispatches worker sub-agents via the
 > Agent/Task tool. It must NOT itself be run as a sub-agent — sub-agents are one level
@@ -38,7 +38,7 @@ Print this first, verbatim — markdown only, no ASCII art / ANSI:
 > market. You get 3 reusable research briefs at the end — they open in your browser.
 
 During the run, follow the full pipeline's **User-facing voice** rules
-(`run-growth-tactics.md`): one plain start line with an ETA and one done line per
+(`start.md`): one plain start line with an ETA and one done line per
 dimension; no reviewer mechanics, check internals, or ledger JSON in the narration.
 
 ## Arguments

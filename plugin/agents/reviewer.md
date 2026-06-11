@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Read-only quality-gate worker for the Diffmode growth-tactics pipeline. Loads the growth-reviewer skill, applies the rubric for a named dimension against the spec + output paths it is given, and returns a machine-readable verdict (score 1-10, APPROVED/REJECTED, blocking issues). Dispatched by the run-growth-tactics orchestrator after each generating stage (enrichment dimensions, think-tank research, and the synthesis chain) writes its output.
+description: Read-only quality-gate worker for the Diffmode growth-tactics pipeline. Loads the growth-reviewer skill, applies the rubric for a named dimension against the spec + output paths it is given, and returns a machine-readable verdict (score 1-10, APPROVED/REJECTED, blocking issues). Dispatched by the start orchestrator after each generating stage (enrichment dimensions, think-tank research, and the synthesis chain) writes its output.
 tools:
   - Read
   - Glob

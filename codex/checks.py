@@ -34,7 +34,7 @@ from typing import Iterable, Sequence
 VECTOR_ID_RE = re.compile(r"(?:struct|lever|resource|psych|pos|conv)-\d+-[a-z0-9-]+")
 VECTOR_ID_ANCHORED_RE = re.compile(r"^(?:struct|lever|resource|psych|pos|conv)-\d+-[a-z0-9-]+$")
 
-# Required keys on every vector in growth-factors.json (per run-growth-tactics.md Stage 3).
+# Required keys on every vector in growth-factors.json (per start.md Stage 3).
 GROWTH_FACTOR_REQUIRED_KEYS = (
     "vector_id",
     "category",
@@ -296,7 +296,7 @@ def growth_factor_ids(gf: dict) -> set[str]:
 def check_growth_factors(path: str | Path, *, min_vectors: int = 15, max_vectors: int = 40) -> CheckResult:
     """Structural + schema check for the per-run LIGHT vector DB.
 
-    The orchestrator's structural gate is 15-40 (run-growth-tactics.md Stage 3); the *acceptance*
+    The orchestrator's structural gate is 15-40 (start.md Stage 3); the *acceptance*
     target is the tighter 20-40 — the count is returned in ``info`` so the A/B report can apply
     the tighter bar separately.
     """

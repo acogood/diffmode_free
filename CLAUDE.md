@@ -45,7 +45,7 @@ MUST NOT read anything under `tactics_DB/`. Mentions of `tactics_DB/` in this re
 |------|------|------------------|
 | `plugin/skills/` | 12 SKILL.md — canonical methodology | yes |
 | `plugin/agents/` | 4 worker sub-agents (research/analysis/synthesis/reviewer) | yes |
-| `plugin/commands/` | `run-growth-tactics`, `run-enrichment` orchestrators | yes |
+| `plugin/commands/` | `start` (main entry), `run-enrichment` (dev/testing) orchestrators | yes |
 | `plugin/reference/` | bundled `Marketing-Channel-Menu-2026.md` | yes |
 | `codex/` | `AGENTS.md` + worker `.toml` + symlinked skills + `CODEX.md` | no |
 | `docs/` | architecture, eval-methodology, STATUS, full-pipeline-map | no |

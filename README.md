@@ -38,10 +38,13 @@ claude plugin install diffmode-growth-tactics@diffmode-free
 Restart Claude Code, then from **any folder**:
 
 ```
-/diffmode-growth-tactics:run-growth-tactics --url https://your-product.com
+/diffmode-growth-tactics:start your-product.com
 ```
 
-No account, no API key. It writes everything into a `./<your-product>/` folder in your current
+No account, no API key, no flags. Run it bare and it asks for your product's website (no
+site yet? it takes a product name instead); run it again in the same folder and it offers
+to continue an unfinished run where it stopped. It writes everything into a
+`./<your-product>/` folder in your current
 directory. **Perplexity is optional** — with nothing configured, it uses Claude Code's built-in
 web search for free.
 
@@ -52,7 +55,7 @@ Same plugin, same command — installed through the app's menu instead of the CL
 1. Open the **Cowork** tab → **Customize** → **Plugins**.
 2. Choose **Add from repository** and enter `acogood/diffmode_free` (or the full GitHub URL).
 3. Install **diffmode-growth-tactics**, then start a **new session** and run
-   `/diffmode-growth-tactics:run-growth-tactics --url https://your-product.com` as above.
+   `/diffmode-growth-tactics:start your-product.com` as above.
 
 > ⚠️ **Don't ask the agent inside a session to install the plugin.** Cowork sessions run in a
 > sandbox, so anything installed there is wiped when the app relaunches — the Customize menu

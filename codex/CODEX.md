@@ -27,7 +27,7 @@ the Codex side.
 | Concern | Claude Code | Codex |
 |---|---|---|
 | Skills | `plugin/skills/*` (auto-discovered) | `.agents/skills/*` (symlinks to the same files) |
-| Orchestrator | `/run-growth-tactics` slash command | a `PLANS.md` ExecPlan + `AGENTS.md` durable instructions |
+| Orchestrator | `/start` slash command (`plugin/commands/start.md`) | a `PLANS.md` ExecPlan + `AGENTS.md` durable instructions |
 | Workers | `plugin/agents/*.md` (`tools:` lists `mcp__perplexity__*` + `WebSearch`) | `agents/*.toml` custom agents (Perplexity MCP **optional** + native `web_search`) |
 | Plugin root | `${CLAUDE_PLUGIN_ROOT}` resolves at runtime | no equivalent — the orchestrator passes checkout-relative paths |
 
@@ -158,7 +158,7 @@ loop from `AGENTS.md` into a `PLANS.md` ExecPlan.
 
 ## Running the full pipeline
 
-The orchestration spec above (`run-growth-tactics.md` → `AGENTS.md`) is implemented by
+The orchestration spec above (`start.md` → `AGENTS.md`) is implemented by
 **`codex/orchestrate.py`** — a stdlib-only Python driver that owns the DAG (Stage 0→4), the
 parallel fan-outs (Wave-2 enrichment; the think-tank + growth-factors batch), the reviewer→retry
 gate (score ≥ 7, max 3, blocking_issues injected into a fresh worker), the structural checks for

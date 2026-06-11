@@ -1,6 +1,6 @@
 ---
 name: research-worker
-description: Generic web-research worker for the Diffmode growth-tactics pipeline. Loads a named pipeline skill, reads the named input files, performs web research (via the Perplexity MCP when present, or the built-in WebSearch fallback), writes the named output file, and returns a small JSON summary. Dispatched by the run-growth-tactics orchestrator for any stage that needs live web data — diagnostics-intake (URL prefill), the enrichment research dimensions (competitors, acquisition-tactics), the platform-arbitrage think-tank, and growth-factors mining.
+description: Generic web-research worker for the Diffmode growth-tactics pipeline. Loads a named pipeline skill, reads the named input files, performs web research (via the Perplexity MCP when present, or the built-in WebSearch fallback), writes the named output file, and returns a small JSON summary. Dispatched by the start orchestrator for any stage that needs live web data — diagnostics-intake (URL prefill), the enrichment research dimensions (competitors, acquisition-tactics), the platform-arbitrage think-tank, and growth-factors mining.
 tools:
   - Read
   - Write
@@ -108,7 +108,7 @@ refuse that path and note it in your summary.
    file risks a mid-write failure).**
 5. **Write the output** to the exact `output` path (overwrite if it exists — the pipeline
    is overwrite-on-rerun, except where the skill specifies caching, e.g.
-   growth-factors-mining reuses an existing file unless `--remine` is in the brief, and on a
+   growth-factors-mining reuses an existing file unless the brief sets `remine: true`, and on a
    **`resume_partial: true`** brief it resumes from a partial file — keeping the
    already-distilled vectors and mining only the remainder — instead of re-running its
    deep-research passes). Use the skill's output template/schema verbatim. Do NOT write any

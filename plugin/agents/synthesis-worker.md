@@ -1,6 +1,6 @@
 ---
 name: synthesis-worker
-description: Reasoning-heavy synthesis worker for the Diffmode growth-tactics pipeline. Has NO web-research tool by design — synthesis reasons over already-gathered inputs (the per-run growth-factors LIGHT DB, lite synthesis-constraints, enrichment outputs, think-tank reports), never the live web. Loads a named synthesis-chain skill, reads the named inputs, writes the named output, and returns a small JSON summary. Dispatched by the run-growth-tactics orchestrator for synthesis explore -> build.
+description: Reasoning-heavy synthesis worker for the Diffmode growth-tactics pipeline. Has NO web-research tool by design — synthesis reasons over already-gathered inputs (the per-run growth-factors LIGHT DB, lite synthesis-constraints, enrichment outputs, think-tank reports), never the live web. Loads a named synthesis-chain skill, reads the named inputs, writes the named output, and returns a small JSON summary. Dispatched by the start orchestrator for synthesis explore -> build.
 tools:
   - Read
   - Write

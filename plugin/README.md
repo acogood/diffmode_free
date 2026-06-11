@@ -1,7 +1,7 @@
 # diffmode-growth-tactics (Claude Code plugin)
 
 The **Diffmode free growth-ideation pipeline**, packaged as a Claude Code plugin. One command —
-`/diffmode-growth-tactics:run-growth-tactics` — takes a product from a **2-minute intake** to a
+`/diffmode-growth-tactics:start your-product.com` — takes a product from a **2-minute intake** to a
 `synthesis.md` of **7–9 novel demand-gen tactic ideas**, then stops. Every run writes into a
 `./<slug>/` folder in your current directory; no host repo, no account, no API key.
 
@@ -65,10 +65,12 @@ Or interactively: `/plugin` → marketplace `diffmode-free` → install `diffmod
 Restart Claude Code, then from **any directory** (the run writes into your cwd):
 
 ```
-/diffmode-growth-tactics:run-growth-tactics --url https://your-product.com   # full run from a URL
-/diffmode-growth-tactics:run-growth-tactics --product <slug>                 # reuse an existing workspace
-/diffmode-growth-tactics:run-enrichment    --product <slug>                  # enrichment only
+/diffmode-growth-tactics:start your-product.com
 ```
+
+That's the whole interface: run it bare and it asks for your product's website (or takes
+"I don't have a site yet"); run it again in the same folder and it offers to continue an
+unfinished run right where it stopped.
 
 **Claude Cowork:** install through the app, not in a session — **Cowork tab → Customize →
 Plugins → Add from repository** → `acogood/diffmode_free` → install `diffmode-growth-tactics`,
@@ -84,7 +86,7 @@ plugin/
   reference/                     bundled 2026 marketing-channel menu (100+ channels)
   skills/                        the 12 skill files — the single source of truth
   agents/                        4 worker sub-agents (research / analysis / synthesis / reviewer)
-  commands/                      the orchestrators (run-growth-tactics, run-enrichment)
+  commands/                      the start orchestrator (+ run-enrichment, a dev/testing entry)
 ```
 
 All paths the skills and agents need are resolved at runtime via `${CLAUDE_PLUGIN_ROOT}` (the

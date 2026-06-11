@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic MVP orchestrator for the Diffmode growth-tactics pipeline under OpenAI Codex.
 
-Ports the proven Claude orchestrator (`plugin/commands/run-growth-tactics.md`) + the durable
+Ports the proven Claude orchestrator (`plugin/commands/start.md`) + the durable
 `codex/AGENTS.md` spec into a stdlib-only Python driver that dispatches each pipeline stage as a
 `codex exec` worker (`codex_dispatch.py`) and gates it with deterministic structural checks
 (`checks.py`). Control-flow that belongs in code — a reviewer->retry loop, structural gates, a
@@ -249,7 +249,7 @@ def preflight(ctx: Ctx) -> None:
 # Stage 0 — diagnostics intake (the entry point)
 # --------------------------------------------------------------------------------------------
 # The must-ask founder fields a website cannot reveal — mirrors the Claude Stage-0
-# AskUserQuestion set (run-growth-tactics.md §"Stage 0"). (key, prompt) each; the key labels the
+# AskUserQuestion set (start.md §"Stage 0"). (key, prompt) each; the key labels the
 # line the diagnostics-intake skill folds into the schema.
 INTAKE_QUESTIONS: list[tuple[str, str]] = [
     ("Stage", "Stage (pre-launch / early / traction / growth)"),
