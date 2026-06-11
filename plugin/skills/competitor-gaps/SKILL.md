@@ -139,6 +139,13 @@ Tier 2. If NO → explain why they structurally cannot.
   2-4 gaps.
 - **Tier 3 — Audience/content/positioning** (strategic bets they're ignoring): 2-3 gaps.
 
+## Output language
+
+Body copy follows `${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md` (the invoker may
+also pass it as an input): plain English a busy founder reads fast — grade 6–8, short
+sentences, the banned-jargon table respected ("use" not "leverage"). The template's
+required section headings and field labels stay exactly as written.
+
 ## Output template
 
 Write to the supplied output path. Maintain the Tier 1/2/3 hierarchy.

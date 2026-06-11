@@ -99,6 +99,13 @@ confidence (High/Medium/Low) with reasoning, and potential channel fit (Step 2.5
    Competitive Adoption]; 1-2 documented tactics from competitors-analysis.md) + 2+
    medium-fit options (brief).
 
+## Output language
+
+Body copy follows `${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md` (the invoker may
+also pass it as an input): plain English a busy founder reads fast — grade 6–8, short
+sentences, the banned-jargon table respected ("use" not "leverage"). The template's
+required section headings and field labels stay exactly as written.
+
 ## Output template
 
 Target length **1,500-2,000 words.** Write to the supplied output path:

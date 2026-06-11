@@ -110,6 +110,13 @@ first-party metrics), **Medium** (credible third-party analysis with data), or *
 When run in research mode, cite URLs + access dates; in analysis mode, attribute to general
 knowledge and lower confidence accordingly.
 
+## Output language
+
+Body copy follows `${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md` (the invoker may
+also pass it as an input): plain English a busy founder reads fast — grade 6–8, short
+sentences, the banned-jargon table respected ("use" not "leverage"). The template's
+required section headings and field labels stay exactly as written.
+
 ## Output template
 
 Write to the supplied output path.

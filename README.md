@@ -90,6 +90,10 @@ calendar off the acquisition audit. The run also leaves three short strategy rep
 where your size is an advantage, plays worth borrowing from other industries, and fresh openings
 on the big platforms. The tactics get spent in a few months. The research keeps working.
 
+And you don't need a markdown viewer to read any of it: the run ends with a **styled report in
+your browser** — open `<your-product>/report/index.html` (it offers to open it for you). No
+extra installs; the plain-text files stay alongside.
+
 ## How it works
 
 ```

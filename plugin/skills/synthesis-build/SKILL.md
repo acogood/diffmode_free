@@ -93,9 +93,12 @@ work be on the product roadmap anyway? If YES → not demand gen.
    `synthesis-explore.md` mechanism where one exists): "What UNUSUAL capability emerges?" It
    must differ from what either vector produces alone and feel uncomfortable/counterintuitive.
    Do NOT consider whether the founder can execute it.
-3. **Design a complete tactic from each mechanism.** Name MUST reflect the unconventional
-   mechanism, not generic marketing. No practicality filtering — include tactics even if they
-   need skills/budget the founder lacks or feel risky.
+3. **Design a complete tactic from each mechanism.** Name it per the naming rule in
+   `${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md`: plain words that tell a smart friend
+   what you'd actually do — what you do + the twist — with the unconventional mechanism
+   visible in the name (not generic marketing, and not an invented codename either). No
+   practicality filtering — include tactics even if they need skills/budget the founder
+   lacks or feel risky.
 
 ## Kill List (still applies in exploration mode)
 
@@ -134,12 +137,15 @@ makes traditional marketers hesitate.
 
 When adapting for constraints: **DO** reduce budget/time, simplify execution, scale down
 scope — while keeping the uncomfortable positioning, the structural advantage, and the
-rebellious/contrarian angle. **DON'T** remove words like "rebellion / anti- / contrarian" to
-make it "safer," replace a structural advantage with an execution advantage, or sand down
-the edge that creates the lockout. The unconventional NAME and POSITIONING must survive.
+contrarian angle. **DON'T** soften the move itself to make it "safer," replace a structural
+advantage with an execution advantage, or sand down the edge that creates the lockout. The
+unconventional POSITIONING must survive adaptation — and per the naming rule (*Output
+language* below), it survives in PLAIN WORDS: the uncomfortable move stays visible in the
+name; the edge lives in the mechanism, never in invented vocabulary.
 
-- BAD: "Anti-Enterprise Citation **Rebellion**" → "Technical Citation Authority" ❌ (lost the rebellion → lost the lockout)
-- GOOD: "Anti-Enterprise Citation **Rebellion** (Lean Version)" ✅ (only budget/time reduced)
+- BAD: "Call Out Enterprise Tools by Name in Your Docs" → "Technical Citation Authority" ❌ (the confrontation vanished → lost the lockout)
+- BAD: "Anti-Enterprise Citation Rebellion" ❌ (edge hidden behind a codename — a smart friend can't tell what you'd do)
+- GOOD: "Call Out Enterprise Tools by Name in Your Docs (Lean Version)" ✅ (the uncomfortable move is right in the name; only budget/time reduced)
 
 Aim for **≥60% Phase-1 preservation** with unconventional edges intact.
 
@@ -238,6 +244,15 @@ way that benefits competitors equally? → reframe or remove.
 # Output Format
 ═══════════════════════════════════════════════════════════════════════════
 
+## Output language (REQUIRED)
+
+`synthesis.md` is the deliverable the founder actually reads. Its body copy follows
+`${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md`: plain English at grade 6–8, ≤~20
+words per sentence, the banned-jargon table respected, vector IDs ONLY in the
+`**Source:**`/Traceability lines (never in prose), tactic names that pass the
+smart-friend test, and an `**In plain English:**` line under every tactic name. The
+template's section headings and field labels stay exactly as written below.
+
 Save to `WS/03-think-tanks/demand-generation/synthesis.md`. In the per-tactic origin tags,
 **Pass 1 White Space** = a Phase-1 tactic that was preserved/adapted; **Pass 2
 Synergy/Founder-Fit** = a Phase-2 generated tactic.
@@ -257,6 +272,7 @@ Synergy/Founder-Fit** = a Phase-2 generated tactic.
 
 ## Generated Tactics
 ### Tactic #N: <Name> — [Pass 1 White Space | Pass 2 Synergy/Founder-Fit]
+**In plain English:** <one ≤20-word sentence — what you actually do>
 **Source:** Origin · Vectors `id-1` + `id-2` (exist in growth-factors.json)
 **Primary Channel(s):** from the channel menu · Competitive adoption (0-2 opportunity / 3-5 moderate / 6+ saturated) · why this channel
 **Emergent Mechanism:** what emerges from the combination
@@ -299,6 +315,9 @@ unconventional; <40% = FAIL (replace conventional tactics).
 - [ ] Every vector ID exists in `growth-factors.json`; every tactic traces to a combination.
 - [ ] Every Pool-B `must_include` pair is validly used (both IDs co-located in one tactic) or
       validly substituted (replacement named and present in `growth-factors.json`).
+- [ ] Every tactic carries an `**In plain English:**` line (≤20 words, plain words); every
+      tactic name passes the smart-friend test; body copy follows
+      `reference/writing-style.md` (no banned jargon, no vector IDs in prose).
 - [ ] `## Post-Synthesis Self-Review` present with retention %, unconventional %, constraint
       compliance, no-duplicates, Final Grade.
 - [ ] STOP here — no prioritization, no implementation guides (paid).

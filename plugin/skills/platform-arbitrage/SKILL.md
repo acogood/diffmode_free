@@ -110,6 +110,13 @@ presence found after X searches"); compute saturation (X/10: 0-2 Low/high-opport
 Moderate, 6+ High/avoid); distinguish presence vs quality (inactive account = low threat);
 include the search date. Undocumented "zero competition" claims are INVALID.
 
+## Output language
+
+Body copy follows `${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md` (the invoker may
+also pass it as an input): plain English a busy founder reads fast — grade 6–8, short
+sentences, the banned-jargon table respected (say "early window" or "opening" in prose,
+not "arbitrage"). The template's required section headings stay exactly as written.
+
 ## Output template
 
 Write to the supplied output path.

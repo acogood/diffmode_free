@@ -27,6 +27,20 @@ Design refs (internal, not shipped in the plugin):
 > `${CLAUDE_PLUGIN_ROOT}/reference/` and writes outputs to a `./<slug>/` workspace in the
 > user's current directory. No host repo is required.
 
+## Welcome (print BEFORE any tool call)
+
+Print this first, verbatim — markdown only, no ASCII art / ANSI:
+
+> # Diffmode — researching your market
+>
+> This is the research-only run (~30–40 minutes, hands-off): it studies your
+> **competitors**, maps your **buyers**, and audits **what's already working** in your
+> market. You get 3 reusable research briefs at the end — they open in your browser.
+
+During the run, follow the full pipeline's **User-facing voice** rules
+(`run-growth-tactics.md`): one plain start line with an ETA and one done line per
+dimension; no reviewer mechanics, check internals, or ledger JSON in the narration.
+
 ## Arguments
 
 `$ARGUMENTS`:
@@ -180,14 +194,28 @@ max-3 norm.
 
 ## Output / report
 
-When the run finishes, report a compact summary to the user (do not paste file
-contents):
+When the run finishes:
+
+1. **Render the HTML report (best-effort, never blocks):** find a Python ≥3.8 by probing
+   `python3` / `python` / `py -3` with `-c "import sys; assert sys.version_info >= (3,8)"`,
+   then run `"${CLAUDE_PLUGIN_ROOT}/scripts/render_html.py" "<WS>"`; with no Python, fall
+   back to `bash "${CLAUDE_PLUGIN_ROOT}/scripts/render_html.sh" "<WS>"`. The renderer
+   skips files that don't exist, so an enrichment-only workspace yields the 3 briefs (+
+   the product brief) at `WS/report/index.html`.
+2. **Lead with the deliverables** — one line per brief with its plain-English value and
+   the HTML link (or the `.md` path if rendering was skipped): Competitor Research (who
+   you're up against and how each rival gets users) · Audience Map (your buyer segments
+   and what each hires you for) · Acquisition Audit (the plays already working in your
+   market). Then offer to open `WS/report/index.html` in the browser (macOS `open`,
+   Linux `xdg-open`, Windows/git-bash `explorer.exe "$(cygpath -w …)"`).
+3. **Do not print scores/verdicts by default** — say each brief is done; keep the
+   compact verdict summary for when the user asks or a dimension FAILED:
 
 ```
 Enrichment — <slug>
   competitors          APPROVED  (score 8, 1 pass)        OUT/competitors-analysis.md
-  audience             APPROVED  (score 9, 1 pass)        OUT/audience-jtbd.md
-  acquisition-tactics  APPROVED  (score 7, 2 passes)      OUT/acquisition-tactics.md
+  audience             OK        (structural)             OUT/audience-jtbd.md
+  acquisition-tactics  OK        (structural)             OUT/acquisition-tactics.md
 ```
 
 For any FAILED dimension, list its final `blocking_issues`.

@@ -55,6 +55,8 @@ from codex import checks             # noqa: E402
 
 SKILLS_ROOT = str(CODEX_DIR / ".agents" / "skills")
 MENU = str(REPO / "plugin" / "reference" / "Marketing-Channel-Menu-2026.md")
+STYLE = str(REPO / "plugin" / "reference" / "writing-style.md")
+SCRIPTS = REPO / "plugin" / "scripts"   # render_html.py (the HTML report layer)
 
 # Per-stage subprocess timeouts (R4): a hang becomes a `died`->respawn, never an infinite join.
 T_RESEARCH = 1800      # enrichment research dims, think-tank research (~25-30 m)
@@ -186,7 +188,33 @@ def reviewer_loop(ctx: Ctx, stage: str, worker: str, base_brief: dict, output: s
 # --------------------------------------------------------------------------------------------
 # Pre-flight
 # --------------------------------------------------------------------------------------------
+def welcome(ctx: Ctx) -> None:
+    """Plain-text mirror of the Claude orchestrator's Step-0a welcome (print FIRST)."""
+    print("=" * 78)
+    print("Diffmode — let's build your growth plan")
+    print("=" * 78)
+    print("""
+What happens next:
+  1. A few quick questions (~2 minutes) — the things your website can't tell us.
+  2. Hands-off research (~60-90 minutes) — your competitors, your buyers, and
+     what's already working in your market. You can walk away.
+  3. Your growth tactics — 7-9 specific ways to get users, built for your
+     budget, team, and stage.
+
+What you'll have at the end:
+  - Your Growth Tactics   — the main event: first steps + an early signal each
+  - 3 research briefs     — Competitor Research, Audience Map, Acquisition Audit
+  - 3 strategy reports    — where your size wins, plays from other industries,
+                            fresh platform openings
+  - Working papers        — the notes behind the work, yours to keep
+
+Total: usually 1.5-2 hours. You only need to be here for the questions at the
+start; the report renders to HTML at the end.""")
+    print("=" * 78 + "\n")
+
+
 def preflight(ctx: Ctx) -> None:
+    welcome(ctx)
     log("Pre-flight…")
     if shutil.which("codex") is None:
         raise StageFailed("missing-codex", "the `codex` binary is not on PATH")
@@ -194,6 +222,7 @@ def preflight(ctx: Ctx) -> None:
     # in ~1s, not 40 min.
     must_resolve = [
         MENU,
+        STYLE,
         f"{SKILLS_ROOT}/diagnostics-intake/SKILL.md",
         f"{SKILLS_ROOT}/enrichment-competitors/SKILL.md",
         f"{SKILLS_ROOT}/growth-factors-mining/SKILL.md",
@@ -326,7 +355,7 @@ def run(ctx: Ctx) -> dict:
     reviewer_loop(
         ctx, "enrichment:competitors", "research-worker",
         {"skill": "enrichment-competitors", "skills_root": SKILLS_ROOT,
-         "inputs": [ctx.founder_input, MENU], "output": ctx.comp},
+         "inputs": [ctx.founder_input, MENU, STYLE], "output": ctx.comp},
         ctx.comp, lambda p: checks.check_markdown_stage("enrichment:competitors", p),
         web=True, timeout=T_RESEARCH,
         dimension="competitors", spec_path=f"{SKILLS_ROOT}/enrichment-competitors/SKILL.md",
@@ -352,11 +381,11 @@ def run(ctx: Ctx) -> dict:
     wave2 = [
         dict(worker="analysis-worker", output=ctx.aud, struct="enrichment:audience",
              brief={"skill": "enrichment-audience", "skills_root": SKILLS_ROOT,
-                    "inputs": [ctx.founder_input, ctx.comp, MENU], "output": ctx.aud},
+                    "inputs": [ctx.founder_input, ctx.comp, MENU, STYLE], "output": ctx.aud},
              web=False, timeout=T_ANALYSIS, stage="enrichment:audience"),
         dict(worker="research-worker", output=ctx.acq, struct="enrichment:acquisition-tactics",
              brief={"skill": "enrichment-acquisition-tactics", "skills_root": SKILLS_ROOT,
-                    "inputs": [ctx.founder_input, ctx.comp, MENU], "output": ctx.acq},
+                    "inputs": [ctx.founder_input, ctx.comp, MENU, STYLE], "output": ctx.acq},
              web=True, timeout=T_RESEARCH, stage="enrichment:acquisition-tactics"),
     ]
     run_fanout(ctx, wave2, fanout_concurrency)
@@ -368,15 +397,15 @@ def run(ctx: Ctx) -> dict:
         # platform-arbitrage first (slowest; only research one) so the analysis branches finish under it
         dict(worker="research-worker", output=ctx.pa, struct="think-tank:platform-arbitrage",
              brief={"skill": "platform-arbitrage", "skills_root": SKILLS_ROOT,
-                    "inputs": tt_inputs + [MENU], "output": ctx.pa},
+                    "inputs": tt_inputs + [MENU, STYLE], "output": ctx.pa},
              web=True, timeout=T_RESEARCH, stage="think-tank:platform-arbitrage"),
         dict(worker="analysis-worker", output=ctx.cg, struct="think-tank:competitor-gaps",
              brief={"skill": "competitor-gaps", "skills_root": SKILLS_ROOT,
-                    "inputs": tt_inputs + [MENU], "output": ctx.cg},
+                    "inputs": tt_inputs + [MENU, STYLE], "output": ctx.cg},
              web=False, timeout=T_ANALYSIS, stage="think-tank:competitor-gaps"),
         dict(worker="analysis-worker", output=ctx.ci, struct="think-tank:cross-industry",
              brief={"skill": "cross-industry", "skills_root": SKILLS_ROOT,
-                    "inputs": tt_inputs, "output": ctx.ci},
+                    "inputs": tt_inputs + [STYLE], "output": ctx.ci},
              web=False, timeout=T_ANALYSIS, stage="think-tank:cross-industry"),
     ]
     run_fanout(ctx, stage2, fanout_concurrency)
@@ -427,7 +456,7 @@ def run(ctx: Ctx) -> dict:
         ctx, "synthesis:build", "synthesis-worker",
         {"skill": "synthesis-build", "skills_root": SKILLS_ROOT,
          "inputs": [ctx.explore, ctx.sc, ctx.gf, ctx.founder_input, ctx.aud, ctx.comp,
-                    ctx.cg, ctx.pa, ctx.ci, MENU],
+                    ctx.cg, ctx.pa, ctx.ci, MENU, STYLE],
          "output": ctx.synth},
         ctx.synth, lambda p: checks.check_synthesis_build(p, ctx.sc, ctx.gf),
         web=False, timeout=T_SYNTHESIS,
@@ -501,10 +530,40 @@ def run_fanout(ctx: Ctx, specs: list[dict], concurrency: int) -> None:
 # Report
 # --------------------------------------------------------------------------------------------
 def report(ctx: Ctx) -> None:
+    # 1) HTML report layer — best-effort, never blocks/fails the report (also runs on the
+    #    StageFailed path: render_workspace() renders whatever a partial run produced).
+    index_path = None
+    deliverables = []
+    try:
+        sys.path.insert(0, str(SCRIPTS))
+        import render_html
+        deliverables = [(title, ctx.ws / rel) for rel, title, _g, _d in render_html.MANIFEST]
+        index_path = render_html.render_workspace(ctx.ws)
+    except Exception as e:  # noqa: BLE001 — degrade to md paths, one line, no traceback
+        log(f"HTML report skipped: {e}")
+
+    # 2) deliverables first — the founder-facing part of the report
     print("\n" + "=" * 78)
     print(f"Growth Tactics — {ctx.ws.name}                                    (Codex / native web_search)")
     print("=" * 78)
-    # timing from the ledger
+    print("Your deliverables:")
+    if not deliverables:  # render_html unavailable — fall back to the canonical md paths
+        deliverables = [("Your Growth Tactics", Path(ctx.synth)),
+                        ("Competitor Research", Path(ctx.comp)),
+                        ("Audience Map", Path(ctx.aud)),
+                        ("Acquisition Audit", Path(ctx.acq)),
+                        ("Where Your Size Wins", Path(ctx.cg)),
+                        ("Plays From Other Industries", Path(ctx.ci)),
+                        ("Fresh Platform Openings", Path(ctx.pa))]
+    for title, md_path in deliverables:
+        html_path = ctx.ws / "report" / f"{title}.html"
+        shown = html_path if html_path.is_file() else md_path
+        if md_path.is_file():
+            print(f"  {title:30} {shown}")
+    if index_path:
+        print(f"\nOpen it in your browser: {index_path}")
+
+    # 3) the run ledger — Codex is driven by developers, so the timing table stays
     import json
     rows = []
     try:

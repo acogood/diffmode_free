@@ -4,7 +4,66 @@
 notes below) and tracks current state. For onboarding + install see [`README.md`](./README.md);
 for the design (orchestrator + skills + workers) see [`architecture.md`](./architecture.md).*
 
-Last updated: **2026-06-04**
+Last updated: **2026-06-11**
+
+> **Round-8 — Friendly UX for the marketer persona (2026-06-11, plugin v2.5.0).** A Windows
+> end-to-end run by a marketer (medmastery.com — pipeline fine, experience built for devs)
+> drove four UX workstreams:
+>
+> 1. **Welcome / onboarding** — `run-growth-tactics` now prints a Step-0a welcome **before any
+>    tool call** (what happens, ~1.5–2 h, the 4 deliverable groups, "you only need to be here
+>    for the questions"); `run-enrichment` gets a lighter variant; `codex/orchestrate.py`
+>    `preflight()` prints a plain-text mirror.
+> 2. **Quiet progress + deliverables-first ending** — a new *User-facing voice* section: one
+>    plain start line with an ETA + one done line with a human metric per stage; NEVER narrate
+>    structural-check internals, ledger JSON, reviewer scores, or pool/ID plumbing (the
+>    `.run-state.json` ledger itself is unchanged); a gate retry = exactly one line. The final
+>    message **leads with the deliverables list**, offers to open the report in the browser,
+>    and **demotes the run-ledger table** to on-failure / on-request. New informational
+>    failure row `report-render-skipped`.
+> 3. **HTML report layer** (new `plugin/scripts/`) — `render_html.py` (stdlib-only) renders
+>    the 9 user-valuable files to self-contained pages in `WS/report/` with human-friendly
+>    names (`Your Growth Tactics.html` …) + an `index.html` with best-effort stats; markdown
+>    is escaped into a hidden `<pre>` and rendered client-side by a **vendored, version-pinned
+>    marked.js v15.0.12** (MIT notice vendored; no literal `</script` in the bundle; raw HTML
+>    in the markdown is escaped to literal text via a renderer override — quoted scraped
+>    content can't inject live DOM); `<noscript>` un-hides the readable raw markdown.
+>    `render_html.sh` is a dumb POSIX mirror (sed-escape + cat-splice over the SAME
+>    `assets/{page,index}.html` templates; no stats) for machines with no Python — the
+>    command probes `python3` / `python` / `py -3` with `-c` (defeats the Windows Store stub)
+>    and falls back to sh. `assets/report.css` is a trimmed extraction of the diffmode.app
+>    design system (#f0eae0 chassis, #fffdf8 cards, #ff611a accent) plus a `.dm-prose`
+>    element layer for marked's bare elements + `@media print`. Codex `report()` renders via
+>    `render_workspace()` (try/except, also on the StageFailed path) and lists deliverables
+>    before the ledger. `.gitignore` adds `**/report/`.
+> 4. **Plain-language style layer** — new central `plugin/reference/writing-style.md` (grade
+>    6–8 voice, banned-jargon table, no internal plumbing in prose, the smart-friend tactic
+>    naming rule, required `**In plain English:**` per-tactic line), distilled from the paid
+>    report's copy style guide. `synthesis-build` gets an *Output language* section, the
+>    In-plain-English template field + checklist item, and **reconciled naming examples**
+>    (mechanism stays, vocabulary simplifies — the old "Anti-Enterprise Citation Rebellion"
+>    GOOD example is now a BAD codename example). The 3 enrichment + 3 think-tank skills get
+>    a 3–4-line pointer; `growth-reviewer` notes readability as **non-blocking feedback only**
+>    (no new scored lens — avoids gate churn). The Codex driver passes `writing-style.md` as
+>    an input alongside the channel menu.
+>
+> **Prompt-trim question: deliberately DEFERRED.** June-2026 consensus: frontier models don't
+> degrade on 150–350-line structured skills; the failure mode is duplicated/conflicting rules,
+> not length. Hence: no bulk trim; the style layer is ONE central file + short pointers
+> precisely to avoid prompt bloat; conflicting lines were deleted where pointers landed
+> (synthesis-build naming examples). A future trim should use the established theona.ai A/B
+> method (v2.2/v2.3 precedent) — measure, then cut.
+>
+> Local verification: py + sh renderers produce structurally equal output on a fixture
+> workspace (9 pages + index, URL-encoded space-in-name links, stats line correct);
+> adversarial markdown (`</script>`, `<div onclick>`, raw `<pre>`) renders as literal text —
+> 0 live injected elements (headless-Chrome DOM check); JS-off falls back to readable raw
+> markdown. Ship gate for the tag: a full theona.ai re-run on the dev tree (`--plugin-dir`
+> scratch + `--strict-mcp-config`, Perplexity OFF) holding the v2.3 bars (7–9 tactics, ≥50 %
+> unconventional, 0 phantom, build APPROVED ≥7) **plus** the new UX bars (welcome before any
+> tool call; ≤2 orchestrator lines per stage; deliverables-first ending; `report/index.html`
+> renders; In-plain-English line per tactic; names pass the smart-friend read). The Windows
+> no-Python sh-fallback re-test is handed back to Anton's test machine.
 
 > **Round-7 — Full Codex orchestrator built + Stage 0 URL intake + A/B-validated (2026-06-04).** The
 > Codex runtime is no longer a scaffold. A stdlib-only Python driver — **`codex/orchestrate.py`**

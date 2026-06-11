@@ -82,6 +82,16 @@ bakes in, restated here so the contract is explicit:
   day-by-day depth, a global "Technical Capabilities" table, or any artifact the synthesis-build
   skill does not emit (the rubric scores only the synthesis-build template's actual fields).
 
+## Readability (non-blocking feedback ONLY — not a scored lens)
+
+Deliverable body copy is meant to follow
+`${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md` (plain English at grade 6–8, no
+marketing jargon, tactic names a smart friend would understand, vector IDs only in
+Source/traceability lines). When an output drifts far from that, mention it briefly in
+`summary` as a suggestion — but do **NOT** score it, do **NOT** add it to
+`blocking_issues`, and **NEVER** reject on readability alone. The scored rubrics are
+unchanged; readability is advisory.
+
 ## Return shape (machine-readable — this is what the orchestrator consumes)
 
 Return ONLY this JSON object as your final message (no prose around it):

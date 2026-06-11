@@ -22,6 +22,10 @@ The competitor read, the buyer map, and the acquisition audit behind them stay i
 as briefs you can reuse. It **stops at synthesis** — prioritization and a week-by-week rollout
 are the paid product (see the bottom of this file).
 
+The run ends with a **styled HTML report** at `<slug>/report/index.html` — every deliverable as
+a readable page that opens in your browser, no markdown viewer or extra installs needed (the
+`.md` sources stay alongside).
+
 ## The pipeline
 
 ```

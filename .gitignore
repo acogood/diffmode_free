@@ -6,6 +6,7 @@ RUN-LOG.md
 **/01-diagnostics/
 **/02-enrichment/
 **/03-think-tanks/
+**/report/
 **/.codex-out/
 
 # Python bytecode (the codex/ driver is stdlib Python — never stage its caches).

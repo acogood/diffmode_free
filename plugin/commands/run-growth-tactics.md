@@ -34,6 +34,72 @@ the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
 > `${CLAUDE_PLUGIN_ROOT}/reference/` and writes all run outputs to a `./<slug>/` workspace in
 > the user's current directory. No host repo is required.
 
+## Step 0a — Welcome (print BEFORE any tool call)
+
+The very FIRST thing this command does — before pre-flight, before any Bash/Read/Agent
+call — is print this welcome so the founder knows what's about to happen, how long it
+takes, and what they get back. Print it verbatim. **Markdown only** — headers, bold,
+lists, `---` rules; NO ASCII art, NO ANSI codes (rendering is terminal-dependent;
+markdown renders reliably).
+
+> # Diffmode — let's build your growth plan
+>
+> Here's what happens next:
+>
+> 1. **A few quick questions** (~2 minutes) — the things your website can't tell us.
+> 2. **Hands-off research** (~60–90 minutes) — we study your competitors, your buyers,
+>    and what's already working in your market. You can walk away.
+> 3. **Your growth tactics** — 7–9 specific ways to get users, built for your budget,
+>    team, and stage.
+>
+> **What you'll have at the end:**
+>
+> - **Your Growth Tactics** — the main event: each tactic with first steps and an
+>   early signal to watch.
+> - **3 research briefs** — Competitor Research, an Audience Map, and an Acquisition
+>   Audit. Reusable on their own.
+> - **3 strategy reports** — where your size wins, plays from other industries, and
+>   fresh platform openings.
+> - **Working papers** — the notes behind the work, yours to keep.
+>
+> **Total: usually 1.5–2 hours.** You only need to be here for the questions at the
+> start; results open in your browser at the end.
+
+(Fill in nothing; the block is static. If `--from`/`--only` resumes a run mid-way, you
+may shorten it to the first paragraph + the time estimate for the remaining stages.)
+
+## User-facing voice (applies to EVERYTHING you print during the run)
+
+The founder is a marketer or a busy founder, not a developer. The routines below define
+what to DO; this section defines what to SAY. When they differ about what to print,
+this section wins.
+
+- **Stage start = ONE plain line with an ETA.** Stage done = ONE line with a human
+  metric. Suggested lines (vary naturally, keep the shape):
+
+  | Stage | Start line | Done line |
+  |-------|-----------|-----------|
+  | diagnostics | "Looking at your site and getting set up (~3 min)…" | "✓ Got your product brief" |
+  | enrichment competitors | "🔍 Researching your competitors (~15–20 min)…" | "✓ Competitor research done — 9 competitors mapped" |
+  | enrichment wave 2 | "🔍 Mapping your buyers + auditing what works in your market (~15–20 min)…" | "✓ Buyer map + acquisition audit done" |
+  | growth-factors | "⛏️ Mining growth mechanisms from public case studies (runs in the background, ~40 min)…" | "✓ 27 growth mechanisms mined" |
+  | think-tanks | "🔭 Working three strategy angles in parallel (~15–25 min)…" | "✓ 3 strategy reports done" |
+  | lite-constraints | "Setting up the tactic builder (~3 min)…" | (fold into the next start line) |
+  | synthesis | "🧪 Building your tactics (~25–35 min)…" | "✓ 8 tactics built — passed the quality check" |
+
+- **NEVER narrate to the founder:** structural-check internals, run-ledger writes or
+  any JSON, reviewer scores/verdicts/rubric mechanics, vector counts-as-plumbing
+  (`must_include`, pools, anchors, IDs), retry/respawn logistics, worker lifecycle, or
+  model tiering. All of that detail still goes into `WS/.run-state.json` exactly as the
+  routines specify — the ledger is unchanged; only the narration is quiet.
+- **On a gate retry print exactly one line:** "Quality check asked for one fix —
+  re-running, a few extra minutes." (Same shape for a structural re-dispatch.)
+- **Pre-flight is silent unless something fails.** At most one line: "✓ Setup checks
+  passed". The WebSearch-fallback notice (pre-flight step 4) stays — it's one line and
+  the founder should know research runs on the built-in search.
+- Stage *failures* are the exception: report them plainly with the resume command, as
+  the failure-modes table specifies.
+
 ## Arguments
 
 `$ARGUMENTS`:
@@ -466,10 +532,73 @@ synthesis is the final stage).
 
 ## Output / report — and STOP
 
-When the run finishes, report a compact summary (do not paste file contents). Include a
-**timing column** (`duration_s` per stage, read from the run-ledger rows) so the run prints
-exactly where the wall-clock went — the `growth-factors` row shows its concurrent duration,
-which should overlap (not add to) enrichment + the think-tanks:
+The run ends with **deliverables, not logs.** Do these in order:
+
+### 1. Render the HTML report (best-effort — NEVER blocks or fails the run)
+
+The deliverables are markdown files; the founder's machine may have no markdown viewer,
+so render them to styled HTML and open in the browser. Find a real Python ≥3.8 first
+(probing with `-c` defeats the Windows Store stub, which would otherwise pop the Store):
+
+```bash
+PY=""
+for P in python3 python "py -3"; do
+  $P -c "import sys; assert sys.version_info >= (3,8)" >/dev/null 2>&1 && { PY="$P"; break; }
+done
+```
+
+- **Python found** → `$PY "${CLAUDE_PLUGIN_ROOT}/scripts/render_html.py" "<WS>"`
+- **No Python** → `bash "${CLAUDE_PLUGIN_ROOT}/scripts/render_html.sh" "<WS>"`
+- **Both fail** → record `report-render-skipped` (informational), use the `.md` paths in
+  step 2 instead of HTML links, and add one line: *"Couldn't build the browser report —
+  your files are plain text, listed below. To render later:
+  `python3 <plugin>/scripts/render_html.py <WS>`."*
+
+The renderer writes `WS/report/index.html` plus one page per deliverable
+(human-friendly names like `Your Growth Tactics.html`). It renders whatever exists and
+skips the rest, so a partial/failed run still gets a report of what it produced.
+
+### 2. Final message — LEAD with the deliverables
+
+The first line is the result, not a log. Template (fill real numbers from the outputs;
+drop any line whose file doesn't exist; use `.md` paths if step 1 rendered nothing):
+
+> ## Your growth strategy is ready
+>
+> **8 growth tactics** built for your budget, team, and stage — plus the research they
+> stand on (9 competitors mapped · 4 buyer segments · 31 acquisition plays audited).
+>
+> **Start here → Your Growth Tactics** — what to run and the first steps for each
+> (`<WS>/report/Your Growth Tactics.html`)
+>
+> **Research briefs** — reusable on their own (hand one to a freelancer, drop one in a deck):
+> - **Competitor Research** — who you're up against and how each rival gets users
+> - **Audience Map** — your buyer segments and what each one hires you for
+> - **Acquisition Audit** — the plays already working in your market
+>
+> **Strategy reports:**
+> - **Where Your Size Wins** — openings big competitors can't or won't fill
+> - **Plays From Other Industries** — proven moves adapted to your market
+> - **Fresh Platform Openings** — new platform features rivals haven't claimed
+>
+> **Working papers:** Your Product Brief · How These Were Built
+>
+> Done in ~1h25m — say "show the run ledger" for per-stage timings.
+
+### 3. Offer to open it
+
+`AskUserQuestion` (main thread): *"Open your report in the browser?"* [Yes / No]. On
+Yes, open `<WS>/report/index.html` with the OS command — macOS `open`, Linux
+`xdg-open`, Windows/git-bash `explorer.exe "$(cygpath -w "<WS>/report/index.html")"`.
+A failed open is one apologetic line with the path — never an error dump. Skip the
+question entirely if nothing was rendered, or if the run is non-interactive (headless
+`-p` mode — just print the path instead).
+
+### 4. The run ledger — demoted (print ONLY on failure or on request)
+
+Do NOT print the per-stage timing table by default. Print it only when (a) a stage
+FAILED, or (b) the founder asks (e.g. "show the run ledger"). When asked, read the
+real `duration_s` rows from `WS/.run-state.json`:
 
 ```
 Growth Tactics — <slug>                                                          duration
@@ -482,9 +611,9 @@ Growth Tactics — <slug>                                                       
   ── total wall-clock ──────────────────────────────────────────────────────────  ~1h25m
 ```
 
-(Durations are illustrative; print the real `duration_s` from `WS/.run-state.json`. Mark the
-`growth-factors` row `‖` to signal it ran concurrently with enrichment + Stage 2, so its time
-is hidden under the critical path rather than added to it.)
+(The `‖` marks growth-factors as concurrent — its time hides under the critical path.)
+
+### 5. Free stops here
 
 Then tell the founder explicitly:
 
@@ -510,6 +639,7 @@ For any FAILED stage, list its final `blocking_issues`.
 | `constraints-stale` | Stage 4 precheck | `synthesis-constraints.json` references vector IDs absent from the CURRENT `growth-factors.json` (e.g. `--remine` then `--from synthesis`) | re-run `--from lite-constraints` to rebuild constraints against the current LIGHT DB |
 | `synthesis-failed` | Stage 4 | `build` REJECTED ×3 | list blocking_issues |
 | `clean-room-violation` | Stage 1.5/3/4 | a worker read `tactics_DB/` | re-dispatch; the LIGHT-DB stages must never touch the proprietary DB |
+| `report-render-skipped` | Output step 1 | no usable Python AND the sh fallback failed — HTML report not built (informational; the run itself is fine) | print the `.md` deliverable list + the manual render command (`python3 <plugin>/scripts/render_html.py <WS>`) |
 
 ## Idempotency
 

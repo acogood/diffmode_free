@@ -181,6 +181,10 @@ and **stops at `synthesis.md`**. `--max-concurrency 2` (the default) overlaps gr
 mining with enrichment + the think-tanks. On a backgrounded / piped run the driver auto-falls
 back to `--fast-intake` rather than hang on the founder Q&A.
 
+The final report renders the deliverables to a styled HTML report at `./<slug>/report/index.html`
+(via `plugin/scripts/render_html.py`, stdlib-only, best-effort — a render failure never fails the
+run) and lists the deliverables before the per-stage timing ledger.
+
 **✅ A/B-validated (theona.ai, 2026-06-04, gpt-5.5, Perplexity OFF).** A full-DAG run matched the
 Claude v2.3.0 baseline: **9 tactics · 78% unconventional · 0 phantom vectors · build reviewer
 APPROVED 8.0 first-pass · 25-vector clean-room LIGHT DB · 18/18 cited URLs live · ~51 min**. See
