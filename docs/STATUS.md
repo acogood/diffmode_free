@@ -58,12 +58,27 @@ Last updated: **2026-06-11**
 > workspace (9 pages + index, URL-encoded space-in-name links, stats line correct);
 > adversarial markdown (`</script>`, `<div onclick>`, raw `<pre>`) renders as literal text —
 > 0 live injected elements (headless-Chrome DOM check); JS-off falls back to readable raw
-> markdown. Ship gate for the tag: a full theona.ai re-run on the dev tree (`--plugin-dir`
-> scratch + `--strict-mcp-config`, Perplexity OFF) holding the v2.3 bars (7–9 tactics, ≥50 %
-> unconventional, 0 phantom, build APPROVED ≥7) **plus** the new UX bars (welcome before any
-> tool call; ≤2 orchestrator lines per stage; deliverables-first ending; `report/index.html`
-> renders; In-plain-English line per tactic; names pass the smart-friend read). The Windows
-> no-Python sh-fallback re-test is handed back to Anton's test machine.
+> markdown.
+>
+> **✅ Full-DAG re-validation PASSED (theona.ai, dev tree via `--plugin-dir` +
+> `--strict-mcp-config`, Perplexity OFF, headless, 2026-06-11, ~1h23m, ~$27 API):**
+> **8 tactics · 88 % unconventional · 0 phantom vectors · build reviewer APPROVED 9
+> first-pass · 28-vector clean-room LIGHT DB**; competitors approved on iteration 2 (mix
+> rule — a second indie_direct was found). New UX bars: welcome printed **before any tool
+> call** ✓; per-stage narration stayed at 1–2 plain lines with ETAs, the competitors gate
+> retry printed exactly one line ("Quality check asked for one fix…") while the ledger
+> still recorded the full REJECTED row ✓; `report/` rendered 9 pages + index with a
+> correct stats line (8 tactics · 8 competitors · 28 mechanisms) ✓; `**In plain
+> English:**` on 8/8 tactics ✓; names pass the smart-friend read ✓ (e.g. "Call the SMB
+> Teams Your Funded Rivals Just Walked Away From"). **One partial bar, fixed in-round:**
+> the orchestrator folded the itemized deliverables list into the post-open-question
+> reply instead of printing it first — step-2 wording hardened ("print BEFORE the
+> open-question"). **Known follow-up (pre-existing, NOT a v2.5.0 defect):**
+> `codex/checks.py` `must_include` matching is exact-string, so a run whose
+> lite-constraints emits short-form ids (`struct-004`) against full-id growth-factors
+> false-positives as "missing" — this run's deliverable validly co-located all Pool-B
+> pairs; normalize short↔full ids in a future checks.py pass. The Windows no-Python
+> sh-fallback re-test is handed back to Anton's test machine.
 
 > **Round-7 — Full Codex orchestrator built + Stage 0 URL intake + A/B-validated (2026-06-04).** The
 > Codex runtime is no longer a scaffold. A stdlib-only Python driver — **`codex/orchestrate.py`**

@@ -560,8 +560,11 @@ skips the rest, so a partial/failed run still gets a report of what it produced.
 
 ### 2. Final message — LEAD with the deliverables
 
-The first line is the result, not a log. Template (fill real numbers from the outputs;
-drop any line whose file doesn't exist; use `.md` paths if step 1 rendered nothing):
+The first line is the result, not a log. **Print this full message BEFORE the
+open-question of step 3** — the itemized list must appear even when that question is
+skipped or auto-answered; never fold it into the post-answer reply. Template (fill real
+numbers from the outputs; drop any line whose file doesn't exist; use `.md` paths if
+step 1 rendered nothing):
 
 > ## Your growth strategy is ready
 >
