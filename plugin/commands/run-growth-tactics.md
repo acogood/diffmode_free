@@ -593,9 +593,11 @@ step 1 rendered nothing):
 `AskUserQuestion` (main thread): *"Open your report in the browser?"* [Yes / No]. On
 Yes, open `<WS>/report/index.html` with the OS command — macOS `open`, Linux
 `xdg-open`, Windows/git-bash `explorer.exe "$(cygpath -w "<WS>/report/index.html")"`.
-A failed open is one apologetic line with the path — never an error dump. Skip the
-question entirely if nothing was rendered, or if the run is non-interactive (headless
-`-p` mode — just print the path instead).
+A failed open is one apologetic line with the path — never an error dump. If the open
+command fails or the session is sandboxed with no host browser to reach (e.g. Claude
+Cowork), print the `<WS>/report/index.html` path and say to open it from the app's
+files panel. Skip the question entirely if nothing was rendered, or if the run is
+non-interactive (headless `-p` mode — just print the path instead).
 
 ### 4. The run ledger — demoted (print ONLY on failure or on request)
 

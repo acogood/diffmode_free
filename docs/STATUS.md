@@ -79,6 +79,23 @@ Last updated: **2026-06-11**
 > false-positives as "missing" — this run's deliverable validly co-located all Pool-B
 > pairs; normalize short↔full ids in a future checks.py pass. The Windows no-Python
 > sh-fallback re-test is handed back to Anton's test machine.
+>
+> **Addendum — Claude Cowork compatibility (2026-06-11, research-verified; in-app test
+> pending).** Cowork supports plugins natively (Help Center "Use plugins in Claude"):
+> Cowork tab → Customize → Plugins → **Add from repository** syncs a marketplace straight
+> from a GitHub repo — the same `marketplace.json` schema Claude Code reads, so
+> `acogood/diffmode_free` should work as-is — and UI-installed plugins are saved locally
+> and persist across relaunches; slash commands + sub-agents (our component set) are
+> Cowork-supported. Root cause of the earlier failed install attempt: asking the
+> in-session agent to install lands in the session's sandboxed VM (ephemeral working
+> dirs, no host `~/.claude/`), so the install is wiped on relaunch — the Customize UI is
+> the only durable path. Both READMEs + the orchestrator's report-open step now say so.
+> In-app checks handed to Anton: repo sync accepts the marketplace; a ~1.5–2 h run
+> survives a Cowork session; `python3` present in the VM for `render_html.py` (sh
+> fallback otherwise); browser-open degrades to the files-panel path. Codex needs no
+> equivalent round — it has first-class persistent Agent Skills (`$CODEX_HOME/skills/`,
+> repo-level `.agents/skills/` — the convention this repo already uses), and the shipped
+> Codex path (clone + `python3 codex/orchestrate.py`) is already durable.
 
 > **Round-7 — Full Codex orchestrator built + Stage 0 URL intake + A/B-validated (2026-06-04).** The
 > Codex runtime is no longer a scaffold. A stdlib-only Python driver — **`codex/orchestrate.py`**

@@ -70,6 +70,11 @@ Restart Claude Code, then from **any directory** (the run writes into your cwd):
 /diffmode-growth-tactics:run-enrichment    --product <slug>                  # enrichment only
 ```
 
+**Claude Cowork:** install through the app, not in a session — **Cowork tab → Customize →
+Plugins → Add from repository** → `acogood/diffmode_free` → install `diffmode-growth-tactics`,
+then start a new session. Don't ask the in-session agent to install it: sessions are sandboxed,
+so an in-session install is wiped on relaunch; the Customize menu is the install that persists.
+
 ## What's in this directory
 
 ```

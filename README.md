@@ -45,6 +45,20 @@ No account, no API key. It writes everything into a `./<your-product>/` folder i
 directory. **Perplexity is optional** — with nothing configured, it uses Claude Code's built-in
 web search for free.
 
+### Run it in Claude Cowork
+
+Same plugin, same command — installed through the app's menu instead of the CLI:
+
+1. Open the **Cowork** tab → **Customize** → **Plugins**.
+2. Choose **Add from repository** and enter `acogood/diffmode_free` (or the full GitHub URL).
+3. Install **diffmode-growth-tactics**, then start a **new session** and run
+   `/diffmode-growth-tactics:run-growth-tactics --url https://your-product.com` as above.
+
+> ⚠️ **Don't ask the agent inside a session to install the plugin.** Cowork sessions run in a
+> sandbox, so anything installed there is wiped when the app relaunches — the Customize menu
+> is the only install that sticks. If the report doesn't open in your browser at the end of a
+> run, open `<your-product>/report/index.html` from the session's files panel.
+
 ## What you get
 
 A run builds your growth strategy in three parts — a read on your competition, a map of your

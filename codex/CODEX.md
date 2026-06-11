@@ -39,7 +39,9 @@ are the same files.
 
 - **Skills** are read from `.agents/skills/<skill>/SKILL.md`. Codex reads a **checked-out
   repo** (not a copied cache), so the relative symlinks into `../plugin/skills/*` resolve
-  fine — one physical skill set, both runtimes.
+  fine — one physical skill set, both runtimes. (`.agents/skills/` is Codex's standard
+  repo-level Agent Skills location; the user-level equivalent is `$CODEX_HOME/skills/` —
+  `~/.codex/skills/` — for skills that should persist across all sessions.)
 - **The channel menu** is at `plugin/reference/Marketing-Channel-Menu-2026.md` (from
   the repo root) — i.e. `../plugin/reference/…` relative to this `codex/` directory. The skill
   bodies mention it as `${CLAUDE_PLUGIN_ROOT}/reference/…`; that token is **Claude-only**.
