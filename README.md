@@ -154,9 +154,9 @@ Clone this repo first, then from inside it:
 python3 codex/orchestrate.py --url https://your-product.com
 ```
 
-It writes everything into a `./<your-product>/` folder — same pipeline, same stop point as the
-Claude run, though the Codex report keeps the raw `synthesis.md` as its main page (the founder-clean
-re-write is Claude-only for now). Add `--fast-intake` to skip the founder Q&A (hands-off; lower quality). Full setup
+It writes everything into a `./<your-product>/` folder — same pipeline, same quality gates, same
+stop point as the Claude run; the Codex report leads with the full tactic write-ups
+(`synthesis.md`). Add `--fast-intake` to skip the founder Q&A (hands-off; lower quality). Full setup
 — making the worker agents discoverable, the optional Perplexity backend, the dispatch flags — is
 in [`codex/CODEX.md`](codex/CODEX.md).
 

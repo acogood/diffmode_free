@@ -58,7 +58,8 @@ orchestrator (main thread)
   │       error{reason}               → surface reason, stop this branch
   │       died mid-run (no JSON)       → spawn a FRESH worker, up to 2×;
   │                                       still dead → fail clean (worker-dispatch-failed),
-  │                                       tell the founder to re-run /start (auto-resume
+  │                                       tell the founder to re-run
+  │                                       /diffmode-growth-tactics:start (auto-resume
   │                                       picks up from what's on disk), NO main-thread fallback
   │
   ├─ existence check: <path> exists AND non-empty?  else spawn a fresh worker / abort
