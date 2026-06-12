@@ -6,7 +6,14 @@
 
 > **Always outcrowded, never outgunned.**
 
-**Install (Claude Code):** `claude plugin marketplace add acogood/diffmode_free` then `claude plugin install diffmode-growth-tactics@diffmode-free` — or [run it on Codex](#run-it-on-codex). Free, no account, no API key.
+**Install (Claude Code):** two commands, then restart:
+
+```bash
+claude plugin marketplace add acogood/diffmode_free
+claude plugin install diffmode-growth-tactics@diffmode-free
+```
+
+Or [run it on Codex](#run-it-on-codex). Free, no account, no API key.
 
 Diffmode builds a **growth strategy** for startups that can't outspend their competitors. It
 researches who your buyers are and how your rivals win them, then hands you unconventional ways
@@ -52,7 +59,7 @@ web search for free.
 
 Same plugin, same command — installed through the app's menu instead of the CLI:
 
-1. Open the **Cowork** tab → **Customize** → **Plugins**.
+1. Open the **Claude desktop app**. Click the **Cowork** tab → **Customize** → **Plugins**.
 2. Choose **Add from repository** and enter `acogood/diffmode_free` (or the full GitHub URL).
 3. Install **diffmode-growth-tactics**, then start a **new session** and run
    `/diffmode-growth-tactics:start your-product.com` as above.
@@ -140,15 +147,16 @@ quality gates, is in [`docs/architecture.md`](docs/architecture.md).
 ## Run it on Codex
 
 On Codex, the same pipeline runs as a small Python driver, Perplexity-optional too (it falls back
-to Codex's native web search). With the `codex` CLI installed and logged in (plus Python 3), from
-any folder:
+to Codex's native web search). You'll need the `codex` CLI installed and logged in, plus Python 3.
+Clone this repo first, then from inside it:
 
 ```bash
 python3 codex/orchestrate.py --url https://your-product.com
 ```
 
-It writes everything into a `./<your-product>/` folder and stops at `synthesis.md`, exactly like
-the Claude run. Add `--fast-intake` to skip the founder Q&A (hands-off; lower quality). Full setup
+It writes everything into a `./<your-product>/` folder — same pipeline, same stop point as the
+Claude run, though the Codex report keeps the raw `synthesis.md` as its main page (the founder-clean
+re-write is Claude-only for now). Add `--fast-intake` to skip the founder Q&A (hands-off; lower quality). Full setup
 — making the worker agents discoverable, the optional Perplexity backend, the dispatch flags — is
 in [`codex/CODEX.md`](codex/CODEX.md).
 

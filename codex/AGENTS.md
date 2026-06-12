@@ -35,7 +35,9 @@ channel menu as **invoker-supplied**, so no skill edit is needed.
 
 ## Skills (single source of truth)
 
-The 12 skills are symlinked into `.agents/skills/` from `../plugin/skills/`. Load a skill by
+The 13 skills are symlinked into `.agents/skills/` from `../plugin/skills/` (the
+`founder-report` packaging skill is symlinked too, but the Codex driver does not dispatch
+it — the report renderer falls back to `synthesis.md` for Codex runs). Load a skill by
 reading `.agents/skills/<skill>/SKILL.md` and following it step-by-step — the skill is the
 authority on scope, frameworks, output template, and validation. Reviewer rubrics live at
 `.agents/skills/growth-reviewer/references/<dimension>.md`.

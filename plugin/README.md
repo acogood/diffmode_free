@@ -2,8 +2,9 @@
 
 The **Diffmode free growth-ideation pipeline**, packaged as a Claude Code plugin. One command —
 `/diffmode-growth-tactics:start your-product.com` — takes a product from a **2-minute intake** to a
-`synthesis.md` of **7–9 novel demand-gen tactic ideas**, then stops. Every run writes into a
-`./<slug>/` folder in your current directory; no host repo, no account, no API key.
+**Your Growth Tactics** report of **7–9 novel demand-gen tactic ideas**, then stops at ideas.
+Every run writes into a `./<slug>/` folder in your current directory; no host repo, no account,
+no API key.
 
 > **This is the shipped plugin.** `marketplace.json` at the repo root declares `source: ./plugin`,
 > so Claude Code copies **only this directory** to its plugin cache. The bundled channel menu
