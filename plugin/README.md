@@ -7,7 +7,7 @@ The **Diffmode free growth-ideation pipeline**, packaged as a Claude Code plugin
 
 > **This is the shipped plugin.** `marketplace.json` at the repo root declares `source: ./plugin`,
 > so Claude Code copies **only this directory** to its plugin cache. The bundled channel menu
-> (`reference/`) and the 12 skills travel with it; the repo's `docs/`, `codex/`, and root README do
+> (`reference/`) and the 13 skills travel with it; the repo's `docs/`, `codex/`, and root README do
 > **not** ship.
 
 ## What you get
@@ -15,8 +15,9 @@ The **Diffmode free growth-ideation pipeline**, packaged as a Claude Code plugin
 The run builds a **growth strategy** in three parts — a read on your competition (who you're up
 against and how each rival gets users), a map of your buyers (your segments and the job each is
 hiring you to do), and **7–9 unconventional acquisition tactics** built for the founder's budget,
-stage, and team. The tactics land in **`synthesis.md`**, each with what it is, why it fits, the
-first steps to run it, and the week-1 signal to watch.
+stage, and team. The tactics land in the **Your Growth Tactics** report — plain cards, one per
+tactic: what it is, why rivals can't copy it, how to start this week, and when to kill it. The
+full engineering write-up behind each tactic ships alongside as a working paper.
 
 The competitor read, the buyer map, and the acquisition audit behind them stay in the workspace
 as briefs you can reuse. It **stops at synthesis** — prioritization and a week-by-week rollout
@@ -38,6 +39,8 @@ think-tank research     three angles in parallel — competitor gaps · cross-in
 lite-constraints       in-context constraints generator (no Python)
         ↓
 synthesis  explore → build  →  synthesis.md   (7–9 tactic ideas, then STOP)
+        ↓
+packaged as "Your Growth Tactics"  →  plain-language tactic cards (best-effort)
 ```
 
 Research stages use a **Perplexity MCP server** when present and **fall back to the built-in
@@ -84,7 +87,7 @@ plugin/
   README.md                      this file
   .claude-plugin/plugin.json     plugin manifest (name: diffmode-growth-tactics)
   reference/                     bundled 2026 marketing-channel menu (100+ channels)
-  skills/                        the 12 skill files — the single source of truth
+  skills/                        the 13 skill files — the single source of truth
   agents/                        4 worker sub-agents (research / analysis / synthesis / reviewer)
   commands/                      the start orchestrator (+ run-enrichment, a dev/testing entry)
 ```

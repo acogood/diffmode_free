@@ -31,7 +31,7 @@ MUST NOT read anything under `tactics_DB/`. Mentions of `tactics_DB/` in this re
 
 ## Architecture — single source of truth + what ships
 
-- **One repo, one physical copy of the skills.** The 12 skills live **once** in
+- **One repo, one physical copy of the skills.** The 13 skills live **once** in
   `plugin/skills/`. **Edit them there.** `codex/.agents/skills/*` are relative symlinks
   (`../../../plugin/skills/<name>`) — Codex reads the same files; do NOT create a second copy.
 - **Only `plugin/` ships to Claude users.** `marketplace.json` (repo root) declares
@@ -43,7 +43,7 @@ MUST NOT read anything under `tactics_DB/`. Mentions of `tactics_DB/` in this re
 
 | Path | Role | Ships to Claude? |
 |------|------|------------------|
-| `plugin/skills/` | 12 SKILL.md — canonical methodology | yes |
+| `plugin/skills/` | 13 SKILL.md — canonical methodology | yes |
 | `plugin/agents/` | 4 worker sub-agents (research/analysis/synthesis/reviewer) | yes |
 | `plugin/commands/` | `start` (main entry), `run-enrichment` (dev/testing) orchestrators | yes |
 | `plugin/reference/` | bundled `Marketing-Channel-Menu-2026.md` | yes |
@@ -73,12 +73,14 @@ diagnostics-intake → enrichment (competitors → audience ‖ acq-tactics)
   → think-tank ×3 (competitor-gaps · cross-industry · platform-arbitrage)
   ‖ growth-factors-mining (LIGHT DB; starts right after the competitors gate, overlaps enrichment + think-tanks)
   → lite-constraints → synthesis (explore → build) → synthesis.md  (STOP)
+  → founder-report (best-effort packaging) → growth-tactics.md  (the founder-facing view; renderer falls back to synthesis.md when absent)
 ```
 
 A parameterized **reviewer** gates **two stages** (v2.3.0): enrichment `competitors` and the
 final synthesis (`build`) — score ≥ 7, max 3 retries, `blocking_issues` injected into a FRESH
 worker. Every other generating stage (audience + acquisition-tactics, the 3 think-tanks,
-growth-factors, lite-constraints, the intermediate `explore`) gets a structural check. Workers are **single-shot and stateless** — every retry is a fresh
+growth-factors, lite-constraints, the intermediate `explore`, the post-gate `founder-report`
+packaging) gets a structural check. Workers are **single-shot and stateless** — every retry is a fresh
 spawn; never `SendMessage` a returned worker. Research stages use a **Perplexity MCP** when
 present and **fall back to the built-in WebSearch** otherwise; analysis + synthesis run with
 **no MCP** by design (structurally enforces no-web-search).
@@ -92,7 +94,7 @@ present and **fall back to the built-in WebSearch** otherwise; analysis + synthe
 - **Check nothing external leaked back in** →
   `grep -rn "prompts/\|ai-cmo-workspace\|repo root" plugin/` should return nothing but the
   README's references to this repo's own root.
-- **Confirm Codex symlinks resolve** → `ls -L codex/.agents/skills/` lists all 12.
+- **Confirm Codex symlinks resolve** → `ls -L codex/.agents/skills/` lists all 13.
 
 ## Pointers
 

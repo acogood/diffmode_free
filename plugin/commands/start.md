@@ -6,8 +6,10 @@ description: Build your growth plan — researches your market and builds 7–9 
 
 Main-thread orchestrator for the **Diffmode free growth-ideation pipeline** — from a fast
 founder intake all the way to a final `synthesis.md` of **7-9 novel demand-gen tactic
-IDEAS**, and it **STOPS there**. Prioritization, implementation guides, and the proprietary
-576-vector database are the paid product; this command never attempts them.
+IDEAS**, and it **STOPS there**. (A best-effort packaging stage then re-writes `synthesis.md`
+as the founder-facing `growth-tactics.md` — same tactics, plain language, no new content.)
+Prioritization, implementation guides, and the proprietary 576-vector database are the paid
+product; this command never attempts them.
 
 It runs the workflow as skills + worker sub-agents. It owns the DAG, the parallel fan-out,
 the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
@@ -27,7 +29,8 @@ advanced/testing tool, not advertised to founders).
 >   `diffmode-growth-tactics:enrichment-<dimension>`,
 >   `diffmode-growth-tactics:competitor-gaps` · `:cross-industry` · `:platform-arbitrage`,
 >   `diffmode-growth-tactics:growth-factors-mining`, `diffmode-growth-tactics:lite-constraints`,
->   `diffmode-growth-tactics:synthesis-explore` · `:synthesis-build`
+>   `diffmode-growth-tactics:synthesis-explore` · `:synthesis-build`,
+>   `diffmode-growth-tactics:founder-report`
 > - workers: `diffmode-growth-tactics:research-worker`,
 >   `diffmode-growth-tactics:analysis-worker`, `diffmode-growth-tactics:synthesis-worker`,
 >   `diffmode-growth-tactics:reviewer`
@@ -89,6 +92,7 @@ this section wins.
   | think-tanks | "🔭 Working three strategy angles in parallel (~15–25 min)…" | "✓ 3 strategy reports done" |
   | lite-constraints | "Setting up the tactic builder (~3 min)…" | (fold into the next start line) |
   | synthesis | "🧪 Building your tactics (~25–35 min)…" | "✓ 8 tactics built — passed the quality check" |
+  | founder-report | "📦 Packaging your report (~3 min)…" | "✓ Your Growth Tactics ready to read" |
 
 - **NEVER narrate to the founder:** structural-check internals, run-ledger writes or
   any JSON, reviewer scores/verdicts/rubric mechanics, vector counts-as-plumbing
@@ -132,15 +136,18 @@ otherwise ignore them (auto-resume replaces `--from`/`--only`; **Start fresh** r
 
 **Stage names** (internal — used in the run-ledger and failure rows; the founder never
 types them): `diagnostics`, `enrichment`, `think-tanks`, `growth-factors`,
-`lite-constraints`, `synthesis` (or finer synthesis steps `explore`, `build`).
+`lite-constraints`, `synthesis` (or finer synthesis steps `explore`, `build`),
+`founder-report`.
 
 ## Pre-flight
 
 1. **Auto-resume scan (FIRST — before resolving a new workspace or asking the website
    question).** Scan the current directory for existing workspaces: any `*/.run-state.json`.
    A workspace is an **unfinished run** when its ledger exists but the final `synthesis`
-   stage has no APPROVED row (when the ledger and the on-disk outputs disagree, trust the
-   on-disk outputs — the existing rule). Then:
+   stage has no APPROVED row, **or** synthesis has an APPROVED row but `growth-tactics.md`
+   is missing — stopped during packaging (a recorded `founder-report-skipped` row counts as
+   done; the skip was deliberate). When the ledger and the on-disk outputs disagree, trust
+   the on-disk outputs — the existing rule. Then:
    - the typed URL/name resolves to a workspace with an unfinished run, **or** the command
      was run bare and exactly ONE unfinished run exists → `AskUserQuestion`: *"Found an
      unfinished run for `<slug>` (stopped at: <human stage name>). Continue where it left
@@ -205,7 +212,8 @@ Stage 2    think-tank ×3             (parallel, after enrichment; structural ch
               competitor-gaps · cross-industry · platform-arbitrage
 Stage 3    lite-constraints          → WS/03-think-tanks/demand-generation/synthesis-constraints.json
               precondition: growth-factors.json present + valid
-Stage 4    synthesis  explore → build   → synthesis.md   (STOP)
+Stage 4    synthesis  explore → build   → synthesis.md   (the last gated stage — STOP generating here)
+Stage 5    founder-report (best-effort)  → growth-tactics.md   (packages synthesis.md for the founder; never blocks)
 ```
 
 Filesystem state is the contract between stages (same pattern as the enrichment pilot).
@@ -579,6 +587,41 @@ applies the demand-gen-synthesis rubric WITH the clean-room adjustments noted in
 growth-reviewer skill (score against the per-run LIGHT DB; do not require Week-1 depth;
 synthesis is the final stage).
 
+## Stage 5 — Package the founder report (best-effort — NEVER blocks the run)
+
+`synthesis.md` is written to pass the reviewer — disposition tables, traceability lines,
+scores — and downstream checks parse that structure, so it stays exactly as built. The page
+the founder opens first is **derived** from it after the build gate: a packaging stage
+re-writes the tactics as plain cards, and the renderer (Output step 1) uses that page as
+"Your Growth Tactics", keeping `synthesis.md` available as a working paper.
+
+Run this only after the Stage-4 build gate is APPROVED. Dispatch **`synthesis-worker`** with
+a per-dispatch **`model: sonnet`** override (packaging is re-writing, not reasoning):
+
+| Stage | Worker | Model | Skill | Inputs | Output |
+|-------|--------|-------|-------|--------|--------|
+| founder-report | synthesis-worker | **sonnet** | `:founder-report` | `…/synthesis.md`; `${CLAUDE_PLUGIN_ROOT}/reference/writing-style.md` | `…/growth-tactics.md` |
+
+(`…` = `WS/03-think-tanks/demand-generation/`.)
+
+**Structural check (deterministic — no reviewer gate):**
+
+- exists, non-empty, min-line floor ~80;
+- the LAST section is `## Where these came from`;
+- the `### N.` card count equals `synthesis.md`'s `### Tactic #N` count;
+- the banned-pattern grep returns nothing:
+
+  ```bash
+  grep -nE '(struct|lever|resource|psych|pos|conv)-[0-9]|Pass [12]|must_include|Pool [AB]|[Ww]hite[ -][Ss]pace|growth-factors\.json|\bPASS\b|\bFAIL\b|/10\b|/50\b|[Aa]nti-[Pp]attern' "<WS>/03-think-tanks/demand-generation/growth-tactics.md"
+  ```
+
+On a failed check, re-dispatch ONCE with the specific gaps in `blocking_issues` (the usual
+fresh-worker rule). If it still fails — or the worker dies twice — record informational
+**`founder-report-skipped`** in the ledger, **delete the failed `growth-tactics.md`** (the
+renderer's fallback keys on the file being absent — never leave a broken page behind), and
+continue to the Output step: the report falls back to `synthesis.md` as the main page (the
+pre-v2.7 behavior). This stage never fails the run and never counts against its success.
+
 ## Output / report — and STOP
 
 The run ends with **deliverables, not logs.** Do these in order:
@@ -605,7 +648,11 @@ done
 
 The renderer writes `WS/report/index.html` plus one page per deliverable
 (human-friendly names like `Your Growth Tactics.html`). It renders whatever exists and
-skips the rest, so a partial/failed run still gets a report of what it produced.
+skips the rest, so a partial/failed run still gets a report of what it produced. The
+"Your Growth Tactics" page renders from `growth-tactics.md` (Stage 5); when that file is
+absent (an old run, a Codex run, or a skipped packaging stage) it falls back to
+`synthesis.md` and the "Tactic Engineering Notes" working-paper page is skipped — the
+renderer handles this itself, no orchestrator work needed.
 
 ### 2. Final message — LEAD with the deliverables
 
@@ -633,7 +680,7 @@ step 1 rendered nothing):
 > - **Plays From Other Industries** — proven moves adapted to your market
 > - **Fresh Platform Openings** — new platform features rivals haven't claimed
 >
-> **Working papers:** Your Product Brief · How These Were Built
+> **Working papers:** Your Product Brief · How These Were Built · Tactic Engineering Notes
 >
 > Done in ~1h25m — say "show the run ledger" for per-stage timings.
 
@@ -693,6 +740,7 @@ For any FAILED stage, list its final `blocking_issues`.
 | `constraints-stale` | Stage 4 precheck | `synthesis-constraints.json` references vector IDs absent from the CURRENT `growth-factors.json` (a re-mine without a constraints rebuild) | re-run `lite-constraints` against the current LIGHT DB (in-run; or run `/diffmode-growth-tactics:start` again — auto-resume re-enters there) |
 | `synthesis-failed` | Stage 4 | `build` REJECTED ×3 | list blocking_issues |
 | `clean-room-violation` | Stage 1.5/3/4 | a worker read `tactics_DB/` | re-dispatch; the LIGHT-DB stages must never touch the proprietary DB |
+| `founder-report-skipped` | Stage 5 | packaging structural check failed after one re-dispatch (or the worker died twice) — informational, the run itself is fine | nothing required — the report falls back to `synthesis.md` as the main page; run `/diffmode-growth-tactics:start` again to retry packaging |
 | `report-render-skipped` | Output step 1 | no usable Python AND the sh fallback failed — HTML report not built (informational; the run itself is fine) | print the `.md` deliverable list + the manual render command (`python3 <plugin>/scripts/render_html.py <WS>`) |
 
 ## Idempotency
@@ -748,16 +796,21 @@ ledger at `WS/.run-state.json` and **append to it after every stage attempt**:
 
 1. `synthesis.md` exists with **7-9 tactics**, ≥50% unconventional, every tactic traceable
    to a vector combination from `growth-factors.json`.
-2. `growth-factors.json` is a clean-room LIGHT DB (20-40 vectors, correct schema, real
+2. `growth-tactics.md` exists (the packaged founder report): same card count as
+   `synthesis.md`'s tactic count, ends with `## Where these came from`, and the Stage-5
+   banned-pattern grep over it is empty (no vector IDs, pass labels, pools, or scores). If
+   the ledger recorded `founder-report-skipped` instead, the report's main page fell back
+   to `synthesis.md` — acceptable, note it.
+3. `growth-factors.json` is a clean-room LIGHT DB (20-40 vectors, correct schema, real
    source URLs, nothing traceable to `tactics_DB/`).
-3. Spot-check that tactics are **non-generic** (the novelty test the whole pipeline exists
+4. Spot-check that tactics are **non-generic** (the novelty test the whole pipeline exists
    for) — strip the tactic name + adjectives; a traditional marketer should NOT say "obviously
    do that" for the majority.
-4. Enrichment `competitors` reached APPROVED (score ≥7); `audience` + `acquisition-tactics`
+5. Enrichment `competitors` reached APPROVED (score ≥7); `audience` + `acquisition-tactics`
    and all 3 think-tank outputs passed their structural completeness check (required sections
    present). Note anything that needed a re-dispatch.
-5. `WS/.run-state.json` carries a `duration_s` for every stage attempt, and the run report
+6. `WS/.run-state.json` carries a `duration_s` for every stage attempt, and the run report
    printed the per-stage timing column — confirm `growth-factors` overlapped enrichment +
    Stage 2 (its row started right after the competitors gate) rather than serializing after them.
-6. (Optional moat check) Compare a light-DB synthesis run against a proprietary-DB run for
+7. (Optional moat check) Compare a light-DB synthesis run against a proprietary-DB run for
    the same workspace — the free output should be **useful but visibly weaker**.

@@ -4,7 +4,41 @@
 notes below) and tracks current state. For onboarding + install see [`README.md`](./README.md);
 for the design (orchestrator + skills + workers) see [`architecture.md`](./architecture.md).*
 
-Last updated: **2026-06-11**
+Last updated: **2026-06-12**
+
+> **Round-10 — Founder-clean "Your Growth Tactics" report (2026-06-12, plugin v2.7.0).** The
+> medmastery run's deliverable audit (Marcus Chen) found the main report page rendering raw
+> `synthesis.md` — "a pipeline working paper dressed up as a deliverable" (Pass 1 Disposition,
+> per-tactic `Source` vector lines, Pool-B pair audits, Traceability Summary, self-review
+> grades, unexplained Scores — all founder-visible). `synthesis.md`'s structure is
+> **load-bearing** (the demand-gen-synthesis rubric, start.md's must_include closing check,
+> and `codex/checks.py` all parse it), so it stays untouched; the fix is a **new post-gate
+> packaging stage**:
+>
+> 1. **Skill 13 — `founder-report`** (skills 12 → 13): after the synthesis build gate,
+>    `synthesis-worker` (sonnet) re-packages `synthesis.md` per `writing-style.md` into
+>    `growth-tactics.md` — plain tactic cards (what this is / why competitors can't copy it /
+>    how to start this week / time to first signal / what you need / kill it if…), plus
+>    Start-this-week, What-to-avoid, How-to-sequence, and Where-these-came-from sections.
+>    Strict re-packaging: zero new claims; **numeric scores dropped from the founder view**
+>    (Top-5 kept with one-line plain reasons). Deterministic structural check (card count ==
+>    tactic count, banned-pattern grep: vector IDs / Pass labels / pools / scores / self-
+>    grading); one re-dispatch, then informational `founder-report-skipped` — the stage
+>    **never blocks a run**.
+> 2. **Renderer fallback** — both renderers point the "Your Growth Tactics" hero at
+>    `growth-tactics.md` and fall back to `synthesis.md` when it's absent (old runs, Codex
+>    runs, skipped packaging → exactly the old behavior, never a broken report). When the
+>    packaged report IS the hero, `synthesis.md` still ships as a new working-paper page,
+>    **"Tactic Engineering Notes"**.
+> 3. **Validated cheaply** on the medmastery `synthesis.md` (extracted from the rendered
+>    report): packaging stage run headlessly, banned-grep empty, card count preserved, both
+>    renderer paths exercised. Full-pipeline re-validation rides the next quality round.
+>
+> **Deferred / follow-ups:** a native Codex `founder-report` stage port (the Codex driver
+> gets the renderer fallback for free = old behavior; its skill symlink is already in
+> place); tightening synthesis-build's own prose-ID leak (`(per lever-004)` in timeline
+> lines violated writing-style in the medmastery run — the packaging layer now guarantees
+> the founder never sees it, revisit at the next synthesis quality round).
 
 > **Round-9 — Simple launch surface (2026-06-11, plugin v2.6.0).** The launch UX collapsed
 > to ONE founder-typeable line. Four changes, all in the launch layer — **no synthesis-chain
@@ -342,11 +376,12 @@ full hour.
 
 **2 orchestrator commands** ([`commands/`](./commands/)):
 - `start.md` — the main entry; runs the full DAG in the main thread (intake →
-  enrichment → think-tanks ‖ LIGHT-DB mining → lite-constraints → 4-step synthesis → STOP).
+  enrichment → think-tanks ‖ LIGHT-DB mining → lite-constraints → synthesis (explore →
+  build) → best-effort founder-report packaging → STOP).
 - `run-enrichment.md` — standalone enrichment-only entry (hidden/dev — "(advanced —
   pipeline testing)" in its description), under the new namespace.
 
-**12 skills** ([`skills/`](./skills/)) — passive instruction docs:
+**13 skills** ([`skills/`](./skills/)) — passive instruction docs:
 
 | Stage | Skills | Produces |
 |-------|--------|----------|
@@ -356,6 +391,7 @@ full hour.
 | LIGHT DB | `growth-factors-mining` | `…/growth-factors.json` (20-40 clean-room vectors) |
 | Constraints | `lite-constraints` | `…/synthesis-constraints.json` |
 | Synthesis | `synthesis-explore` (blind combinations → emergent mechanisms) → `synthesis-build` (white-space → founder-fit → merge) | `…/synthesis.md` (7-9 tactics, STOP) |
+| Packaging | `founder-report` (post-gate, best-effort — re-packages synthesis.md as plain tactic cards) | `…/growth-tactics.md` (the founder-facing report) |
 | Review | `growth-reviewer` (+ 7 rubrics in `references/`) | JSON verdict |
 
 **4 worker sub-agents** ([`agents/`](./agents/)) — thin runners:

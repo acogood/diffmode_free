@@ -23,8 +23,14 @@ OUT="$WS/report"
 DATE=$(date +%Y-%m-%d)
 TT="03-think-tanks/demand-generation"
 
+# "Your Growth Tactics" renders the packaged founder report when Stage 5 produced one,
+# else falls back to the raw synthesis (old runs / Codex runs / skipped packaging) —
+# the same resolve as render_html.py's _resolve_manifest().
+HERO="$TT/growth-tactics.md"
+[ -f "$WS/$HERO" ] || HERO="$TT/synthesis.md"
+
 # relpath|Title|group|one-line description  — same rows as render_html.py
-MANIFEST="$TT/synthesis.md|Your Growth Tactics|hero|The main event - 7-9 ways to get users, built for your budget, team, and stage.
+MANIFEST="$HERO|Your Growth Tactics|hero|The main event - 7-9 ways to get users, built for your budget, team, and stage.
 02-enrichment/competitors-analysis.md|Competitor Research|research|Who you're really up against, and how each rival gets users.
 02-enrichment/audience-jtbd.md|Audience Map|research|Your buyer segments, and the job each one hires your product to do.
 02-enrichment/acquisition-tactics.md|Acquisition Audit|research|The plays already working in your market, with effort and budget for each.
@@ -33,6 +39,13 @@ $TT/cross-industry.md|Plays From Other Industries|strategy|Growth moves proven e
 $TT/platform-arbitrage.md|Fresh Platform Openings|strategy|New platform features and quiet corners your rivals haven't claimed.
 01-diagnostics/founder-input.md|Your Product Brief|papers|What you told us - the product, budget, and goals the research is built on.
 $TT/synthesis-explore.md|How These Were Built|papers|Working paper - the mechanism combinations behind your tactics."
+
+# The engineering-notes working paper is a separate page ONLY when the hero is the
+# packaged report — otherwise synthesis.md IS the hero and a second page would duplicate it.
+if [ -f "$WS/$TT/growth-tactics.md" ]; then
+  MANIFEST="$MANIFEST
+$TT/synthesis.md|Tactic Engineering Notes|papers|Working paper - the full engineering write-up behind each tactic, scores and traceability included."
+fi
 
 escape_html() { # html-escape stdin (kills any literal </pre> / </script> in the markdown)
   sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'

@@ -76,13 +76,17 @@ in. (A real run mapped **9 competitors** and the acquisition channels behind eac
 the moments that make someone switch. Most founders have never written this down — and it's the
 part generic tools skip.
 
-**3. Unconventional ways to get users yourself.** The sharp end of the strategy — **`synthesis.md`**,
-with **7–9 specific tactics** built for your budget, stage, and team. Each one spells out:
+**3. Unconventional ways to get users yourself.** The sharp end of the strategy — the
+**Your Growth Tactics** report, with **7–9 specific tactics** built for your budget, stage, and
+team. Each tactic is a plain card that spells out:
 
 - **what it is**, in plain language;
-- **why it fits a team like yours** (your budget, stage, and team size are baked in);
-- the **first three steps** to run it; and
-- the **week-1 signal** that tells you whether it's working.
+- **why your better-funded rivals can't copy it** (your budget, stage, and team size are baked in);
+- **how to start this week** — the first steps, with the tools to use; and
+- **when to kill it** — the concrete signal that says stop or double down.
+
+The full engineering write-up behind each tactic — mechanism combinations, scores, traceability —
+ships alongside as a working paper, for when you want to see how the sausage was made.
 
 They come from an audit of **25–35 plays** already working in your space, then bent into angles
 your better-funded competitors haven't thought to copy. Here's the *kind* of tactic a run
@@ -165,7 +169,7 @@ money-back guarantee**.
 
 ```
 plugin/     the Claude Code plugin — the only thing Claude installs
-  skills/   the 12 skill files — the single source of truth
+  skills/   the 13 skill files — the single source of truth
   agents/  commands/  reference/
 codex/      Codex driver — runs the same skills through symlinks (no second copy)
 docs/       design notes + build history (not shipped to either runtime)

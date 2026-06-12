@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Render a Diffmode growth-tactics workspace into a styled HTML report.
 
-Stdlib-only. Takes the 9 user-valuable markdown deliverables from a run workspace and
+Stdlib-only. Takes the user-valuable markdown deliverables from a run workspace and
 writes a self-contained HTML report to ``<workspace>/report/`` — an ``index.html`` plus
 one page per deliverable, with human-friendly file names ("Your Growth Tactics.html").
+The hero page renders ``growth-tactics.md`` (the packaged founder report) when present,
+falling back to ``synthesis.md`` for runs that never packaged one — see
+``_resolve_manifest``.
 Markdown is NOT parsed in Python: each page embeds the escaped source in a hidden
 ``<pre>`` and renders it client-side with the vendored marked.js (``assets/marked.min.js``);
 with JavaScript off the raw markdown un-hides and reads fine as-is.
@@ -45,7 +48,7 @@ ASSETS = Path(__file__).resolve().parent / "assets"
 # are deliberately NOT rendered. Kept in sync with render_html.sh's MANIFEST.
 TT = "03-think-tanks/demand-generation"
 MANIFEST: list[tuple[str, str, str, str]] = [
-    (f"{TT}/synthesis.md", "Your Growth Tactics", "hero",
+    (f"{TT}/growth-tactics.md", "Your Growth Tactics", "hero",
      "The main event — 7-9 ways to get users, built for your budget, team, and stage."),
     ("02-enrichment/competitors-analysis.md", "Competitor Research", "research",
      "Who you're really up against, and how each rival gets users."),
@@ -63,7 +66,29 @@ MANIFEST: list[tuple[str, str, str, str]] = [
      "What you told us — the product, budget, and goals the research is built on."),
     (f"{TT}/synthesis-explore.md", "How These Were Built", "papers",
      "Working paper — the mechanism combinations behind your tactics."),
+    (f"{TT}/synthesis.md", "Tactic Engineering Notes", "papers",
+     "Working paper — the full engineering write-up behind each tactic, scores and "
+     "traceability included."),
 ]
+
+
+def _resolve_manifest(ws: Path) -> list[tuple[str, str, str, str]]:
+    """Per-workspace manifest. The hero renders ``growth-tactics.md`` (the packaged
+    founder report) when present. When it's absent (an old run, a Codex run, or a
+    skipped packaging stage) the hero falls back to ``synthesis.md`` and the
+    "Tactic Engineering Notes" entry is dropped — synthesis.md IS the hero then, so a
+    separate working-paper page would be a duplicate."""
+    if (ws / TT / "growth-tactics.md").is_file():
+        return MANIFEST
+    rows: list[tuple[str, str, str, str]] = []
+    for rel, title, group, desc in MANIFEST:
+        if rel == f"{TT}/growth-tactics.md":
+            rows.append((f"{TT}/synthesis.md", title, group, desc))
+        elif title == "Tactic Engineering Notes":
+            continue
+        else:
+            rows.append((rel, title, group, desc))
+    return rows
 
 GROUPS = [
     ("hero", "Start here"),
@@ -191,7 +216,7 @@ def render_workspace(ws: str | Path, open_browser: bool = False) -> Path | None:
 
     out_dir = ws / "report"
     rendered: list[tuple[str, str, str]] = []  # (title, group, desc)
-    for rel, title, group, desc in MANIFEST:
+    for rel, title, group, desc in _resolve_manifest(ws):
         md = _read_md(ws / rel)
         if md is None or not md.strip():
             continue
