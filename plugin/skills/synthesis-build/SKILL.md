@@ -39,7 +39,7 @@ Phase-1 tactic for "the founder can't do this," STOP — that belongs in Phase 2
 - `WS/03-think-tanks/demand-generation/synthesis-explore.md` (PRIMARY — the validated emergent
   mechanisms + blind combinations; Phase 1 ideates from these + `diverse_white_space`)
 - `WS/03-think-tanks/demand-generation/synthesis-constraints.json` (`diverse_white_space`; pools
-  `B_synergy` + `C_founder_fit`; `anti_patterns`; `category_diversity_requirements`)
+  `B_synergy` + `C_founder_leverage`; `anti_patterns`; `category_diversity_requirements`)
 - `WS/03-think-tanks/demand-generation/growth-factors.json` (vector definitions)
 - `WS/01-diagnostics/founder-input.md` (Phase 1 READS but does NOT filter by constraints; Phase
   2 applies them; goal + deadline)
@@ -125,7 +125,7 @@ demand-gen only. Carry a one-line Practicality Assessment per tactic (Difficulty
 intensity / Risk / Phase-2 action: Preserve / Adapt / Consider dropping) so Phase 2 can act.
 
 ═══════════════════════════════════════════════════════════════════════════
-# PHASE 2 — ADAPT & GENERATE (founder fit; ≥60% of Phase 1 PRESERVED)
+# PHASE 2 — ADAPT & GENERATE (founder leverage; ≥60% of Phase 1 PRESERVED)
 ═══════════════════════════════════════════════════════════════════════════
 
 ## Philosophy: Preserve the Unconventional Core (CRITICAL)
@@ -138,7 +138,8 @@ makes traditional marketers hesitate.
 When adapting for constraints: **DO** reduce budget/time, simplify execution, scale down
 scope — while keeping the uncomfortable positioning, the structural advantage, and the
 contrarian angle. **DON'T** soften the move itself to make it "safer," replace a structural
-advantage with an execution advantage, or sand down the edge that creates the lockout. The
+advantage with an execution advantage, sand down the edge that creates the lockout, or drop
+a tactic because the founder hasn't done it before — unfamiliarity is not a constraint. The
 unconventional POSITIONING must survive adaptation — and per the naming rule (*Output
 language* below), it survives in PLAIN WORDS: the uncomfortable move stays visible in the
 name; the edge lives in the mechanism, never in invented vocabulary.
@@ -155,19 +156,29 @@ Aim for **≥60% Phase-1 preservation** with unconventional edges intact.
 |----------|----------|--------|
 | PRESERVE | founder can execute with minor adaptation | keep, small resource adjustments |
 | ADAPT | mechanism valuable, execution needs rework | redesign execution, keep mechanism |
-| DROP | requires capabilities the founder fundamentally lacks | remove (counts toward the ≤40% drop allowance) |
+| DROP | requires more time or money than the founder has | remove (counts toward the ≤40% drop allowance) |
+
+> **A skill the founder would need to LEARN is NOT a reason to drop.** State the learning
+> cost honestly (time to competence, quality of first attempts) and keep the tactic.
+> Founders will learn any channel that brings customers — unfamiliarity is not a constraint.
 
 **Timeline gate:** if a structural-advantage timeline (6-24 mo) exceeds the founder's
 deadline by >3x AND the founder has a ≤90-day deadline → ADAPT so the tactic produces
 observable acquisition signal (traffic/signups/trials) within the deadline, even while the
 moat builds over time. If it fundamentally can't signal within 3x the deadline → DROP.
 
-**Adaptation rules:** budget too high → reduce scope, not approach; skill missing → add a
-learning curve or no-code/vibe-code path BUT keep distribution as the primary effort (if
-80%+ becomes building, reframe around the distribution mechanism); time-intensive → phase
-it; positioning feels risky → KEEP IT (the risk IS the advantage).
+**Adaptation rules:** budget too high → reduce scope, not approach; skill missing → state
+the learning cost honestly (time to competence, quality of first attempts) and KEEP the
+tactic — a founder will learn any channel that brings customers; time-intensive → phase it;
+positioning feels risky → KEEP IT (the risk IS the advantage).
 
 **DROP threshold:** at most 2 Phase-1 tactics dropped (preserve ≥60%).
+
+**Channel-justification rule.** For each tactic, the Primary Channel choice must be
+justified against the mechanism — explain WHY this channel amplifies THIS mechanism (not
+just "the founder can do content"). If the mechanism would work equally on any channel,
+the channel choice is arbitrary — pick the one with the lowest competitive adoption from
+the matrix. The channel shapes the execution steps; it is a design input, not a label.
 
 ## Deception veto (NEVER allowed — binary, non-scored)
 
@@ -180,9 +191,9 @@ we execute this, would it be embarrassing?" YES → reframe or DROP. Cross-check
 against `synthesis-constraints.json` `anti_patterns` (the clean-room replacement for the
 proprietary anti-vectors DB) — any HIGH-severity match is blocking.
 
-## Phase 2b: Generate Synergy & Founder-Fit Tactics
+## Phase 2b: Generate Synergy & Founder-Leverage Tactics
 
-From `synthesis-constraints.json`: **Pool B** (synergy pairs) + **Pool C** (founder-fit).
+From `synthesis-constraints.json`: **Pool B** (synergy pairs) + **Pool C** (founder-leverage).
 **You MUST generate at least 4 new tactics here** so the final set reaches 7-9 (the founder
 gets a portfolio of ideas; this is where free stops, so depth-of-options matters). If you
 can't find 4 quality combinations, explain why, still produce your best 4 with caveats, and
@@ -200,15 +211,15 @@ replacement isn't in `growth-factors.json`, is a defect — list each Pool-B pai
 used (which tactic #) or validly substituted (which replacement). This is in addition to the
 "≥4 new tactics" floor, not a replacement for it.
 
-These MUST pass founder-constraint checks: budget in range; skills available or a clear path;
-timeline realistic. Apply the **Complexity Budget** (inlined — the paid pipeline kept this in
-a monolith):
+These MUST pass founder-constraint checks: budget in range; time realistic; leverages an
+asset the founder possesses (or states honestly what they'd need to learn). Apply the
+**Complexity Budget** (inlined — the paid pipeline kept this in a monolith):
 
-| Team capacity | Max vectors/tactic | Max external dependencies |
-|---------------|--------------------|---------------------------|
-| Solo, <10 hrs/wk | 2 | 1 |
-| Solo, 10-25 hrs/wk | 2-3 | 1-2 |
-| Small team | 3 | 2 |
+| Team capacity | Max vectors/tactic | Max monthly $ on external help |
+|---------------|--------------------|--------------------------------|
+| Solo, <10 hrs/wk | 2 | $0-100 |
+| Solo, 10-25 hrs/wk | 2-3 | $100-300 |
+| Small team | 3 | $300+ |
 
 Tactics exceeding budget are flagged `[HIGH COMPLEXITY]`. Apply the **Kill List** (inlined
 from the tactic-design step): start a newsletter · write SEO content · build community ·

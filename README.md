@@ -143,6 +143,9 @@ quality gates, is in [`docs/architecture.md`](docs/architecture.md).
   it; without one, they fall back to Claude Code's built-in web search automatically.
 - **Cost:** free with the built-in search; about **$2–3 per run** if you point it at Perplexity
   (a few deep-research calls are the only paid part).
+- **Model:** the synthesis stage runs on Claude Opus for reasoning quality; research and
+  packaging stages use Sonnet. On a Sonnet-only plan the pipeline still runs, but synthesis
+  quality is bounded by the smaller model.
 
 ## Run it on Codex
 

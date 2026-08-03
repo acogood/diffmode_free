@@ -426,7 +426,7 @@ def check_constraints(path: str | Path) -> CheckResult:
         issues.append(f"diverse_white_space has <5 pairs ({len(dws) if isinstance(dws, list) else 'missing'})")
 
     pools = {item.get("pool") for item in obj.get("mandatory_combinations", []) or []}
-    for required in ("A_white_space", "B_synergy", "C_founder_fit"):
+    for required in ("A_white_space", "B_synergy", "C_founder_leverage"):
         if required not in pools:
             issues.append(f"mandatory_combinations missing pool '{required}'")
 

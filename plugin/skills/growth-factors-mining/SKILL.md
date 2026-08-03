@@ -171,11 +171,25 @@ fabricate); `source_url` is a real, reachable URL; `time_to_signal_weeks` option
    WebSearch fallback) — on growth case studies across those themes + 2-3
    deliberately *different* industries (for transferable mechanisms). Capture source URLs +
    the specific result/metric for each story.
+   **Guerrilla search seeds:** alongside the founder-derived themes, include at least one
+   search pass using unconventional/guerrilla angles — e.g. "ambush marketing case study,"
+   "counter-cyclical launch timing," "secret menu / exclusive offer growth," "community
+   infiltration marketing," "mystery benefactor / anonymous giveaway," "reverse review /
+   customer-as-hero marketing," "hyperlocal guerrilla tactic," "partnership judo startup."
+   These pull in case studies the default "growth case study" query misses (physical-world,
+   event-based, psychological, and partnership mechanisms).
 4. **Distill** each case study → 1-3 atomic vectors using the method above. Assign category
    + a local sequential `{prefix}-NNN-slug` id. Write `mechanism`, `transferability`,
    `saturation_risk`, 2-3 cross-industry `examples`, `evidence`, `source_url`.
-5. **Dedup + balance** to 20-40 vectors with category spread (no prefix > ~60%).
-6. **Compute `metadata`** (counts, category_counts, case_studies_reviewed) and write valid
+5. **Breadth check.** Map every distilled vector to a mechanism type: content/SEO ·
+   partnership/alliance · timing/counter-cyclical · pricing/offer · community/tribe ·
+   outbound/direct · event/experiential · platform/technical · psychological/behavioral ·
+   structural/regulatory. If any type that the founder's industry could plausibly use has
+   ZERO vectors, do one more targeted search for case studies in that type before
+   proceeding. This is a check, not a constraint — new vectors still must pass the
+   transferability test and the mechanism-over-tactic rule.
+6. **Dedup + balance** to 20-40 vectors with category spread (no prefix > ~60%).
+7. **Compute `metadata`** (counts, category_counts, case_studies_reviewed) and write valid
    JSON to the output path. Validate it parses (`json.load`-clean).
 
 ## Validation checklist (self-check before returning)
@@ -183,6 +197,9 @@ fabricate); `source_url` is a real, reachable URL; `time_to_signal_weeks` option
 - [ ] Output is valid JSON in the exact schema above; `total_vectors` matches `vectors`
       length; `category_counts` sums to `total_vectors`.
 - [ ] 20-40 vectors (or ≥15 with a noted shortfall); no single prefix > ~60%.
+- [ ] Breadth check ran: vectors span ≥5 distinct mechanism types (content, partnership,
+      timing, pricing, community, outbound, event, platform, psychological, structural);
+      any plausible type with zero vectors triggered a follow-up search.
 - [ ] Every vector is a MECHANISM (WHY), not a surface tactic (WHAT).
 - [ ] Every vector has 2-3 cross-industry `examples`, real `evidence`, and a real
       `source_url`. No fabricated sources or metrics.

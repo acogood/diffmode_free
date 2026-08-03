@@ -90,7 +90,7 @@ plugin/
   reference/                     bundled 2026 marketing-channel menu (100+ channels)
   skills/                        the 13 skill files — the single source of truth
   agents/                        4 worker sub-agents (research / analysis / synthesis / reviewer)
-  commands/                      the start orchestrator (+ run-enrichment, a dev/testing entry)
+  commands/                      the start orchestrator
 ```
 
 All paths the skills and agents need are resolved at runtime via `${CLAUDE_PLUGIN_ROOT}` (the

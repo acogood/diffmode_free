@@ -37,7 +37,7 @@ per-run LIGHT DB and stops at synthesis — full-depth *ideas*, deliberately lig
   LIGHT DB — the bridge into synthesis),
   `diffmode-growth-tactics:synthesis-explore` (blind vector combinations → emergent
   mechanisms — the structural-check-only stage),
-  `diffmode-growth-tactics:synthesis-build` (white-space ideation → founder-fit adaptation →
+  `diffmode-growth-tactics:synthesis-build` (white-space ideation → founder-leverage adaptation →
   merge — the final, reviewer-gated deliverable).
 - **`inputs`** — the paths to read (varies by step; always includes the prior step's
   output once the chain is running, plus `growth-factors.json`, `synthesis-constraints.json`,
@@ -55,7 +55,7 @@ per-run LIGHT DB and stops at synthesis — full-depth *ideas*, deliberately lig
    list, the deception veto, the unconventional-ratio targets, the final mix). Apply them
    honestly — the whole point is novelty, so do not let conventional tactics pass.
 2. **Read the inputs** the brief lists. Vector IDs and definitions come from
-   `growth-factors.json`; white-space pairs / synergy pools / founder-fit pools /
+   `growth-factors.json`; white-space pairs / synergy pools / founder-leverage pools /
    prohibited combos / category-diversity requirements come from `synthesis-constraints.json`.
 3. **Address `blocking_issues` first** (if present), then re-run the skill's validation.
    **If the brief flags the retry as format-only and the output file already exists, use

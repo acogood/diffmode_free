@@ -12,9 +12,7 @@ Prioritization, implementation guides, and the proprietary 576-vector database a
 product; this command never attempts them.
 
 It runs the workflow as skills + worker sub-agents. It owns the DAG, the parallel fan-out,
-the reviewer-retry quality gate, and the stage-boundary checks, and supersedes
-`run-enrichment.md` (which remains a standalone entry for running enrichment alone — an
-advanced/testing tool, not advertised to founders).
+the reviewer-retry quality gate, and the stage-boundary checks.
 
 > **This command runs in the main thread.** It dispatches worker sub-agents via the
 > Agent/Task tool, and it is the only place that may talk to the human (via AskUserQuestion,
@@ -265,6 +263,9 @@ dimension `D` + spec `Spec`:
    `test -s` + a first-header grep both pass on a file that died mid-write, so for markdown
    stages require the stage's **LAST** required section to be present (a worker that crashed
    mid-write won't have reached it), plus a sane **min-line floor** for the large stages.
+   **Generic non-triviality floor:** every markdown stage output must be ≥ 2 KB (`wc -c`);
+   JSON stages must be ≥ 500 bytes. A file that passes section greps but is under the floor
+   is treated as truncated (hollow — sections present but content missing).
    For JSON stages: parses + has the required keys + expected counts. Per-stage anchors:
 
    | Stage | Last-required-section anchor | Min-line floor |
@@ -312,8 +313,9 @@ Recommended batching (≤4 questions/call; founders pick "Other" to free-type):
 
 - *Call 1 (structured):* **Stage** [pre-launch / early / traction / growth]; **Monthly
   marketing budget** [$0 / under $500 / $500-2k / $2k+]; **Biggest growth problem** [Not
-  enough traffic (demand gen) / Traffic doesn't convert (CRO) / Both]; **Skills you can do**
-  (multiSelect) [landing pages / content / ad campaigns / analytics].
+  enough traffic (demand gen) / Traffic doesn't convert (CRO) / Both]; **Unfair advantage**
+  (multiSelect) [Technical skill / Industry access or network / Existing audience / Domain
+  expertise / None yet]; **Hours per week for growth** [Under 5 / 5-15 / 15+].
 - *Call 2 (free-form, founders use "Other"):* **Current traction** (visitors/signups/MRR/
   paying customers — or "pre-launch"); **Primary goal + deadline**; **Where users/traffic
   come from today** (the Q8 acquisition signal); and — **only in no-website Q&A mode** —
@@ -338,9 +340,6 @@ thread. No reviewer rubric for diagnostics (it's capture, not analysis).
 
 ## Stage 1 — Enrichment (2 waves)
 
-Run the enrichment DAG exactly as `run-enrichment.md` specifies (that file is the detailed
-reference and the standalone entry). Compactly:
-
 ```
 Wave 1 (blocking reviewer gate):  competitors
 Wave 2 (parallel, structural check only):  audience  ‖  acquisition-tactics   (depend on competitors)
@@ -357,9 +356,12 @@ Per-dimension wiring (worker · inputs · gate):
 Skills: `diffmode-growth-tactics:enrichment-<dim>`. Outputs in `OUT = WS/02-enrichment/`:
 `competitors-analysis.md`, `audience-jtbd.md`, `acquisition-tactics.md`. **Only `competitors`
 is reviewer-gated** (the Wave-1 blocker); `audience` + `acquisition-tactics` get a structural
-completeness check only — confirm required sections present per `run-enrichment.md` step 2,
-re-dispatch once on a gap (their outputs proved reliable enough in the field that a reviewer
-gate added latency + retry risk without changing the result). **Wave 1 is a blocking gate** —
+completeness check only — confirm required sections present: competitors →
+`## Competitor Overview` + `## Competitive Channel Matrix`; audience →
+`## Customer Segments` + `## Segment Evaluation Summary`; acquisition-tactics →
+`## Tactics Summary Dashboard`. Re-dispatch once on a gap (their outputs proved reliable
+enough in the field that a reviewer gate added latency + retry risk without changing the
+result). **Wave 1 is a blocking gate** —
 if `competitors` FAILS, abort (the rest of enrichment, Stage 1.5 mining, the think-tanks, and
 all synthesis depend on `competitors-analysis.md`). (`acquisition-tactics` is a leaf within
 enrichment, but its output feeds the think-tanks, so let it complete.)
@@ -367,6 +369,14 @@ enrichment, but its output feeds the think-tanks, so let it complete.)
 > **Kick off Stage 1.5 the moment `competitors` is APPROVED** — see the next section. The
 > mining branch runs concurrently with Wave 2 and Stage 2; do not wait for the rest of
 > enrichment before starting it.
+
+> **Non-blocking competitor print (after Wave 1 APPROVED, before continuing):** print one
+> line — *"✓ Competitor research done — N competitors mapped. Written to
+> `WS/02-enrichment/competitors-analysis.md` — if the list looks wrong, Ctrl-C and re-run
+> with corrections."* Then continue without blocking (do NOT wait for founder input).
+
+> **Peek line (after Wave 2 completes):** fold into the Wave-2 done line — *"✓ Buyer map +
+> acquisition audit done — all 3 briefs in `WS/02-enrichment/` if you want to peek."*
 
 ## Stage 1.5 — Start growth-factors mining (overlaps enrichment + Stage 2)
 

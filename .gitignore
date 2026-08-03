@@ -7,7 +7,10 @@ RUN-LOG.md
 **/02-enrichment/
 **/03-think-tanks/
 **/report/
-**/.codex-out/
+**/.codex_out/
+
+# Internal dev tools (not shipped in the plugin).
+dev/
 
 # Python bytecode (the codex/ driver is stdlib Python — never stage its caches).
 __pycache__/

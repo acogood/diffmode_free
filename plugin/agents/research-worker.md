@@ -100,6 +100,9 @@ refuse that path and note it in your summary.
      Perplexity hands you grounded result URLs; the `WebSearch` fallback makes you assemble
      citations yourself, which is exactly where a fabricated domain slips in — so this rule is
      the first line of defense, and Step 6 re-verifies it on the fallback path.
+     **Supporting quotes:** for every cited source, store a one-line supporting quote (the
+     exact sentence or metric from the page that grounds the claim) alongside the URL.
+     Format: `[Source: <url> — "<quote>"]`. This makes fabrication structurally harder.
 4. **Address `blocking_issues` first** (if present). Each one is a concrete fix the
    reviewer demanded — resolve every item before anything else, then re-validate the
    whole output against the skill's checklist. **If the brief flags the retry as

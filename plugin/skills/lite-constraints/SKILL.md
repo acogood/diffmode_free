@@ -1,6 +1,6 @@
 ---
 name: lite-constraints
-description: Generates synthesis-constraints.json for the Diffmode growth-tactics pipeline by reasoning in-context over the per-run growth-factors.json (LIGHT vector DB) + founder context — the clean-room, no-Python replacement for the proprietary Python constraints generator. Emits the white-space pairs, mandatory synergy/founder-fit pools, prohibited (conventional-outcome) combinations, and category-diversity requirements that the synthesis chain reads. Use after growth-factors mining and before synthesis.
+description: Generates synthesis-constraints.json for the Diffmode growth-tactics pipeline by reasoning in-context over the per-run growth-factors.json (LIGHT vector DB) + founder context — the clean-room, no-Python replacement for the proprietary Python constraints generator. Emits the white-space pairs, mandatory synergy/founder-leverage pools, prohibited (conventional-outcome) combinations, and category-diversity requirements that the synthesis chain reads. Use after growth-factors mining and before synthesis.
 metadata:
   version: "1.0.0"
 ---
@@ -28,8 +28,8 @@ specific pairs.
 
 - **INPUT** (required): `WS/03-think-tanks/demand-generation/growth-factors.json` (the
   LIGHT DB — read its `vectors` and `metadata.category_counts`).
-- **INPUT** (required): `WS/01-diagnostics/founder-input.md` (budget, team size, skills,
-  stage — to build the founder-fit pool and bias selection).
+- **INPUT** (required): `WS/01-diagnostics/founder-input.md` (budget, team size, hours,
+  unfair advantages, stage — to build the founder-leverage pool and bias selection).
 - **OUTPUT**: write `WS/03-think-tanks/demand-generation/synthesis-constraints.json`.
 
 ## What the synthesis chain actually uses (build these fields)
@@ -46,9 +46,11 @@ specific pairs.
    - **Pool B — `B_synergy`** (5): high-synergy CROSS-CATEGORY pairs (e.g. Structural +
      Resource, Leverage + Positioning, Psychological + Leverage, Structural + Psychological,
      Resource + Positioning). `reason`: name the synergy type.
-   - **Pool C — `C_founder_fit`** (5): pairs that fit THIS founder's constraints (within
-     budget, uses skills they have or can acquire, fits stage/team). Both vectors should be
-     transferability "High"; at least one "Emerging". `reason`: name the constraint it fits.
+   - **Pool C — `C_founder_leverage`** (5): pairs that exploit what THIS founder HAS
+     that's rare — their unfair advantages (technical skill, industry access, network,
+     domain expertise, existing audience) — within their time and budget. Both vectors
+     should be transferability "High"; at least one "Emerging". `reason`: name the asset
+     it exploits.
    `priority`: `must_include` for A/B, `suggested` for C.
 
 3. **`prohibited_combinations`** (Step 1's conventional-detection) — category/theme-level
@@ -94,10 +96,10 @@ Also emit (lite versions of the script's other fields, used loosely by synthesis
 {
   "version": "lite-1.0",
   "source_note": "Built in-context from the per-run growth-factors.json LIGHT DB. NOT the proprietary intelligence layer.",
-  "generated_for": { "budget_max": 0, "team_size": "solo|small|full|unknown", "skills": [], "stage": "..." },
+  "generated_for": { "budget_max": 0, "team_size": "solo|small|full|unknown", "unfair_advantages": [], "hours_per_week": 0, "stage": "..." },
   "diverse_white_space": [ { "vectors": ["id_a","id_b"], "reason": "...", "source": "white_space" } ],
   "diverse_white_space_stats": { "candidate_vectors": 0, "pairs_emitted": 0, "excluded_theme": "content-flywheel/over-represented" },
-  "mandatory_combinations": [ { "pool": "A_white_space|B_synergy|C_founder_fit", "vectors": ["id_a","id_b"], "reason": "...", "priority": "must_include|suggested" } ],
+  "mandatory_combinations": [ { "pool": "A_white_space|B_synergy|C_founder_leverage", "vectors": ["id_a","id_b"], "reason": "...", "priority": "must_include|suggested" } ],
   "prohibited_combinations": [ { "pattern": "...", "vectors_if_present": [], "reason": "...", "alternative": "..." } ],
   "unconventional_anchors": [ { "vector": "id", "category": "...", "good_partners": ["id"], "avoid_partners": ["id"], "reason": "..." } ],
   "anti_patterns": [ { "pattern": "...", "severity": "HIGH", "why": "..." } ],
@@ -109,11 +111,16 @@ Also emit (lite versions of the script's other fields, used loosely by synthesis
 ## Procedure
 
 1. **Parse founder constraints** from `founder-input.md` into `generated_for` (budget_max
-   from "Monthly marketing budget"/MRR; team_size from solo/team; skills from the technical-
-   capabilities bullets; stage from metrics). Mirror the field labels the paid parser used.
+   from "Monthly marketing budget"/MRR; team_size from solo/team; unfair_advantages from
+   "Rare assets"; hours_per_week from "Hours per week for growth"; stage from metrics).
 2. **Load the vectors** from `growth-factors.json`. Note category spread and which vectors
    are Emerging / High transferability (white-space + anchor candidates) vs over-represented
    (content-flywheel-like → exclude from white space).
+   **Degraded-DB check:** if the vectors collapse into fewer than 5 distinct mechanism
+   verbs (e.g. 8 of 20 vectors are "publish/write/create"), or a single category holds
+   >70% of vectors, mark `"db_quality": "degraded"` in the output metadata and widen the
+   pools — relax the "Emerging" requirement for Pool C and allow one extra pair per pool
+   from adjacent categories. This is a warning that changes behavior, not a gate that halts.
 3. **Build `diverse_white_space`** (8-10 cross-category pairs; run each mentally through the
    "would a marketer say 'that's unusual'?" test; exclude content-flywheel-type vectors).
 4. **Build the three `mandatory_combinations` pools** (A/B/C as above), using ONLY this
@@ -131,8 +138,8 @@ Also emit (lite versions of the script's other fields, used loosely by synthesis
 - [ ] Every vector ID referenced exists in this run's `growth-factors.json` (no invented /
       no proprietary IDs).
 - [ ] `diverse_white_space` ≥ 5 cross-category pairs; no content-flywheel-type vector in it.
-- [ ] `mandatory_combinations` has Pool A (5), Pool B (5), Pool C (5); founder-fit pool
-      respects the founder's budget/skills/stage.
+- [ ] `mandatory_combinations` has Pool A (5), Pool B (5), Pool C (5); founder-leverage
+      pool exploits the founder's rare assets within their time and budget.
 - [ ] `prohibited_combinations` includes the 5 generic conventional patterns.
 - [ ] `category_diversity_requirements` computed from real `category_counts`,
       `max_single_category_pct: 60`.

@@ -56,7 +56,7 @@ STEPS.**
 to do" · generate combinations that produce CONVENTIONAL outcomes.
 
 **YOU MUST ONLY:** explore vector synergies · explain WHY vectors combine · identify white
-space · document founder fit · **REJECT combinations that produce conventional marketing.**
+space · document founder leverage · **REJECT combinations that produce conventional marketing.**
 
 If you find yourself writing a tactic name or execution step, STOP and delete it.
 
@@ -96,8 +96,9 @@ listing ONLY vector IDs (no descriptions/previews yet), into the output's
   pool `A_white_space`.
 - **Pool B — Cross-Category Synergy (5):** from `mandatory_combinations` pool `B_synergy`
   (one per high-synergy category pair).
-- **Pool C — Founder Fit (5):** from pool `C_founder_fit` — both vectors transferability
-  "High", at least one "Emerging", each addressing a specific founder constraint.
+- **Pool C — Founder Leverage (5):** from pool `C_founder_leverage` — both vectors
+  transferability "High", at least one "Emerging", each exploiting a specific unfair
+  advantage the founder possesses.
 
 **Checkpoint:** 15 combinations drawn blind. If any pool is short (the LIGHT DB is smaller
 than the paid DB), fill from the nearest cross-category Emerging/High-transferability pairs
@@ -125,6 +126,12 @@ compelling contrarian content" ✗ — has adjectives.)
 
 **Part 2 — The Marketer Test.** Would a generic B2B marketer recommend this EXACT raw
 action? "Obviously do that" → REJECT. "That's risky / unusual / why would you?" → ACCEPT.
+
+**Part 2b — Structural Rescue (on REJECT only).** If the Marketer Test says REJECT but the
+competitor analysis (`competitor-gaps.md` Tier 1) shows a genuine structural barrier
+preventing competitors from executing this exact action, OVERRIDE the reject → ACCEPT with
+note `[STRUCTURAL RESCUE: <barrier>]`. The action looks conventional but competitors
+structurally can't do it. Max 2 rescues per run.
 
 **Part 3 — Emergence Proof (accepted only).** Can Vector A ALONE produce the action? Can
 Vector B ALONE? If BOTH can independently → REJECT (no emergence). If EITHER alone CANNOT →
@@ -189,6 +196,26 @@ CONVENTIONAL; YES (give the reason) → continue. **Q3** Could a competitor copy
 within 30 days with no structural barrier? YES → downgrade to "Execution Lead"; NO (name the
 barrier) → true structural advantage.
 
+## Guerrilla Lens (tag each mechanism — positive novelty, not a gate)
+
+After the prototype gates, tag each mechanism with 1-3 guerrilla principles it exploits.
+This is a POSITIVE lens — it pushes toward mechanisms that work *because* of structural
+asymmetries between small and large players, complementing the negative anti-conventional
+tests above. A mechanism does NOT need all six; 1-2 strong tags is fine.
+
+| Principle | Why it works for a small player | Why a funded competitor can't copy it |
+|-----------|--------------------------------|---------------------------------------|
+| **Surprise** | Unexpected format, timing, or channel gets disproportionate attention | Big players plan campaigns months ahead; can't be spontaneous |
+| **Intimacy** | Personal, 1:1, hand-crafted outreach converts at 10× mass marketing | Can't scale intimacy; delegating it makes it fake |
+| **Judo** | Uses a competitor's size, brand, or compliance burden against them | Their size IS the vulnerability; they can't shrink |
+| **Counter-cyclical** | Going against the grain (timing, pricing, positioning) buys cheap attention | Big players follow industry norms; deviating is career risk |
+| **Transparency / Absurdity** | Doing something "unprofessional" works because it's honest or weird | Corporate brands get fired for this; founders get celebrated |
+| **Compounding** | Many small consistent actions build an asset nobody can buy | Big players buy results; they don't build them patiently |
+
+Write the tags as `Guerrilla: Surprise + Judo` (etc.) in each mechanism block. If a
+mechanism has zero applicable tags, note `Guerrilla: none — execution lead` as a warning
+(it may still pass the structural-advantage test, but it lacks the asymmetry multiplier).
+
 ## Mid-Generation Diversity Check (after mechanisms #5, #10, #15)
 
 List each mechanism's core action in 3-5 words; group by similarity. If 3+ share the same
@@ -233,7 +260,7 @@ structural proof that Phase 1 preceded Phase 2 — keep it exactly:
 > Drawn BEFORE any analysis (Phase 1, step 1). IDs only — no descriptions, no tactics.
 - Pool A — White Space (5): `id` · `id` · `id` · `id` · `id`
 - Pool B — Cross-Category Synergy (5): `id`+`id` · … (one per high-synergy pair)
-- Pool C — Founder Fit (5): `id`+`id` · …
+- Pool C — Founder Leverage (5): `id`+`id` · …
 - Substitutions (if the LIGHT DB was short): <pair> → <replacement id that exists in growth-factors.json>
 
 ## Selected Category Clusters
@@ -259,7 +286,7 @@ structural proof that Phase 1 preceded Phase 2 — keep it exactly:
 - **Marketer Test:** ACCEPT  · **Emergence Proof:** PASS
 - **Why These Combine:** what each vector contributes (1 sentence each) + Together (2-3 sentences)
 - **Why Unconventional:** reference the Raw Action
-- **Founder Fit:** 2 sentences
+- **Founder Leverage:** 2 sentences — what unfair advantage does this exploit?
 - **Buyer Psychology Fit:** intercepts trigger? addresses emotion?
 
 ## White Space Combinations
@@ -275,6 +302,8 @@ structural proof that Phase 1 preceded Phase 2 — keep it exactly:
 **Why Novel:** 2-3 sentences
 **Structural Advantage:** Type / Duration / Why competitors can't copy (specific barrier)
 **Execution Prototype:** 1. Day 1 … 2. Day 7 … 3. Day 30 …
+**Guerrilla Lens:** <1-3 principles: Surprise / Intimacy / Judo / Counter-cyclical /
+Transparency-Absurdity / Compounding — or "none — execution lead">
 **Novelty Test:** Conventional Detection PASS (marketer would NOT recommend) · Emergence Yes
 · Specificity Yes (unconventional element explicit)
 
@@ -320,6 +349,8 @@ structural proof that Phase 1 preceded Phase 2 — keep it exactly:
 - [ ] Each has a structural-advantage type + duration; ≥50% are Arbitrage/Lockout/Network.
 - [ ] ≥60% UNCONVENTIONAL (Reframing Test applied — adjectives stripped, conventional core REJECTED).
 - [ ] Each has a 3-step Execution Prototype passing Q1/Q2/Q3.
+- [ ] Each has a Guerrilla Lens tag (1-3 principles); mechanisms tagged "none — execution
+      lead" are flagged but allowed (they still need a structural-advantage type).
 - [ ] **Verb groups ≥7 and ≤2 mechanisms per group** (else OUTPUT INVALID — regenerate).
 - [ ] Weak combinations documented; NO tactic names.
 - [ ] Every vector ID used exists in `growth-factors.json`.

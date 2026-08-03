@@ -122,12 +122,12 @@ the founder keeps) vs **rented** (paid ads that stop when budget stops)? For an 
 bootstrapper, lean owned (≥50%). 100% paid = red flag.
 
 ### 2G. Execution realism + skill fit (flag, do NOT auto-FAIL)
-Cross-reference each tactic's `Skills Required` table against the founder's stated skills in
-`founder-input.md`. Note skill gaps and over-complex tactics (too many vectors/dependencies
-for the team's capacity). **Flag mismatches in `blocking_issues`, but do NOT auto-FAIL on
-skill gaps** — consistent with the AI-era philosophy that skill gaps are not sanity issues
-(AI tooling closes most of them; founder capability is a separate concern from synthesis
-quality).
+Cross-reference each tactic's `Skills Required` table against the founder's stated assets in
+`founder-input.md`. A tactic that requires the founder to LEARN a skill is NOT a defect —
+score the learning cost's honesty (is the time-to-competence stated?), not the skill's
+pre-existence. Founders will learn any channel that brings customers. Note genuinely
+over-complex tactics (too many vectors for the team's time/budget). **Flag mismatches in
+`blocking_issues`, but do NOT auto-FAIL on skill gaps.**
 
 ### 2H. Time-to-signal
 Does each tactic state a time-to-signal, and does the mix give the founder fast feedback

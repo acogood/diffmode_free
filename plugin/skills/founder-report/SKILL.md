@@ -54,7 +54,7 @@ detail here; the cards follow.
 ### 3. `## The tactics`
 
 One card per tactic, in synthesis order. Heading: `### N. <Name>` (sequential number, plain
-name, no bracket labels). Each card has **exactly these 6 fields, in this order**:
+name, no bracket labels). Each card has **exactly these 7 fields, in this order**:
 
 | Field | Built from (synthesis.md) | Rules |
 |-------|---------------------------|-------|
@@ -64,6 +64,25 @@ name, no bracket labels). Each card has **exactly these 6 fields, in this order*
 | **Time to first signal** | `Expected Timeline & Success Metrics` | the early signal + when to expect it; strip any `(per …)` vector citations |
 | **What you need** | `Required Resources` (+ `Skills Required` where it adds something) | time / budget / tools, in one or two lines |
 | **Kill it if…** | the decision point in `Expected Timeline & Success Metrics` | the concrete number/date that says stop or double down |
+| **Execute this** | derived from the tactic's first steps | 2-3 specific tools, skills, or templates that help execute the first steps — see rules below |
+
+**"Execute this" rules.** This field is the ONE exception to the "zero new content" rule —
+it names execution aids, not strategic claims. Scope it tightly:
+
+- Name 2-3 concrete tools, agent skills, or templates that help the founder execute the
+  tactic's first steps. Match them to what the tactic actually involves:
+  - Outreach / cold email → the `cold-email` skill (coreyhaines31/marketingskills) or the
+    agent's built-in writing
+  - Copy / messaging → the `copywriting` skill or the agent's built-in writing
+  - Landing page / demo → v0.dev, the `free-tools` skill, or the agent's code generation
+  - Community / social → the `community-marketing` or `social` skill
+  - Content / SEO → the `content-strategy` or `ai-seo` skill
+  - Design / visual assets → Canva, Figma, or the agent's image generation
+  - Tracking / measurement → a simple spreadsheet with columns for the kill-signal metric
+- Format as a short bulleted list: `→ <what>: <tool/skill name>`.
+- Do NOT invent tactics, channels, or numbers here — only name execution tools.
+- If the tactic is purely manual (e.g. "walk into 10 coffee shops"), say
+  `→ No tools needed — this is a shoes-on-the-ground play.`
 
 ### 4. `## What to avoid`
 
@@ -110,7 +129,7 @@ Plus everything `writing-style.md` already bans (leverage, optimize, arbitrage, 
 
 - [ ] Card count under `## The tactics` == the number of `### Tactic #N` blocks in
       synthesis.md, same order, same names (minus bracket tags).
-- [ ] Every card has all 6 fields, in the listed order.
+- [ ] Every card has all 7 fields, in the listed order (including "Execute this").
 - [ ] Banned-pattern grep over the output is empty.
 - [ ] The document's last section is `## Where these came from`.
 - [ ] Voice: grade 6–8, ≤~20 words per sentence, passes the coffee test, no banned jargon —

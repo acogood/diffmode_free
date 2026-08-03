@@ -43,7 +43,8 @@ If neither `url` nor `answers` is present, write the schema with every must-ask 
 | **Current acquisition sources / what's working** (Q8 demand-gen signal) | **MUST ASK** |
 | **Demand-gen vs CRO split** (traffic problem vs conversion problem) | **MUST ASK** |
 | **Budget** (monthly marketing $, paid-ads yes/no) | **MUST ASK** |
-| **Skills / technical capabilities** (landing pages, content, ads, analytics) | **MUST ASK** |
+| **Unfair advantage / rare assets** (technical skill, industry access, network, domain expertise, existing audience) | **MUST ASK** |
+| **Hours per week for growth** (time they can commit) | **MUST ASK** |
 | **Goal + timeline** (target metric, deadline) | **MUST ASK** |
 | Tactics ruled out + competitor-dignity constraints | MUST ASK (optional) |
 
@@ -67,8 +68,9 @@ interview-observation and CRO-deep-dive fields):
    bottleneck → demand gen; if traffic converts poorly → CRO.)*
 6. **Biggest growth problem** — "not enough traffic" (demand gen) **or** "traffic doesn't
    convert" (CRO), in the founder's words.
-7. **Budget + skills** — monthly marketing $ (and paid-ads yes/no), plus which of
-   {landing pages, content creation, ad campaigns, analytics} they can do.
+7. **Budget + unfair advantage + hours** — monthly marketing $ (and paid-ads yes/no);
+   what they have that's rare (technical skill / industry access or network / existing
+   audience / domain expertise / none yet); hours per week they can put into growth.
 8. **Goal + deadline** — target (e.g. "20 paying teams" / "10k visitors/mo") + timeframe.
    *(Optional 9th: tactics/channels already ruled out + why.)*
 
@@ -168,16 +170,14 @@ From Q8 / the stated biggest problem:
 ---
 ## 5. Resources & Constraints
 ### Time
-**Founder availability:** <hrs/week on marketing or [NEEDS FOUNDER INPUT]>
+**Hours per week for growth:** <n or [NEEDS FOUNDER INPUT]>
 **Team availability:** <roles or "solo">
 ### Budget
 **Monthly marketing budget:** <$ / "no paid ads for now" / [NEEDS FOUNDER INPUT]>
 **Hard constraints:** <e.g. paid ads ruled out>
-### Technical Capabilities
-- Landing pages: <Yes/No/Limited>
-- Ad campaigns: <Yes/No/Limited>
-- Content creation: <Yes/No/Limited>
-- Analytics/tracking: <Yes/No/Limited>
+### Unfair Advantage & Capacity
+**Rare assets:** <technical skill / industry access or network / existing audience / domain expertise / none yet — free-form, whatever the founder has that competitors don't>
+**Willingness:** <what they'll do to get customers — default: "whatever works">
 ### Goal & Timeline
 **Primary goal:** <target metric + number>
 **Deadline:** <timeframe>
@@ -213,9 +213,9 @@ orchestrator can ask the founder. Empty list = "None — all fields captured.">
 - [ ] All 7 sections present, in order, with the exact `## N.` headers above.
 - [ ] Section 1 product description is specific to THIS product (not generic).
 - [ ] Section 4 separates demand-gen (traffic) from CRO (conversion) — the Q8 signal.
-- [ ] Section 5 budget + technical capabilities are present (the constraints parser reads
-      "Monthly marketing budget", the skills bullets, MRR, and "solo"/team — keep those
-      exact labels so the parser finds them).
+- [ ] Section 5 budget + unfair advantage + hours are present (the constraints parser reads
+      "Monthly marketing budget", "Hours per week for growth", "Rare assets", MRR, and
+      "solo"/team — keep those exact labels so the parser finds them).
 - [ ] Section 7 routing is derived from the stated problem, with a one-line rationale.
 - [ ] Every founder-only field is either filled from `answers` or marked
       `[NEEDS FOUNDER INPUT]` AND listed in Confirmation Gaps — never silently invented.
