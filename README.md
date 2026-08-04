@@ -1,41 +1,43 @@
 # Diffmode Growth Tactics
 
-**Growth tactics for startups that can't outspend their competitors.** It researches your market, mines the *reasons* real growth plays worked from public case studies, combines them in ways nobody's tried, and kills anything a generic marketer would have suggested anyway.
+**Growth tactics for startups that can't outspend their competitors.** It researches your market, mines public case studies for the *reasons* real growth plays worked, combines them in ways nobody's tried, and kills anything an average marketer would have suggested anyway.
 
 Free. No account. Runs inside Claude Code or OpenAI Codex in about 90 minutes.
 
 ![Diffmode overview](docs/assets/diffmode-overview.gif)
 
 ```mermaid
-graph LR
-    A["Your product<br/>URL"] --> B["Research"]
-    B --> B1["Competitors<br/>mapped"]
-    B --> B2["Buyer<br/>segments"]
-    B --> B3["Case studies<br/>mined"]
-    B1 --> C["Combine<br/>mechanisms"]
-    B2 --> C
-    B3 --> C
-    C --> D{"Would a marketer<br/>recommend this?"}
-    D -- "Yes" --> X["✗ Killed"]
-    D -- "No" --> E["7–9 tactics<br/>competitors can't copy"]
+graph TD
+    A["Your product URL"] --> R["Research your market"]
+    R --> COMP["Competitors:<br/>how they get users"]
+    R --> BUY["Buyers:<br/>jobs-to-be-done"]
+    R --> CASE["Real case studies"]
+    CASE --> MINE["Mine the mechanisms:<br/>why each play worked"]
+    COMP --> CONS["Constraints:<br/>budget, team, market gaps"]
+    BUY --> CONS
+    MINE --> DRAW["Blind draw: pair mechanisms<br/>before knowing the tactic"]
+    CONS --> DRAW
+    DRAW --> GATE{"Would an average marketer<br/>already suggest this?"}
+    GATE -- "Yes" --> KILL["✗ Killed<br/>too conventional"]
+    GATE -- "No" --> OUT["7 to 9 tactics<br/>competitors can't copy"]
 
-    style X fill:#fee,stroke:#c00
-    style E fill:#efe,stroke:#0a0
+    style KILL fill:#fee,stroke:#c00
+    style OUT fill:#efe,stroke:#0a0
 ```
 
 ---
 
 ## What you get
 
-- **A read on your competition.** Who you're up against, how each rival actually gets users, and the channels they're ignoring. That gap is where you get in.
-- **A map of your buyers.** Real segments, the job each one hires you to do, and the moments that make someone switch.
-- **7–9 unconventional tactics.** Each one a plain card: what it is, why your better-funded rivals can't copy it, how to start this week, and when to kill it.
+- **A read on your competition.** Who you're up against, how each rival gets users, and which channels they're ignoring. That gap is where you get in.
+- **A map of your buyers.** Real segments, the job each one hires you to do, and what makes someone switch.
+- **7 to 9 unconventional tactics.** Each one a plain card: what it is, why your better-funded rivals can't copy it, how to start this week, and when to kill it.
 
 Here's the kind of tactic a run produces:
 
-> **The Hiring-Signal Pitch.** When a company posts a job to hire someone for the exact manual task your product removes, that's a buying signal nobody else is watching. Set alerts for those job titles. When one's posted, find the hiring manager and send a 60-second screen recording: "saw you're hiring a [role] to do [task] — here's my tool doing it live." A reply rate above ~10% means the angle lands.
+> **The Hiring-Signal Pitch.** When a company posts a job to hire someone for the exact manual task your product removes, that's a buying signal nobody else is watching. Set alerts for those job titles. When one's posted, find the hiring manager and send a 60-second screen recording: "saw you're hiring a [role] to do [task]. Here's my tool doing it live." A reply rate above ~10% means the angle lands.
 
-Everything is yours to reuse — hand the competitor read to a freelancer, drop the buyer map into a deck. The run ends with a styled report in your browser.
+Everything is yours to reuse. Hand the competitor read to a freelancer, drop the buyer map into a deck. The run ends with a styled report in your browser.
 
 ---
 
@@ -43,17 +45,17 @@ Everything is yours to reuse — hand the competitor read to a freelancer, drop 
 
 Most marketing tools hand you a checklist: do SEO, run ads, post on LinkedIn. Diffmode does the opposite.
 
-**Mechanism, not tactic.** It stores *why* growth plays worked — not what channels were used. Mechanisms transfer across industries; channel checklists don't.
+**Mechanism, not tactic.** It stores *why* growth plays worked, not which channels were used. Mechanisms transfer across industries; channel checklists don't.
 
-**Blind before analysis.** It picks which mechanisms to combine *before* it knows what tactic they'll produce. This stops the model from reverse-engineering its way back to the obvious answer.
+**Blind before analysis.** It picks which mechanisms to combine *before* it knows what tactic they'll produce. That stops the model from reverse-engineering its way back to the obvious answer.
 
-**Rejection is the product.** Four separate gates throw away anything a generic marketer would recommend. Novelty isn't generated — it's what survives.
+**Rejection is the product.** Four separate gates throw away anything an average marketer would recommend. Novelty isn't generated. It's what survives.
 
 ---
 
 ## Install
 
-**Claude Code** — two commands, then restart:
+**Claude Code** (two commands, then restart):
 
 ```bash
 claude plugin marketplace add acogood/diffmode_free
@@ -68,7 +70,7 @@ Then from any folder:
 
 No flags. Run it bare and it asks for your website. Run it again in the same folder and it resumes where it stopped.
 
-**Codex** — clone this repo, then:
+**Codex** (clone this repo, then run):
 
 ```bash
 python3 codex/orchestrate.py --url https://your-product.com
@@ -80,17 +82,17 @@ Same pipeline, same quality gates. Full setup in [`codex/CODEX.md`](codex/CODEX.
 
 ## Requirements
 
-- **[Claude Code](https://claude.com/claude-code)** or **[OpenAI Codex](https://developers.openai.com/codex)**. That's it.
-- **Research backend:** the built-in web search, free, nothing to set up. A Perplexity MCP works too if you already have one (~$2–3 per run) — both are supported and validated; neither is the degraded option.
+- **[Claude Code](https://claude.com/claude-code)** or **[OpenAI Codex](https://developers.openai.com/codex)**.
+- **Research backend:** the built-in web search, free, nothing to set up. A Perplexity MCP also works if you already have one (about $2-3 per run). Both are fully supported.
 - **Model:** synthesis runs on Opus for reasoning quality; research and packaging use Sonnet.
 
 ---
 
 ## Free vs. the full Diffmode
 
-This free tool builds the **strategy** — the competitor read, the buyer map, and the unconventional ideas. It stops at ideas.
+This free tool builds the **strategy**: the competitor read, the buyer map, and the unconventional ideas. It stops at ideas.
 
-[**Diffmode**](https://diffmode.app) picks up from there: it ranks the tactics so you know what to run first, and turns the top picks into a week-by-week rollout plan — drawn from a much deeper database of growth mechanisms. Start with a **free audit** (no credit card). The full plan comes with a **30-day money-back guarantee**.
+[**Diffmode**](https://diffmode.app) picks up from there. It ranks the tactics so you know what to run first, and turns the top picks into a week-by-week rollout plan, drawn from a much deeper database of growth mechanisms. Start with a **free audit** (no credit card). The full plan comes with a **30-day money-back guarantee**.
 
 → **[diffmode.app](https://diffmode.app)**
 
