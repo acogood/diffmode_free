@@ -4,6 +4,8 @@
 
 Free. No account. Runs inside Claude Code or OpenAI Codex in about 90 minutes.
 
+![Diffmode overview](https://github.com/user-attachments/assets/d1d5502e-1027-420e-a9fa-b8821d596bb9)
+
 ```mermaid
 graph LR
     A["Your product<br/>URL"] --> B["Research"]
@@ -79,7 +81,7 @@ Same pipeline, same quality gates. Full setup in [`codex/CODEX.md`](codex/CODEX.
 ## Requirements
 
 - **[Claude Code](https://claude.com/claude-code)** or **[OpenAI Codex](https://developers.openai.com/codex)**. That's it.
-- **Perplexity is optional.** Without it, research runs on the built-in web search for free. With it, ~$2–3 per run.
+- **Research backend:** the built-in web search, free, nothing to set up. A Perplexity MCP works too if you already have one (~$2–3 per run) — both are supported and validated; neither is the degraded option.
 - **Model:** synthesis runs on Opus for reasoning quality; research and packaging use Sonnet.
 
 ---
