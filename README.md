@@ -7,19 +7,19 @@ Free. No account. Runs inside Claude Code or OpenAI Codex in about 90 minutes.
 ![Diffmode overview](docs/assets/diffmode-overview.gif)
 
 ```mermaid
-graph TD
-    A["Your product URL"] --> R["Research your market"]
-    R --> COMP["Competitors:<br/>how they get users"]
-    R --> BUY["Buyers:<br/>jobs-to-be-done"]
-    R --> CASE["Real case studies"]
-    CASE --> MINE["Mine the mechanisms:<br/>why each play worked"]
-    COMP --> CONS["Constraints:<br/>budget, team, market gaps"]
+graph LR
+    A["Your product URL"] --> R["Research"]
+    R --> COMP["Competitors"]
+    R --> BUY["Buyers"]
+    R --> CASE["Case studies"]
+    CASE --> MINE["Mine mechanisms<br/>(why each worked)"]
+    COMP --> CONS["Constraints"]
     BUY --> CONS
-    MINE --> DRAW["Blind draw: pair mechanisms<br/>before knowing the tactic"]
+    MINE --> DRAW["Blind draw"]
     CONS --> DRAW
-    DRAW --> GATE{"Would an average marketer<br/>already suggest this?"}
-    GATE -- "Yes" --> KILL["✗ Killed<br/>too conventional"]
-    GATE -- "No" --> OUT["7 to 9 tactics<br/>competitors can't copy"]
+    DRAW --> GATE{"Average marketer<br/>already suggests it?"}
+    GATE -- "Yes" --> KILL["✗ Killed"]
+    GATE -- "No" --> OUT["7 to 9 tactics<br/>they can't copy"]
 
     style KILL fill:#fee,stroke:#c00
     style OUT fill:#efe,stroke:#0a0
