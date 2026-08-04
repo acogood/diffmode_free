@@ -4,7 +4,7 @@
 
 Free. No account. Runs inside Claude Code or OpenAI Codex in about 90 minutes.
 
-![Diffmode overview](https://github.com/user-attachments/assets/d1d5502e-1027-420e-a9fa-b8821d596bb9)
+![Diffmode overview](docs/assets/diffmode-overview.gif)
 
 ```mermaid
 graph LR
