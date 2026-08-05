@@ -17,7 +17,7 @@ Last updated: **2026-06-12**
 >
 > 1. **Skill 13 — `founder-report`** (skills 12 → 13): after the synthesis build gate,
 >    `synthesis-worker` (sonnet) re-packages `synthesis.md` per `writing-style.md` into
->    `growth-tactics.md` — plain tactic cards (what this is / why competitors can't copy it /
+>    `growth-tactics.md` — plain tactic cards (what this is / why they won't see it coming /
 >    how to start this week / time to first signal / what you need / kill it if…), plus
 >    Start-this-week, What-to-avoid, How-to-sequence, and Where-these-came-from sections.
 >    Strict re-packaging: zero new claims; **numeric scores dropped from the founder view**

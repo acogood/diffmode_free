@@ -19,7 +19,7 @@ graph LR
     CONS --> DRAW
     DRAW --> GATE{"Average marketer<br/>already suggests it?"}
     GATE -- "Yes" --> KILL["✗ Killed"]
-    GATE -- "No" --> OUT["7 to 9 tactics<br/>they can't copy"]
+    GATE -- "No" --> OUT["7 to 9 tactics<br/>they won't see coming"]
 
     style KILL fill:#fee,stroke:#c00
     style OUT fill:#efe,stroke:#0a0
@@ -31,7 +31,7 @@ graph LR
 
 - **A read on your competition.** Who you're up against, how each rival gets users, and which channels they're ignoring. That gap is where you get in.
 - **A map of your buyers.** Real segments, the job each one hires you to do, and what makes someone switch.
-- **7 to 9 unconventional tactics.** Each one a plain card: what it is, why your better-funded rivals can't copy it, how to start this week, and when to kill it.
+- **7 to 9 unconventional tactics.** Each one a plain card: what it is, why your competitors won't see it coming, how to start this week, and when to kill it.
 
 Here's the kind of tactic a run produces:
 

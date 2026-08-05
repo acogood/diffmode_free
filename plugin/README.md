@@ -17,7 +17,7 @@ The run builds a **growth strategy** in three parts — a read on your competiti
 against and how each rival gets users), a map of your buyers (your segments and the job each is
 hiring you to do), and **7–9 unconventional acquisition tactics** built for the founder's budget,
 stage, and team. The tactics land in the **Your Growth Tactics** report — plain cards, one per
-tactic: what it is, why rivals can't copy it, how to start this week, and when to kill it. The
+tactic: what it is, why they won't see it coming, how to start this week, and when to kill it. The
 full engineering write-up behind each tactic ships alongside as a working paper.
 
 The competitor read, the buyer map, and the acquisition audit behind them stay in the workspace

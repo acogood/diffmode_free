@@ -1,6 +1,6 @@
 ---
 name: founder-report
-description: Founder-report packaging stage for the Diffmode growth-tactics pipeline — the post-gate step that turns the APPROVED synthesis.md (a reviewer-facing working paper) into growth-tactics.md, the founder-facing "Your Growth Tactics" report. Strict re-packaging per the central writing-style.md — plain tactic cards (what it is, why competitors can't copy it, how to start this week, time to first signal, what you need, kill it if) with ZERO pipeline plumbing — no vector IDs, no Pass labels, no pools, no numeric scores, no self-grading. Adds no new claims, numbers, tactics, or estimates — every sentence traceable to synthesis.md. Use after the synthesis build reviewer gate and before the HTML report render. Best-effort by design — if it fails, the report falls back to synthesis.md.
+description: Founder-report packaging stage for the Diffmode growth-tactics pipeline — the post-gate step that turns the APPROVED synthesis.md (a reviewer-facing working paper) into growth-tactics.md, the founder-facing "Your Growth Tactics" report. Strict re-packaging per the central writing-style.md — plain tactic cards (what it is, why they won't see it coming, how to start this week, time to first signal, what you need, kill it if) with ZERO pipeline plumbing — no vector IDs, no Pass labels, no pools, no numeric scores, no self-grading. Adds no new claims, numbers, tactics, or estimates — every sentence traceable to synthesis.md. Use after the synthesis build reviewer gate and before the HTML report render. Best-effort by design — if it fails, the report falls back to synthesis.md.
 metadata:
   version: "1.0.0"
 ---
@@ -59,7 +59,7 @@ name, no bracket labels). Each card has **exactly these 7 fields, in this order*
 | Field | Built from (synthesis.md) | Rules |
 |-------|---------------------------|-------|
 | **What this is** | `In plain English` (+ `Emergent Mechanism` where it clarifies) | 1-3 short sentences; what you actually do |
-| **Why competitors can't copy it** | `Structural Advantage` (+ the competitive-adoption note from `Primary Channel(s)`) | strip taxonomy labels ("Type: …") — keep the plain reason and how long the edge lasts. KEEP competitor-adoption lines like "nobody in your market does this yet" |
+| **Why they won't see it coming** | `Structural Advantage` (+ the competitive-adoption note from `Primary Channel(s)`) | lead with why competitors won't think of this themselves; strip taxonomy labels ("Type: …") — keep the plain structural reason and how long the edge lasts. KEEP competitor-adoption lines like "nobody in your market does this yet" |
 | **How to start this week** | `How to Execute` steps, kept verbatim where they're already plain | fold in useful `Adapted to Your Constraints` context (e.g. "scaled down to fit your $500/month") |
 | **Time to first signal** | `Expected Timeline & Success Metrics` | the early signal + when to expect it; strip any `(per …)` vector citations |
 | **What you need** | `Required Resources` (+ `Skills Required` where it adds something) | time / budget / tools, in one or two lines |
