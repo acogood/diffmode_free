@@ -44,9 +44,14 @@ synthesis  explore → build  →  synthesis.md   (7–9 tactic ideas, then STOP
 packaged as "Your Growth Tactics"  →  plain-language tactic cards (best-effort)
 ```
 
-Research stages use a **Perplexity MCP server** when present and **fall back to the built-in
-WebSearch** otherwise (zero setup; fallback citations are auto-verified for reachability); the
-analysis and synthesis stages run with **no MCP** by design. A parameterized reviewer gates two
+Research stages run on the **built-in WebSearch + WebFetch** — zero setup, free, no API key —
+and every cited URL is auto-verified for reachability before a stage returns. A **Perplexity
+MCP** is supported as an **opt-in** alternative: include the word `perplexity` in the command and
+research is routed to a separate worker that carries those tools. Nothing probes for it
+otherwise, because it bills a paid API and its key can expire mid-run. Both backends are
+validated end-to-end with no measured quality difference (`../docs/eval-methodology.md` §4c);
+the default is the one that costs nothing and cannot break. The analysis and synthesis stages
+run with **no MCP** by design. A parameterized reviewer gates two
 stages — enrichment `competitors` and the final synthesis `build` — and every other generating
 stage gets a structural check. The orchestration model (a main-thread orchestrator, passive
 skills, and thin worker sub-agents, and why each runs where it does) is documented in
@@ -89,7 +94,7 @@ plugin/
   .claude-plugin/plugin.json     plugin manifest (name: diffmode-growth-tactics)
   reference/                     bundled 2026 marketing-channel menu (100+ channels)
   skills/                        the 13 skill files — the single source of truth
-  agents/                        4 worker sub-agents (research / analysis / synthesis / reviewer)
+  agents/                        5 worker sub-agents (research / research-perplexity / analysis / synthesis / reviewer)
   commands/                      the start orchestrator
 ```
 
@@ -98,9 +103,10 @@ plugin's install dir), so the plugin is self-contained.
 
 ## Notes
 
-- **Cost / runtime:** about **1–1.5 hours** per run; free on the built-in web search, or roughly
-  **$2–3** with Perplexity (a few deep-research calls are the only paid part). Measured runtimes
-  and the per-stage breakdown live in [`../docs/STATUS.md`](../docs/STATUS.md).
+- **Cost / runtime:** about **1–1.5 hours** per run, and **free** — the default backend costs
+  nothing. Only the opt-in Perplexity path spends money (roughly **$2–3**, almost all of it in a
+  few deep-research calls). Measured runtimes and the per-stage breakdown live in
+  [`../docs/STATUS.md`](../docs/STATUS.md).
 - **Codex:** the skill bodies are runtime-neutral and Codex reads them unchanged; only the
   orchestration layer is Claude-specific. See the repo's [`../codex/CODEX.md`](../codex/CODEX.md).
 

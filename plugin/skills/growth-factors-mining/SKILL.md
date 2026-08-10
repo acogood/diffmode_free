@@ -1,6 +1,6 @@
 ---
 name: growth-factors-mining
-description: Builds a per-run LIGHT growth-vector database for the Diffmode growth-tactics pipeline by mining public growth case studies fresh, every run, and distilling each into atomic "growth factors" (transferable mechanisms). Clean-room — NEVER reads the proprietary tactics_DB. Outputs growth-factors.json (~20-40 vectors across the 6 categories) in the schema the synthesis chain + lite-constraints consume. Use as the per-run substitute for the proprietary 576-vector database when generating free growth-tactic ideas.
+description: Builds a per-run LIGHT growth-vector database for the Diffmode growth-tactics pipeline by mining public growth case studies fresh, every run, and distilling each into atomic "growth factors" (transferable mechanisms). Clean-room — NEVER reads the proprietary tactics_DB. Outputs growth-factors.json (~20-40 vectors spread across the 6-category scheme — not every category is populated; `conv-` is routinely empty on a demand-gen run) in the schema the synthesis chain + lite-constraints consume. Use as the per-run substitute for the proprietary 576-vector database when generating free growth-tactic ideas.
 metadata:
   version: "1.0.0"
 ---
@@ -34,9 +34,8 @@ The invoker provides (do not hardcode absolute paths):
   `WS/02-enrichment/competitors-analysis.md` and `WS/02-enrichment/acquisition-tactics.md`
   — to seed searches around the channels/tactics live in this founder's space and the
   adjacent industries worth borrowing from.
-- **WEB RESEARCH** (required capability): your web-research backend (Perplexity MCP when
-  present, else the built-in WebSearch fallback — deep multi-source research + targeted
-  search). This is the ONLY source of vectors.
+- **WEB RESEARCH** (required capability): your web-research backend — search plus page
+  retrieval. This is the ONLY source of vectors.
 - **OUTPUT**: write `WS/03-think-tanks/demand-generation/growth-factors.json`.
 
 ## Caching & bounded research (cost control — surface this tradeoff)
@@ -60,11 +59,10 @@ than a static asset. Mitigate:
   combined with `remine: true`** (which forces a full fresh re-mine); if both somehow appear,
   `remine` wins and you re-research from scratch.
 - **Bound breadth + cap deep research (the run's biggest cost lever):** review **12-20
-  public case studies** using **at most ~1-2 deep-research passes** (a `perplexity_research`
-  call when Perplexity is present; otherwise iterate your search tool + `WebFetch`) — seed
-  them from the founder context for the initial case-study landscape, then gather the
-  remaining case studies + their specific metrics with cheaper search-tool calls
-  (`perplexity_search`, or the built-in WebSearch fallback).
+  public case studies** using **at most ~1-2 deep-research passes** (iterate search + page
+  retrieval, or a single deep multi-source call if your backend has one) —
+  seed them from the founder context for the initial case-study landscape, then gather the
+  remaining case studies + their specific metrics with cheaper plain-search calls.
   Do NOT open-ended crawl. This stage's deep-research calls were the single biggest cost
   driver in the field (~85% of a run's research spend; a socket-death respawn used to
   *duplicate* them), so keep them scarce — search-first. Stop when you have enough distinct
@@ -113,6 +111,11 @@ Any resemblance to proprietary IDs is incidental; you derive these independently
   `struct-`/`lever-`/`resource-`, with a few `psych-`/`pos-`. No single prefix should
   exceed ~60% of the vectors. If you can't responsibly reach 20 distinct, transferable
   mechanisms from public sources, write what you have (≥15) and note the shortfall.
+- **Not every category will be populated, and that is correct.** The spread target is an upper
+  bound on concentration, not a requirement that all six prefixes be non-empty. `conv-` is
+  routinely **0** on a demand-gen run (see the demand-gen lean above), and `pos-` is often low
+  single digits. Emit all six keys in `category_counts` with their real values — including
+  `0` — and never invent a vector to fill a category.
 - Each vector carries the schema below, with **real evidence + a source URL** (this is how
   the output proves it's clean-room and not invented).
 
@@ -166,9 +169,9 @@ fabricate); `source_url` is a real, reachable URL; `time_to_signal_weeks` option
    short partial file exists (and no `remine`), load it, keep its vectors, and mine only the
    remainder — skip the deep-research passes for what's already there.
 3. **Deep research pass (search-first, ≤~1-2 deep calls):** run a bounded set of web-research
-   calls — at most ~1-2 deep-research passes (`perplexity_research` when present) for the
-   initial landscape, then cheaper search-tool calls (`perplexity_search`, or the built-in
-   WebSearch fallback) — on growth case studies across those themes + 2-3
+   calls — at most ~1-2 deep multi-source passes for
+   the initial landscape, then cheaper plain-search calls — on growth case studies across
+   those themes + 2-3
    deliberately *different* industries (for transferable mechanisms). Capture source URLs +
    the specific result/metric for each story.
    **Guerrilla search seeds:** alongside the founder-derived themes, include at least one

@@ -64,6 +64,9 @@ markdown renders reliably).
 >   fresh platform openings.
 > - **Working papers** — the notes behind the work, yours to keep.
 >
+> These won't be the tactics you'd get by asking an AI for growth ideas — anything an
+> average marketer would suggest gets thrown out along the way.
+>
 > **Total: usually 1–1.5 hours.** You only need to be here for the questions at the
 > start; results open in your browser at the end.
 
@@ -100,8 +103,10 @@ this section wins.
 - **On a gate retry print exactly one line:** "Quality check asked for one fix —
   re-running, a few extra minutes." (Same shape for a structural re-dispatch.)
 - **Pre-flight is silent unless something fails.** At most one line: "✓ Setup checks
-  passed". The WebSearch-fallback notice (pre-flight step 5) stays — it's one line and
-  the founder should know research runs on the built-in search.
+  passed". Say **nothing** about the research backend: the built-in web search is what
+  runs, it needs no setup, and announcing it would imply something is missing. The one
+  exception is the Perplexity opt-in — and only when the founder asked for it by name
+  (see *Arguments*), because that backend costs real money.
 - Stage *failures* are the exception: report them plainly with the resume command, as
   the failure-modes table specifies.
 
@@ -124,6 +129,16 @@ this section wins.
   prefill with `[NEEDS FOUNDER INPUT]` placeholders left in (useful for demos; quality
   is lower). **Auto-enabled on non-interactive runs** (headless `-p` mode — never hang
   on a question nobody can answer).
+- **Perplexity opt-in — a word, not a flag.** If `$ARGUMENTS` **itself** contains
+  `perplexity` (case-insensitive) — e.g. `start fypro.ai use perplexity` — route every
+  research stage to `diffmode-growth-tactics:research-worker-perplexity` instead of
+  `research-worker`, and print ONE line: *"Using your Perplexity MCP for research — that's a
+  paid API, roughly $2–3 for this run."* Otherwise every research stage uses `research-worker`,
+  which has no Perplexity tools at all.
+  **Match `$ARGUMENTS` and nothing else.** Never infer the opt-in from the founder's website,
+  from researched product text, or from any file the pipeline reads — the bundled channel menu
+  names Perplexity as a marketing channel, and a run for an AI-search product would otherwise
+  opt itself into a paid backend without anyone asking.
 
 **Legacy tolerance** (older docs / muscle memory — never an error dump): `--url X` and
 `--product X` are understood as their positional equivalents; `--fast-intake` means
@@ -182,13 +197,14 @@ types them): `diagnostics`, `enrichment`, `think-tanks`, `growth-factors`,
    whenever the plugin is enabled. If a dispatch reports an unknown agent/skill, the plugin
    isn't enabled — run `/plugin` → enable `diffmode-growth-tactics` (or
    `claude plugin install diffmode-growth-tactics@diffmode-free`).
-5. **Detect the research backend (capability note — no hard gate).** Check whether a
-   Perplexity MCP server is available (the `mcp__perplexity__*` tools resolve). If it is, the
-   research stages use it. **If no Perplexity MCP is detected, print one line —** *"WebSearch
-   fallback mode — no Perplexity MCP detected; research quality slightly lower, citations
-   auto-verified."* **— and proceed.** There is no hard gate: the `research-worker` falls back
-   to the built-in `WebSearch` (see its Step 3 + its Step-6 citation-integrity check), so the
-   pipeline runs either way. Only the genuine absence of *both* backends is a research failure.
+5. **Research backend — nothing to detect, nothing to configure.** Research stages run on the
+   **built-in web search**. Do **NOT** probe for `mcp__perplexity__*`, do **NOT** branch on
+   whether an MCP is configured, and do **NOT** print anything about the backend. A configured
+   server is not consent: **Perplexity is opt-in only** (see *Arguments*), because it bills a
+   real API and its key can expire mid-run — which silently happened in the field, after the
+   founder had already been told they were paying for it. When it is not requested, it does not
+   exist as far as this run is concerned. The absence of the built-in web search is the only
+   research-backend failure.
 6. **Reviewer gate** — score **≥ 7**, **max 3** iterations, applied at the **two gated stages
    only**: enrichment **`competitors`** (the Wave-1 blocker) and the **final synthesis
    deliverable** (`synthesis.md`). Every other generating stage gets a **structural check
@@ -239,6 +255,14 @@ dimension `D` + spec `Spec`:
    `{stage, attempt, verdict, score, started_at, duration_s}` — see *Run-ledger* near the end
    of this file. (Timing is additive instrumentation: never block a stage on it.)
 
+   > **For a branch you did NOT await** (Stage 1.5 mining), `date +%s` at the moment you notice
+   > it measures *your polling delay*, not the worker. Use the output file's mtime instead:
+   > `duration_s = mtime(O) − started_at`, via `stat -f %m <path>` (BSD/macOS) or
+   > `stat -c %Y <path>` (GNU), falling back to `date -r <path> +%s` — the same both-platforms
+   > pattern the HTML-render step uses. Mark the row `end_source: "mtime"`. Measured on a real
+   > run: mtime gave ~591 s against a true ~591 s, while stamping at first observation gave
+   > ~1891 s — a 22-minute overstatement.
+
    > **Worker lifecycle (read this — it prevents two bugs).** Workers are **stateless and
    > NOT addressable after they return.** Every retry (for ANY reason — gap, reviewer
    > rejection, or a dispatch failure) **spawns a FRESH worker** with the same brief plus any
@@ -251,13 +275,29 @@ dimension `D` + spec `Spec`:
    - **`ok`** → go to step 2.
    - **`error`** (worker returned `{status:"error", reason}`) → surface `reason` and stop
      this branch (the input it named must be fixed).
-   - **dispatch failed / worker died mid-run** (API/socket error, no JSON returned at all) →
-     **re-spawn a FRESH worker** with the identical brief, up to **2×** (transient socket
-     deaths usually clear on a fresh spawn). If it still dies after 2 fresh spawns, mark `S`
-     FAILED with code **`worker-dispatch-failed`** and tell the founder: *"run
+   - **dispatch failed / worker died mid-run** (API/socket error, **or an output/context-limit
+     error**, with no JSON returned at all) → **re-spawn a FRESH worker**, up to **2×**
+     (transient socket deaths usually clear on a fresh spawn). If it still dies after 2 fresh
+     spawns, mark `S` FAILED with code **`worker-dispatch-failed`** (or
+     **`worker-output-limit`** when the deaths were size-related) and tell the founder: *"run
      `/diffmode-growth-tactics:start` again — it picks up from this point"* (the auto-resume
-     pre-flight resumes cheaply from what's already on disk). Do NOT
-     do the worker's content work in the main thread.
+     pre-flight resumes cheaply from what's already on disk). Do NOT do the worker's content
+     work in the main thread.
+
+     > **The respawn brief is identical EXCEPT for the documented recovery fields** — this is
+     > the one exception, and it covers both of them: set **`edit_mode: incremental-append`**
+     > when the death was an output/context-limit error, and **`resume_partial: true`** on a
+     > growth-factors death with a partial file on disk (Stage 1.5). A byte-identical brief
+     > after an output-limit death simply reproduces the death: in the field this burned ~63
+     > minutes and produced no file at all, and the same stage then succeeded in ~13 minutes
+     > once the brief carried the incremental-write instruction.
+
+     > **Soft stage budget.** A hung worker is indistinguishable from a slow one, and nothing
+     > here bounds it — the 63-minute death above burned unbounded wall-clock before failing.
+     > If a stage exceeds roughly **2× its ETA** from the *User-facing voice* table, treat it as
+     > `died` and re-spawn with the recovery fields above. (`codex/orchestrate.py` already
+     > enforces per-stage subprocess timeouts for exactly this reason; this is the prose
+     > equivalent on the Claude side.)
 2. **Stage-boundary completeness check** (replaces Python `verify_outputs`): confirm `O`
    exists and is non-empty (`test -s`), AND — critically — that it is **not truncated**.
    `test -s` + a first-header grep both pass on a file that died mid-write, so for markdown
@@ -266,13 +306,35 @@ dimension `D` + spec `Spec`:
    **Generic non-triviality floor:** every markdown stage output must be ≥ 2 KB (`wc -c`);
    JSON stages must be ≥ 500 bytes. A file that passes section greps but is under the floor
    is treated as truncated (hollow — sections present but content missing).
-   For JSON stages: parses + has the required keys + expected counts. Per-stage anchors:
+   For JSON stages: parses + has the required keys + expected counts.
 
-   | Stage | Last-required-section anchor | Min-line floor |
-   |-------|------------------------------|----------------|
-   | explore (`synthesis-explore.md`) | `## Validated Mechanisms` (the completeness anchor; `## Blind Draw (IDs only)` must precede `## Vector Combinations`; ends with `## Action Deduplication Result`) | ~120 |
-   | build (`synthesis.md`) | `## Post-Synthesis Self-Review` | ~150 |
-   | enrichment / think-tank `.md` | the skill's final section | per skill |
+   > **Anchor match semantics — read once, applies to every anchor in this file.** All section
+   > anchors are **substring** matches against a heading line, never exact matches. Skills emit
+   > headings with counts and numbering (`## Vector Combinations (18)`,
+   > `## Customer Segments (3-4 total)`, `## Section 5: Research Limitations`,
+   > `### Tactic #3: <name> — [Pass 1 White Space]`), and all of those must match. An
+   > exact-match grep false-fails a correct output and triggers a needless regenerate.
+
+   Per-stage anchors. **These mirror `codex/checks.py` (`MARKDOWN_STAGES`) — the two
+   orchestrators must agree; change both in the same commit.**
+
+   | Stage | Required-section anchors (last one = the completeness anchor) | Min-line floor |
+   |-------|---------------------------------------------------------------|----------------|
+   | enrichment `competitors` | `Competitive Channel Matrix`, `Research Limitations` | ~35 |
+   | enrichment `audience` | `Customer Segments`, `Segment Evaluation Summary` | ~20 |
+   | enrichment `acquisition-tactics` | `Tactics Summary Dashboard`, `Research Sources` (**not** `Research Limitations` — that appears near the TOP of this one) | ~45 |
+   | think-tank `platform-arbitrage` | `Platform Audit Results`, `Research Limitations` | ~35 |
+   | think-tank `competitor-gaps` | `Tier 1`, `Tier 3`, `Executive Summary` (written LAST, after the three tiers) | ~30 |
+   | think-tank `cross-industry` | `Cross-Industry Case Studies`, `Transferable Patterns`, `Controversial` (`Research Sources` is research-mode-only, so it can't be the anchor) | ~35 |
+   | explore (`synthesis-explore.md`) | `Blind Draw (IDs only)` must physically precede `Vector Combinations`; then `Validated Mechanisms`, `Action Deduplication Result`, `Summary Statistics` (**the true last section**) | ~120 |
+   | build (`synthesis.md`) | `Post-Synthesis Self-Review` | ~150 |
+
+   > **`Post-Synthesis Self-Review` is correct — do not "fix" it.** The SKILL's
+   > `## Validation Checklist (final)` sits *outside* the output template fence: it is the
+   > worker's own self-check, never written into `synthesis.md`. Verified against real output,
+   > and asserted identically by `dev/smoke-test.sh` and `codex/checks.py`. Changing this anchor
+   > would fail the truncation check on every correct run and force a full regenerate of the
+   > most expensive, reviewer-gated stage in the pipeline.
 
    If the worker returned `ok` but `O` is missing / empty / **lacks its last-required section
    or falls under the floor** (i.e. truncated — a mid-write death), treat it like a dead
@@ -285,16 +347,27 @@ dimension `D` + spec `Spec`:
    brief plus `blocking_issues` injected verbatim; re-check; `iter++`. If `REJECTED` at
    `iter = 3` → mark `S` FAILED, record blocking_issues, stop dependents.
 
-   > **Smaller-retry rule (format-only fixes on a large existing file).** When the rejection
-   > is **format-only** (missing sections, missing checklist) and `O` already exists and is
-   > large, the re-dispatch brief MUST set `retry_mode: format-only` and instruct the fresh
-   > worker: **"use the `Edit` tool to ADD the missing sections in place; do NOT
-   > Read-then-Write the whole file."** The three writing workers now carry the `Edit` tool,
-   > so this is a real, small in-place patch — not a full regenerate. (A full rewrite of a
-   > ~900-line file is what repeatedly hit socket deaths in the field; a targeted `Edit` is
-   > far smaller and safer.) Fail-clean is unchanged: a worker that dies twice is still
-   > `worker-dispatch-failed` with a resume hint — **the orchestrator never does the worker's
-   > content work in the main thread, including never patching `O` itself.**
+   > **`edit_mode` — how a worker writes its output. ONE flag, defined here, used everywhere.**
+   > Any dispatch brief may carry it, and the three writing workers honor it:
+   >
+   > | Value | When the orchestrator sets it | What the worker does |
+   > |-------|-------------------------------|----------------------|
+   > | `full-write` (default) | ordinary stages, outputs up to a few hundred lines | one `Write` |
+   > | `incremental-append` | **always** on the Stage-4 `explore` and `build` steps; and on any respawn after an output-limit death | `Write` the header + first section, then `Edit`-append the rest in small batches, each well under ~10k tokens of content |
+   > | `format-only-patch` | a **format-only** reviewer rejection (missing sections/checklist) when `O` already exists and is large | `Edit` the missing sections in place; never Read-then-Write the whole file |
+   >
+   > `format-only-patch` supersedes the old `retry_mode: format-only` name — same behavior, one
+   > vocabulary, so a worker can't be handed two differently-named flags that mean the same
+   > thing. (A full rewrite of a ~900-line file is what repeatedly hit socket deaths in the
+   > field; a targeted `Edit` is far smaller and safer.) Fail-clean is unchanged: a worker that
+   > dies twice is still `worker-dispatch-failed` with a resume hint — **the orchestrator never
+   > does the worker's content work in the main thread, including never patching `O` itself.**
+   >
+   > **Sentinel-anchored appends.** Under `incremental-append` the worker's first `Write` ends
+   > with the line `<!-- end -->`; every append targets that sentinel and rewrites it at the new
+   > tail; the last append removes it. Without a fixed anchor the worker ends up matching text
+   > it wrote tens of thousands of tokens ago — a failure mode that produces a file which passes
+   > `test -s` and the size floor while missing its final sections.
 
 Stages **without** a reviewer gate — growth-factors, lite-constraints, the synthesis
 intermediate step(s), enrichment `audience` + `acquisition-tactics`, and all 3 think-tanks —
@@ -325,8 +398,7 @@ Recommended batching (≤4 questions/call; founders pick "Other" to free-type):
 
 Then dispatch **`research-worker`** with skill `diffmode-growth-tactics:diagnostics-intake`:
 - URL mode: pass the site URL + the collected `answers`. The worker scrapes homepage/
-  pricing/about + a research-backend pass (Perplexity if present, else WebSearch) to fill
-  researchable fields, folds in `answers`, marks
+  pricing/about + a web-research pass to fill researchable fields, folds in `answers`, marks
   any remaining gaps, writes `founder-input.md`.
 - No-website Q&A mode: pass the `answers` (incl. product/model/audience). The worker formats them
   into the schema (light research allowed to enrich product description + competitive
@@ -400,9 +472,9 @@ before moving on to Wave 2 / Stage 2):
   NOT set `remine`, the worker reuses it.
 - **Socket-death respawn = retry-in-place, NOT re-mine (cost fix).** This stage's deep-research
   passes are the priciest in the pipeline, and a mid-mine socket death used to make the fresh
-  respawn re-run them all from scratch (≈8 duplicated research-backend calls, Perplexity if
-  present else WebSearch — the single biggest
-  avoidable cost in the field). So whenever you re-spawn a **dead** growth-factors worker (per
+  respawn re-run them all from scratch (≈8 duplicated research-backend calls on either
+  backend — the single biggest avoidable cost in the field). So whenever you re-spawn a
+  **dead** growth-factors worker (per
   the worker-lifecycle rule / the Stage-3-boundary `died` path) **and a partial
   `growth-factors.json` already exists at the output path**, set **`resume_partial: true`** in
   the respawn brief. The fresh worker then reads the partial file, KEEPS the vectors already
@@ -410,14 +482,31 @@ before moving on to Wave 2 / Stage 2):
   deep-research passes already paid for. **Never combine `resume_partial` with `remine: true`**:
   `remine` means "discard the cache and re-research from scratch" (the opposite intent), so a
   respawn under `remine: true` re-mines fresh and ignores any partial file.
-- Record the long-running branch in the run-ledger as `growth-factors` (one row when dispatched,
-  one when it resolves, with `started_at`/`duration_s`).
+- Record the long-running branch in the run-ledger as `growth-factors`: one row when dispatched,
+  one when it resolves (carrying `started_at`, `duration_s` from the output file's mtime, and
+  `end_source: "mtime"`). Readers take the **last** row per `(stage, attempt)` — see *Run-ledger*.
 - The `acquisition-tactics.md` seed is "optional but recommended" — if mining is dispatched
   before Wave 2 finishes it simply won't have that seed yet, which the skill explicitly allows.
 
 **Collection happens at the Stage-3 boundary** (see Stage 3) — the orchestrator runs the
 growth-factors structural + clean-room check there, NOT here. This stage just launches the
-branch and keeps a handle on it.
+branch.
+
+> **A completion notification is NOT required to resolve this branch.** Background workers do
+> not reliably report back, and the branch's contract is the file, not the message. At the
+> Stage-3 boundary the branch is **`ok`** when `growth-factors.json` passes the check there —
+> whether or not its JSON summary was ever observed. It is **`died`** only when the file is
+> absent, unparseable, or fails the check. **Never classify a branch as `died` merely because
+> no summary arrived**: respawning on that basis puts a second worker on the same output path
+> and re-pays for the most expensive research in the pipeline.
+>
+> **Freshness guard (makes disk-resolution safe):** on an auto-resume **Continue**, a
+> `growth-factors.json` whose mtime predates this attempt's `started_at` is the *cached* file,
+> not this attempt's output — treat it as the cache (which Continue reuses by design), never as
+> proof that this attempt succeeded.
+>
+> This applies to Stage 1.5 only. The Stage-2 think-tanks are dispatched in one awaited batch,
+> so they have a real return to classify on and need no disk fallback.
 
 ## Stage 2 — Think-tank research (parallel, structural check only)
 
@@ -425,9 +514,8 @@ After enrichment outputs exist, **dispatch all three think-tanks in a SINGLE mes
 containing exactly three Agent tool calls** so they run concurrently (alongside the
 still-running Stage-1.5 mining branch). **Order them platform-arbitrage → competitor-gaps →
 cross-industry within that one message:** `platform-arbitrage` is the slowest branch and the
-only one that needs a research backend (Perplexity if present, else WebSearch; it runs on
-`research-worker`), so launching it first lets the
-two no-MCP analysis branches finish under its cover. **Do NOT split them across messages** —
+only one that needs web research (it runs on `research-worker`), so launching it first lets the
+two no-web analysis branches finish under its cover. **Do NOT split them across messages** —
 separate messages serialize the batch (the field bug that cost ~18 min); "single message,
 exactly three Agent calls" is load-bearing, and with the per-branch reviewer loops removed
 (below) the batch now resolves on its **slowest branch**, not the sum.
@@ -474,8 +562,10 @@ at the Stage-3 boundary below.
 
 **Stage-3 boundary precondition — collect + validate the Stage-1.5 mining branch (BLOCKING).**
 Before dispatching `lite-constraints`, the `growth-factors` branch launched in Stage 1.5 must
-have RESOLVED and passed its check. Classify it like any concurrent branch (record in the
-run-ledger): `ok` if it passes the check below; `died` → re-spawn a FRESH worker up to 2×
+have RESOLVED and passed its check. **RESOLVED means the check below passes against the file on
+disk** — the worker's JSON summary is welcome but not required, and its absence is never `died`
+(see Stage 1.5). Classify it and record in the
+run-ledger: `ok` if it passes the check below; `died` → re-spawn a FRESH worker up to 2×
 (carry **`resume_partial: true`** when a partial `growth-factors.json` is on disk and this
 is NOT a Start-fresh re-mine, so the respawn resumes mining the remainder instead of re-paying for
 the deep-research passes — see Stage 1.5); `failed` → still bad after 2 respawns. A failed
@@ -493,6 +583,34 @@ sums to total and no prefix > ~60%; every vector has `vector_id` (matching `{pre
 summary should say so; the schema requires real source URLs). If the check fails and the
 worker returned ok, re-dispatch once with the specific gap; max 2 attempts.
 
+> **Two vector-count bands, by design — not a contradiction to reconcile.** The Stage-3 **gate**
+> above is **15-40**: the mining skill explicitly permits ≥15 with a noted shortfall, and such a
+> run must not block synthesis. The **acceptance** target at the end of this file is the tighter
+> **20-40**. `dev/smoke-test.sh` and `codex/checks.py` implement the gate.
+>
+> **A zero-count category is normal**, not a defect: the mining skill deliberately makes `conv-`
+> rare and `psych-`/`pos-` conditional. Only the >60% concentration cap fails the check.
+
+**Citation spot-check (deterministic, orchestrator-side — the worker's own count is not
+evidence).** The research worker reports `citationsVerified`/`citationsDropped`, but the same
+worker assembled those citations, so its self-report cannot detect what it fabricated. Run an
+independent sweep at **two** boundaries only — the competitors gate (Stage 1) and here — because
+those two outputs feed everything downstream:
+
+- extract cited URLs from the output, take a sample of ~8 distinct hosts, and
+  `curl -sSIL --max-time 10 <url>`;
+- **only NXDOMAIN / DNS failure / hard 404 count as failures.** Tolerate 403 and other 4xx —
+  WAFs block automated HEADs routinely (the field has already hit one on G2), and failing a run
+  on a WAF is worse than the problem being solved;
+- **HEAD is not universally supported** — on a non-2xx/non-404 response, retry that URL once
+  with a ranged GET (`curl -sSL -r 0-0`) before calling it dead;
+- on a confirmed dead URL, re-dispatch that stage ONCE with the URL named in `blocking_issues`.
+  Record `citations_checked` / `citations_dead` in the ledger row.
+
+This is the one check that catches a hallucinated citation, which the no-web reviewer
+structurally cannot. In the field it has caught a fabricated case-study attribution, a dead
+link, and four mismatched source quotes across three separate stages.
+
 **Then dispatch lite-constraints.** Worker **`synthesis-worker`** with a **per-dispatch model
 override** (see Stage 4's *Model tiering* note):
 
@@ -503,11 +621,18 @@ override** (see Stage 4's *Model tiering* note):
 `lite-constraints` is a deterministic JSON build from the LIGHT DB, so dispatch it with
 `model: sonnet` (the Agent/Task tool's `model` param overrides the worker's `opus` default).
 
-**Structural check only** (no rubric): parses as JSON; has `diverse_white_space` (≥5 pairs),
-`mandatory_combinations` (pools A/B/C present), `prohibited_combinations` (the 5 generic
-conventional patterns), `anti_patterns`, and `category_diversity_requirements`
-(`max_single_category_pct: 60`). **Every vector ID referenced must exist in
-`growth-factors.json`** (cheap cross-check of a sample of ids). Re-dispatch once on failure.
+**Structural check only** (no rubric): parses as JSON; has `diverse_white_space` (≥5 pairs);
+`mandatory_combinations` — a **flat array** of `{pool, vectors, reason, priority}` (NOT an object
+keyed by pool) carrying all three pool values (`A_white_space`, `B_synergy`, `C_founder_leverage`),
+~5 items each; `prohibited_combinations` (the 5 generic conventional patterns); `anti_patterns`;
+and `category_diversity_requirements` (`max_single_category_pct: 60`). **Every vector ID
+referenced must exist in `growth-factors.json`** (cheap cross-check of a sample of ids).
+
+Also assert, on `category_diversity_requirements.minimum_unique_vectors_in_synthesis`:
+**every prefix whose `category_counts` is 0 maps to 0**, and the **sum across prefixes is ≤ 12**.
+Synthesis produces 7-9 tactics of 2-3 vectors, so a higher sum is unsatisfiable by construction —
+a minimum nobody can meet is worse than no minimum, because build silently violates it and the
+reviewer has no way to see that. Re-dispatch once on failure.
 
 ## Stage 4 — Synthesis chain (explore → build)
 
@@ -529,10 +654,16 @@ not-done and re-enters at lite-constraints.
 Both on **`synthesis-worker`** (no MCP, clean-room), sequentially — but **model-tiered**
 (see the *Model tiering* note below the table):
 
-| Step | Model | Skill | Inputs | Output | Gate |
-|------|-------|-------|--------|--------|------|
-| explore | **sonnet** | `:synthesis-explore` | founder-input; growth-factors.json; synthesis-constraints.json; audience-jtbd; the 3 think-tank reports | `…/synthesis-explore.md` | structural |
-| build | **opus** | `:synthesis-build` | synthesis-explore.md; synthesis-constraints.json; growth-factors.json; founder-input; audience-jtbd; competitors-analysis; competitor-gaps; cross-industry; platform-arbitrage; channel menu | `…/synthesis.md` | **reviewer-gated** |
+| Step | Model | `edit_mode` | Skill | Inputs | Output | Gate |
+|------|-------|-------------|-------|--------|--------|------|
+| explore | **sonnet** | `incremental-append` | `:synthesis-explore` | founder-input; growth-factors.json; synthesis-constraints.json; audience-jtbd; the 3 think-tank reports | `…/synthesis-explore.md` | structural |
+| build | **opus** | `incremental-append` | `:synthesis-build` | synthesis-explore.md; synthesis-constraints.json; growth-factors.json; founder-input; audience-jtbd; competitors-analysis; competitor-gaps; cross-industry; platform-arbitrage; channel menu | `…/synthesis.md` | **reviewer-gated** |
+
+> **Both rows carry `edit_mode: incremental-append` on the FIRST dispatch, not as a retry mode.**
+> These are the two largest outputs in the pipeline (~550 and ~650 lines), and they are the only
+> stages that have hit the response output-token ceiling. Waiting for a death to switch modes
+> means paying for the death every run: in the field, explore's one-shot attempt burned ~63
+> minutes and wrote no file at all, then succeeded in ~13 minutes with incremental writes.
 
 > **Model tiering (cost/latency tuning, no quality change expected).** The mechanical
 > blind-draw + mechanism-derivation stage — `explore` (its Phase 1 draws blind vector
@@ -554,9 +685,11 @@ Both on **`synthesis-worker`** (no MCP, clean-room), sequentially — but **mode
 **Structural check for `explore`:** file exists, non-empty, not truncated, with a min-line
 floor (~120). Verify the skill's required sections **in order** — `## Blind Draw (IDs only)`
 must **physically precede** `## Vector Combinations` (the Phase-1 blind-draw wall held), and
-`## Validated Mechanisms` (the completeness anchor — NOT `## Generated Tactics`, which is a
+`## Validated Mechanisms` (NOT `## Generated Tactics`, which is a
 build-only section and would always be absent here) must be present, followed by
-`## Action Deduplication Result`. Quick novelty smell-test: referenced vector IDs exist in
+`## Action Deduplication Result` and then `## Summary Statistics` — **that last one is the
+completeness anchor**, because it is the file's true final section. Quick novelty smell-test:
+referenced vector IDs exist in
 `growth-factors.json` and NO tactic names leak in. If explore's own validation marks it
 INVALID (e.g. verb groups < 7, or the blind-draw wall is out of order), spawn a fresh worker
 once with the gap.
@@ -564,7 +697,8 @@ once with the gap.
 **`must_include` enforcement gate — Bug-C fix (hardened).** Skill self-checks alone were
 shown to be skippable, so the orchestrator enforces this deterministically. Parse
 `synthesis-constraints.json` for the `must_include` pairs (`mandatory_combinations` pools
-A + B). A raw whole-file grep only proves *line-presence*, which is too weak — the two IDs
+A + B — i.e. filter the flat array on `priority == "must_include"`, which yields 10 pairs).
+A raw whole-file grep only proves *line-presence*, which is too weak — the two IDs
 could appear in unrelated combinations. So enforce **block-level co-occurrence**:
 
 - **After `explore` writes its output:** split the file into `### Combination #N` blocks (parse
@@ -578,7 +712,11 @@ could appear in unrelated combinations. So enforce **block-level co-occurrence**
   one combination and has no valid substitution — co-locate both IDs in one combination, or
   substitute with a replacement vector that exists in growth-factors.json").
 - **After `build` writes the final `synthesis.md` (closing check WITH remediation):** apply the
-  same block-level test per *tactic* — for each Pool-B `must_include` pair, both IDs must
+  same block-level test per *tactic*, but over **Pool B only** — filter the array on
+  `pool == "B_synergy"`, which yields 5 pairs. **This is deliberately narrower than explore's
+  A + B, not an oversight:** 7-9 tactics carrying 2-3 vectors each cannot co-locate 10 pairs, so
+  demanding A + B here would manufacture a gate that can never pass. Do not "unify" the two
+  selectors. For each Pool-B `must_include` pair, both IDs must
   appear within a single tactic's `**Source:** … Vectors` line/block, OR a valid substitution
   note (naming an existing replacement vector) must be present. If any Pool-B pair is neither
   validly used nor validly substituted, **re-dispatch build ONCE** with `blocking_issues`
@@ -743,6 +881,7 @@ For any FAILED stage, list its final `blocking_issues`.
 | `missing-channel-menu` | pre-flight | bundled channel menu absent from `${CLAUDE_PLUGIN_ROOT}/reference/` | reinstall the plugin |
 | `plugin-not-enabled` | any dispatch | a `diffmode-growth-tactics:…` id doesn't resolve | enable the plugin |
 | `worker-dispatch-failed` | any stage | worker died mid-run (API/socket error, no JSON) after 2 fresh re-spawns | stage FAILED; run `/diffmode-growth-tactics:start` again — it picks up from this point. No main-thread fallback |
+| `worker-output-limit` | any writing stage (explore/build in practice) | worker exceeded the response output-token ceiling mid-write — no JSON, and often **no partial file at all** | re-spawn with `edit_mode: incremental-append` (the death-retry exception); still dying after 2 → stage FAILED, same resume hint |
 | `intake-incomplete` | Stage 0 | founder-input has unresolved must-ask gaps | ask the founder the Confirmation Gaps |
 | `competitors-gate-failed` | Wave 1 | competitors REJECTED ×3 | inspect blocking_issues; downstream can't run |
 | `dimension-failed` | enrichment (Wave 2) | `audience`/`acquisition-tactics` structurally incomplete after a single re-dispatch (no reviewer loop in v2.3.0) | list the gap; dependents skipped |
@@ -780,17 +919,32 @@ auto-resume reliable, maintain a small, human-readable, **workspace-local**
 ledger at `WS/.run-state.json` and **append to it after every stage attempt**:
 
 ```json
-{ "stage": "enrichment:competitors", "attempt": 1, "verdict": "APPROVED", "score": 8, "started_at": 1717200000, "duration_s": 1080, "output": "WS/02-enrichment/competitors-analysis.md" }
-{ "stage": "growth-factors", "attempt": 1, "verdict": "OK", "started_at": 1717200200, "duration_s": 2280, "output": "WS/03-think-tanks/demand-generation/growth-factors.json" }
+{ "stage": "run", "plugin_version": "2.8.0", "plugin_root": "/…/diffmode-growth-tactics", "started_at": 1717199900 }
+{ "stage": "enrichment:competitors", "attempt": 1, "verdict": "APPROVED", "score": 8, "started_at": 1717200000, "duration_s": 1080, "backend": "websearch", "citations_checked": 8, "citations_dead": 0, "output": "WS/02-enrichment/competitors-analysis.md" }
+{ "stage": "growth-factors", "attempt": 1, "verdict": "OK", "started_at": 1717200200, "duration_s": 2280, "end_source": "mtime", "backend": "websearch", "output": "WS/03-think-tanks/demand-generation/growth-factors.json" }
 { "stage": "synthesis:build", "attempt": 2, "verdict": "REJECTED", "score": 6, "started_at": 1717206000, "duration_s": 900, "blocking": ["…"] }
 ```
 
-(JSON-lines, or an equivalent `WS/RUN-LOG.md` table — append-only, one row per attempt.)
+**Rows are events; the LAST row per `(stage, attempt)` wins.** A `DISPATCHED` row is an event,
+not a verdict — it is expected to be superseded by a terminal row with the same `stage` and
+`attempt`. Any reader (auto-resume above all) must take the last matching row, never the first.
+Without that rule a dangling `DISPATCHED` reads as "this stage is mid-flight" long after it
+finished, and a resume re-runs completed work.
+
+**The first row identifies the code that ran** — `plugin_version` (from `plugin.json`) and the
+resolved `${CLAUDE_PLUGIN_ROOT}`. A workspace outlives the session that produced it, and "which
+copy of the plugin was live?" is otherwise unanswerable after the fact.
+
+(JSON-lines, or an equivalent `WS/RUN-LOG.md` table — append-only.)
 
 - **Write a row after EVERY attempt** of every gated/structural stage: the verdict
   (`APPROVED` / `REJECTED` / `OK` / `FAILED` / `died→respawn`), the score where there is one,
   the **`started_at`** (epoch seconds from `date +%s` before dispatch) and **`duration_s`**
-  (epoch seconds after the attempt resolves, minus `started_at`), and the output path. The
+  (epoch seconds after the attempt resolves, minus `started_at` — or from the output file's
+  mtime for a branch you did not await, marked `end_source: "mtime"`), and the output path. On
+  research stages also record **`backend`** (`"websearch"` or `"perplexity"`; use
+  `"perplexity→websearch"` when a Perplexity call failed mid-stage and the worker continued on
+  the built-in search) and the citation spot-check counts. The
   per-stage `duration_s` is what the final report's timing column and the *Output/report*
   total wall-clock are read from — the first instrumented run replaces the rough minute
   estimates in this file with real numbers. (The `growth-factors` branch runs concurrently, so

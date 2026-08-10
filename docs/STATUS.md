@@ -4,7 +4,85 @@
 notes below) and tracks current state. For onboarding + install see [`README.md`](./README.md);
 for the design (orchestrator + skills + workers) see [`architecture.md`](./architecture.md).*
 
-Last updated: **2026-06-12**
+Last updated: **2026-08-10**
+
+> **Round-11 — Perplexity opt-in + the fypro.ai run's defect set (2026-08-10, plugin v2.8.0).**
+> A full test run on `fypro.ai` passed both reviewer gates at 9 and still surfaced eleven
+> defects — seven observed, four found by an adversarial review of the fix list itself. Three
+> of the first-draft fixes were **wrong and were reversed** (recorded below, because two would
+> have caused expensive regressions).
+>
+> 1. **Perplexity is opt-in, enforced structurally.** `research-worker` no longer carries
+>    `mcp__perplexity__*` at all; a new `agents/research-worker-perplexity.md` holds them and is
+>    dispatched **only** when `$ARGUMENTS` literally contains `perplexity` (never inferred from
+>    site copy or product text — the channel menu names Perplexity as a marketing channel).
+>    Pre-flight backend detection and the "~$2–3" cost notice are gone. Workers now return a
+>    `backend` field, including **`perplexity→websearch`** for a mid-run fallthrough. **Argued on
+>    cost and key-expiry, never quality** — §4c's no-delta finding and its n≥3 bar stand
+>    untouched. (Trigger: a configured Perplexity 401'd on the first research stage *after* the
+>    founder was told they were paying for it; every later stage ran on the built-in search and
+>    nothing recorded the switch.)
+> 2. **Output-limit deaths are recoverable.** `synthesis-explore` blew the response output
+>    ceiling, left **no file at all**, and cost ~63 min — and the spec's "identical brief"
+>    respawn would have reproduced it. New single `edit_mode`
+>    (`full-write` / `incremental-append` / `format-only-patch`, absorbing the old
+>    `retry_mode: format-only`), set to `incremental-append` **unconditionally** on Stage-4
+>    explore + build, with sentinel-anchored appends; new `worker-output-limit` failure code; the
+>    death-retry rule gained one documented exception clause covering `edit_mode` and
+>    `resume_partial`; `synthesis-explore` gained an output ceiling. (Same stage then succeeded
+>    in ~13 min writing incrementally.)
+> 3. **Anchor table ported from `codex/checks.py`** instead of reinvented in prose, with the
+>    match semantics finally stated (**substring**, never exact — skills emit
+>    `## Vector Combinations (18)`). The think-tank row, previously "the skill's final section"
+>    (unusable as a check), now names real anchors. Explore's completeness anchor corrected to
+>    `## Summary Statistics` (its true last section) on **both** sides.
+> 4. **`lite-constraints` minimums made satisfiable.** The share-of-DB rule is a port artifact
+>    from the 576-vector DB: on a 24-vector LIGHT DB it demanded 24 distinct vectors while 7-9
+>    tactics × 2-3 vectors caps you near 12-18. The run used 18 and **violated 4 of 5 minimums
+>    with nothing checking it** (reviewer still scored 9). New rule: 0 for empty prefixes,
+>    `min(2|3, count)` by share, **sum capped at 12**, with a worked example; the orchestrator now
+>    asserts both properties.
+> 5. **Concurrent-branch resolution + honest timing.** Stage 1.5 resolves from the on-disk file —
+>    a missing completion notification is explicitly **not** `died` (respawning on that basis
+>    duplicates the priciest worker), with a freshness guard for auto-resume. Non-awaited branch
+>    duration comes from output **mtime**, not first-observation (measured: mtime ≈591 s vs
+>    first-observation 1891 s against a true ~591 s).
+> 6. **Ledger discipline + provenance.** Rows are events; **last row per `(stage, attempt)`
+>    wins** (the run left two dangling `DISPATCHED` rows that auto-resume cannot disambiguate).
+>    First row records `plugin_version` + `plugin_root`, so a finished workspace can answer
+>    "which code ran?".
+> 7. **Independent citation spot-check** at the competitors gate and the growth-factors boundary:
+>    the worker's own `citationsVerified` count cannot detect what that worker fabricated.
+>    NXDOMAIN/hard-404 only, 403/WAF tolerated, ranged-GET fallback for hosts that reject HEAD.
+>    (The run had a real fabrication — a search summary attributing a case study to a page that
+>    did not contain it — caught by the worker's own Step 6, plus a dead link and four mismatched
+>    quotes elsewhere.)
+> 8. **Two repair jobs on the instruments themselves.** `dev/smoke-test.sh` **failed on the
+>    successful run** (`tail -5` against a final section carrying 9 lines of content) — every
+>    validation would have run against a red baseline. And `CLAUDE.md` claimed the full Codex
+>    orchestrator "is not built" while `orchestrate.py`/`checks.py`/`codex_dispatch.py` are
+>    tracked and working — that stale line is *why* the first draft reinvented four checks that
+>    `checks.py` already had, landing on worse answers for two.
+>
+> **REVERSED (kept as a warning):** (a) "correcting" `synthesis.md`'s anchor to
+> `## Validation Checklist (final)` — that heading is outside the template fence and never
+> emitted, so the change would have failed the truncation check on **every correct run** and
+> forced a regenerate of the most expensive gated stage; (b) stamping concurrent-branch duration
+> at first observation (~10× less accurate than mtime); (c) collapsing the 15-40 gate / 20-40
+> acceptance bands, which are a deliberate split documented in `checks.py`.
+>
+> **✅ Validated without a live run** (the completed `tmp/fypro.ai` workspace is the fixture):
+> `dev/smoke-test.sh` FAILED → **PASSED**; all 8 new/changed anchors present in real output;
+> `codex/checks.py` explore/build/growth-factors/constraints + all 6 markdown stages **pass**;
+> `claude plugin validate plugin` green; both manifests and the Codex `.toml` parse.
+> `plugin.json` 2.7.0 → **2.8.0**.
+>
+> **Deferred / follow-ups:** a full live run exercising `edit_mode` and the new minimums rule
+> end-to-end (Tier-3 behavior changes are unvalidated by construction); the soft per-stage
+> timeout on the Claude side is prose only (`orchestrate.py` enforces real subprocess timeouts);
+> `dev/` is gitignored, so the repo's only automated check is **not in the repo** — decide
+> whether to track `smoke-test.sh`; `codex/checks.py`'s self-test still fails one case against a
+> stale external fixture at `/tmp/diffmode-codex-smoke/` (missing Pool C), unrelated to this work.
 
 > **Round-10 — Founder-clean "Your Growth Tactics" report (2026-06-12, plugin v2.7.0).** The
 > medmastery run's deliverable audit (Marcus Chen) found the main report page rendering raw
@@ -248,7 +326,9 @@ Last updated: **2026-06-12**
 > NXDOMAIN / hard-404** before returning (reporting `citationsVerified` / `citationsDropped`); the
 > Perplexity path **skips** the re-fetch (its URLs are already grounded → no added latency). Both
 > orchestrators print a one-line **WebSearch-fallback-mode banner** when no Perplexity MCP is
-> detected (no hard gate — there never was one). The 5 research skills, both READMEs, `CLAUDE.md`,
+> detected (no hard gate — there never was one).
+> *[Corrected 2026-08-10: no such banner ships. `start.md` prints nothing about the backend, and
+> as of v2.8.0 it does not detect one at all — Perplexity is opt-in by name.]* The 5 research skills, both READMEs, `CLAUDE.md`,
 > `architecture.md`, and `eval-methodology.md` §4c were softened/updated to backend-neutral;
 > `plugin.json` 2.3.0 → **2.4.0**. **Codex side was unchanged in this round** — its
 > `research-worker` still required Perplexity; **mirrored in Round-6 below** (Codex parity).
@@ -323,14 +403,15 @@ studies (`growth-factors-mining` → `growth-factors.json`) and a skill replaces
 constraints generator (`lite-constraints`). The 4-step synthesis was ported and IP-scrubbed to
 read that LIGHT DB. Paid Diffmode keeps prioritization, implementation guides, and the real DB.
 
-**This work is written, validated (all 12 skills pass `quick_validate.py`), and the v2.3.0
+**This work is written, validated (`claude plugin validate plugin`, `dev/smoke-test.sh`, and
+`codex/checks.py`'s self-test — `quick_validate.py` lives in the private monorepo, not here), and the v2.3.0
 theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see the Round-4 note).**
 
 ## Status at a glance
 
 | Component | State |
 |-----------|-------|
-| 2 manifests (`plugin.json` v2.6.0 + repo-root `marketplace.json`) | ✅ done |
+| 2 manifests (`plugin.json` + repo-root `marketplace.json`) | ✅ done |
 | `diagnostics-intake` skill (URL prefill / minimal Q&A) | ✅ done |
 | 3 enrichment dimension skills | ✅ done (carried from v1; demographics removed 2026-05-28, purchase-objections removed 2026-06-01) |
 | 3 think-tank research skills (competitor-gaps, cross-industry, platform-arbitrage) | ✅ done |
@@ -338,9 +419,9 @@ theona.ai re-test PASSED every ship bar (2026-06-02) — SHIPPED at v2.3.0 (see 
 | `lite-constraints` (no-Python synthesis-constraints) | ✅ done |
 | 2 synthesis skills (`synthesis-explore` → `synthesis-build`) | ✅ done — fused from 4 (v2.3.0), IP-scrubbed |
 | `growth-reviewer` (parameterized, 7 rubrics) | ✅ done |
-| 4 worker sub-agents (research / analysis / synthesis / reviewer) | ✅ done |
+| 5 worker sub-agents (research / research-perplexity / analysis / synthesis / reviewer) | ✅ done |
 | Orchestrator (`start.md`, renamed from `run-growth-tactics.md` in Round-9) + standalone `run-enrichment.md` (hidden/dev) | ✅ done |
-| All 12 skills pass `quick_validate.py` | ✅ done |
+| All 13 skills pass `claude plugin validate plugin` | ✅ done |
 | Clean-room verified (nothing reads `tactics_DB/`) | ✅ done (grep + skill prohibitions) |
 | End-to-end live run | ✅ v2.3.0 theona.ai re-test PASSED (2026-06-02): 8 tactics, 88% unconv, 100% white-space, 0 phantom, build reviewer 9, 85 min, think-tanks 0s-parallel |
 | Git commit on `main` | ✅ v2.4.0 — Perplexity-optional (2026-06-02) |
@@ -355,8 +436,9 @@ Legend: ✅ done · 🟡 built not verified · ⬜ not started.
 
 Point-in-time, measured end-to-end on **theona.ai** (v2.3.0, `--fast-intake`, 2026-06-02).
 Aggregate: **~75–85 min** wall-clock (~75–80 clean; one synthesis socket-death respawn added
-~8 min) and **~5 deep `perplexity_research` + ~51 `perplexity_search` ≈ $2–3** — or free on the
-built-in WebSearch fallback. Overlapping stages share a start time:
+~8 min) and **~5 deep `perplexity_research` + ~51 `perplexity_search` ≈ $2–3** — that run predates
+v2.8.0 and used the (now opt-in) Perplexity path; on today's default built-in-search path the same
+run is free. Overlapping stages share a start time:
 
 | Stage | ~Time | Notes |
 |-------|-------|-------|
@@ -394,10 +476,12 @@ full hour.
 | Packaging | `founder-report` (post-gate, best-effort — re-packages synthesis.md as plain tactic cards) | `…/growth-tactics.md` (the founder-facing report) |
 | Review | `growth-reviewer` (+ 7 rubrics in `references/`) | JSON verdict |
 
-**4 worker sub-agents** ([`agents/`](./agents/)) — thin runners:
-- `research-worker` — web research (Perplexity + WebFetch): diagnostics URL mode, the
+**5 worker sub-agents** ([`agents/`](./agents/)) — thin runners:
+- `research-worker` — web research (`WebSearch` + `WebFetch`): diagnostics URL mode, the
   enrichment research dims (competitors, acquisition-tactics), platform-arbitrage,
   growth-factors mining.
+- `research-worker-perplexity` — the same worker plus the Perplexity MCP tools, dispatched
+  **only** when the founder opts in by naming `perplexity` in the command (v2.8.0).
 - `analysis-worker` — **no research MCP**: audience, competitor-gaps, cross-industry.
 - `synthesis-worker` — **no MCP, clean-room; default opus** but model-tiered per dispatch
   (lite-constraints + `explore` → sonnet, `build` → opus): lite-constraints + the 2

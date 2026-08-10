@@ -21,11 +21,10 @@ Distilled from the Diffmode AI-CMO enrichment methodology (ENR-004).
 - **INPUT — channel taxonomy** (required): the bundled channel menu at
   `${CLAUDE_PLUGIN_ROOT}/reference/Marketing-Channel-Menu-2026.md` — use as a
   systematic checklist so NO channels are overlooked.
-- **WEB RESEARCH** (required capability): web-research backend (Perplexity MCP when present,
-  else the built-in WebSearch fallback) for tactics/trends/data after the training cutoff and
-  for real-time verification. **Search-first, deep-research capped:** default to
-  `perplexity_search` (or WebSearch) and cap `perplexity_research` (deep) at **~1-2 calls**
-  for this stage, then fill in specifics with `search`.
+- **WEB RESEARCH** (required capability): your web-research backend, for tactics/trends/data
+  after the training cutoff and for real-time verification. **Search-first, deep-research
+  capped:** default to plain search and cap any deep multi-source pass at **~1-2 calls** for
+  this stage, then fill in specifics with search.
 - **OUTPUT**: `02-enrichment/acquisition-tactics.md` (path supplied by invoker).
 
 ## Scope (CRITICAL)

@@ -177,18 +177,20 @@ baseline · when you'd run it.*
 
 ### 4c. MCP-degradation delta
 
-- **Measures:** the quality gap between running the research worker **with Perplexity**
-  vs. with a **generic WebSearch fallback**. This is the number that justifies (or
-  retires) "require Perplexity."
-- **One case:** one fixture, generated twice — once with `mcp__perplexity__*`, once with
-  the fallback — scored by the pinned judge; the case's result is the *delta*.
+- **Measures:** the quality gap between the two research backends — the **built-in web
+  search** (the default) and an **opt-in Perplexity MCP**. This is the number that justifies
+  (or retires) any backend requirement.
+- **One case:** one fixture, generated twice — once on each backend — scored by the pinned
+  judge; the case's result is the *delta*.
 - **What varies:** the research backend. Prompt, host, judge held constant.
-- **Baseline:** the Perplexity-backed score; the delta against fallback is the finding.
-- **When:** before changing the research-backend requirement, or when a new fallback
+- **Reference cell:** the built-in path, since that is what ships by default. (This axis was
+  originally written with Perplexity as the baseline; the measurement below found no delta, so
+  neither cell is privileged.)
+- **When:** before changing the research-backend requirement, or when a new backend
   appears.
 - **⚠ Scope:** applies to the **4 research dimensions only** — `competitors`,
   `acquisition-tactics`, `demographics`, `purchase-objections`. It does **NOT** apply to
-  **`audience`**: the audience worker (`enrichment-analysis-worker`) ships with **no
+  **`audience`**: the audience worker (`analysis-worker`) ships with **no
   research MCP by design** (ENR-001 forbids new web search; the no-MCP worker enforces it
   structurally). There is no backend to degrade, so this axis is undefined for audience.
 
@@ -196,7 +198,7 @@ baseline · when you'd run it.*
   plugin ran **end-to-end on the built-in `WebSearch`/`WebFetch` alone** and **matched or beat**
   the Perplexity v2.3.0 baseline on every ship bar:
 
-  | Metric | Perplexity (baseline) | WebSearch fallback |
+  | Metric | Perplexity (baseline) | Built-in WebSearch |
   |---|---|---|
   | Pipeline completed | ✅ | ✅ |
   | Tactics | 8 | 8 |
@@ -208,17 +210,45 @@ baseline · when you'd run it.*
   | **Fabricated source domains** | **0 / 30 hosts** | **1 / 73 hosts** (`digitalailiens.com`) |
 
   Net: quality is comparable — WebSearch trades ~13pp of unconventional ratio for higher
-  white-space retention and a ~25% speedup (118 of 119 cited URLs on the fallback path
-  resolved). The **one real degradation** is grounded-citation integrity: the fallback
+  white-space retention and a ~25% speedup (118 of 119 cited URLs on the built-in path
+  resolved). The **one real degradation** is grounded-citation integrity: the built-in path
   fabricated **1** source (`digitalailiens.com`, NXDOMAIN) where Perplexity fabricated **0** —
-  Perplexity hands the model grounded result URLs while the fallback makes it assemble
+  Perplexity hands the model grounded result URLs while the built-in search makes it assemble
   citations, the expected failure mode of dropping a grounded-citation backend, and one the
   no-web reviewer structurally cannot catch.
 
+- **⚠️ The ~13pp unconventional-ratio gap did NOT reproduce (2026-06-11).** The v2.7.0 full-DAG
+  re-validation — same `theona.ai` fixture, **Perplexity OFF** — came in at **88% unconventional
+  / 8 tactics / build reviewer APPROVED 9 first-pass**, i.e. it *matched the Perplexity baseline
+  exactly* on the metric where the 2026-06-02 A/B showed the only quality deficit. The Codex A/B
+  (2026-06-04, gpt-5.5, Perplexity OFF) landed at 78% with 18/18 cited URLs live. With n=1 per
+  cell and runs one week apart straddling the baseline, **the unconventional-ratio delta is
+  run-to-run variance, not a backend effect.** Treat the two backends as **alternatives, not a
+  hierarchy** — and do not restore "quality slightly lower" language on the built-in path
+  anywhere in the plugin, the docs, or the marketplace copy. Re-open only with n≥3 per cell.
+
+  The citation asymmetry, by contrast, **is** mechanical and survives: it follows from *who
+  assembles the URL*, not from backend quality. That is why the Step-6 re-fetch is scoped to the
+  built-in path — and it is holding (the live Codex smoke swept 26 cited URLs / 15 hosts for 0
+  NXDOMAIN, 0 hard-404).
+
+- **Follow-on decision (shipped in plugin v2.8.0): Perplexity became opt-in — on cost and
+  reliability grounds, NOT on quality.** Nothing above is revised: the backends remain
+  alternatives with no measured quality delta, and the n≥3 bar to re-open that still stands.
+  What changed is that auto-detection was removed. A configured MCP was being treated as
+  consent, so a run announced a ~$2–3 paid backend to the founder, took an HTTP 401
+  (quota-exceeded) on its first research call, and silently completed every stage on the
+  built-in search — the cost notice was wrong, and nothing recorded the switch. Perplexity is
+  now dispatched only when the founder writes `perplexity` in the command, via a separate
+  worker file that isolates the tools; the default worker cannot reach them. Workers now report
+  a `backend` field (including `perplexity→websearch`) into the run-ledger, so a mid-run switch
+  is recorded rather than invisible. **Do not read this as evidence for either backend's
+  quality** — it is an argument about defaults, cost, and failure visibility only.
+
 - **Decision (shipped in plugin v2.4.0): "require Perplexity" is RETIRED — conditioned on a
-  citation-integrity check.** The `research-worker` now prefers Perplexity when present and
-  **falls back to the built-in `WebSearch`** otherwise. To kill the 0→1 fabrication failure
-  mode, the fallback path carries (a) a universal **citation-source rule** — "cite only URLs you
+  citation-integrity check.** The `research-worker` runs on the built-in `WebSearch` by
+  default and uses Perplexity when a server is configured. To kill the 0→1 fabrication failure
+  mode, the built-in path carries (a) a universal **citation-source rule** — "cite only URLs you
   actually retrieved this run; never reconstruct, recall, or invent a domain" — and (b) a
   **Step-6 citation-integrity re-fetch** that `WebFetch`-verifies every distinct cited domain
   not already landed on this run and **drops or re-grounds any NXDOMAIN / hard-404 URL** before

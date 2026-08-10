@@ -258,7 +258,7 @@ structural proof that Phase 1 preceded Phase 2 — keep it exactly:
 
 ## Blind Draw (IDs only)
 > Drawn BEFORE any analysis (Phase 1, step 1). IDs only — no descriptions, no tactics.
-- Pool A — White Space (5): `id` · `id` · `id` · `id` · `id`
+- Pool A — White Space (5 pairs): `id`+`id` · `id`+`id` · … (Pool A entries are PAIRS, same as B and C)
 - Pool B — Cross-Category Synergy (5): `id`+`id` · … (one per high-synergy pair)
 - Pool C — Founder Leverage (5): `id`+`id` · …
 - Substitutions (if the LIGHT DB was short): <pair> → <replacement id that exists in growth-factors.json>
@@ -277,6 +277,12 @@ structural proof that Phase 1 preceded Phase 2 — keep it exactly:
 | A1 | ... | ACCEPT/REJECT | PASS/FAIL |
 
 ## Vector Combinations (15-20)
+> **Length budget — this file has a hard ceiling.** Keep each combination to roughly 10 lines;
+> if the file passes ~600 lines, stop adding combinations and move to Phase 2. This is a working
+> paper the build stage reads for signal, not an essay. A one-shot write of an oversized version
+> of this file has exceeded the response output limit and killed the worker outright, producing
+> no file at all.
+
 ### Combination #N
 - **Vectors:** `id-1` + `id-2` [+ `id-3`]   (2-3 vectors max, never 4+)
 - **Pool Source:** A / B / C

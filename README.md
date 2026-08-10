@@ -43,13 +43,15 @@ Everything is yours to reuse. Hand the competitor read to a freelancer, drop the
 
 ## Why it's different
 
-Most marketing tools hand you a checklist: do SEO, run ads, post on LinkedIn. Diffmode does the opposite.
+Ask any LLM to "give me a growth strategy" and you get back the averaged playbook from its training data. Diffmode never asks the model to invent tactics — it asks it to research, mine, combine, and reject. The inventing is done by the pipeline's structure.
 
-**Mechanism, not tactic.** It stores *why* growth plays worked, not which channels were used. Mechanisms transfer across industries; channel checklists don't.
+**Mechanism, not tactic.** Each run mines 12–20 real case studies fresh, across industries, and distills each into *why* it worked — with sources, numbers, and failure modes kept. Clubhouse gave every user two invites and got a 10M-person waitlist and a $4B valuation on zero ad spend. The distilled mechanism: engineered scarcity turns users into recruiters competing for status — but it only buys time, because ~88% of them left the moment access opened. That failure mode stays in the record. It matters later.
 
-**Blind before analysis.** It picks which mechanisms to combine *before* it knows what tactic they'll produce. That stops the model from reverse-engineering its way back to the obvious answer.
+**Blind before analysis.** Mechanisms are paired *before* anyone knows what tactic they'll produce, so the model can't reverse-engineer its way back to the obvious answer. Pair the Clubhouse mechanism with the one behind Glossier's Boy Brow — a bestseller sourced straight from a blog's comment section — and out comes *invites that carry a real vote on what gets built next*. Access expires; authorship doesn't. The combination explicitly closes Clubhouse's failure mode, and neither case suggests it alone. The order is enforced in the file, not just requested: the blind draw has to physically precede the analysis. Open `synthesis-explore.md` from your own run and check that the model didn't work backwards.
 
-**Rejection is the product.** Four separate gates throw away anything an average marketer would recommend. Novelty isn't generated. It's what survives.
+**Rejection is the product.** Some pairings are banned before the run even opens — combinations whose outcome stays conventional no matter what lands in them ("talk to customers, then write content"). Everything else meets four gates. The Marketer Test: would an average B2B marketer recommend this — yes, it dies. The Reframing Test: strip the adjectives, and if the core action is still conventional, it dies. Emergence Proof: if each mechanism could have produced it alone, nothing was synthesized — it dies. Anti-sameness: ten tactics can't all be "write content". Novelty isn't generated. It's what survives.
+
+What's left becomes 7 to 9 tactics, each with a day-1 / day-7 / day-30 execution prototype and a "can a competitor copy this in 30 days?" check. A recent run: 24 mechanisms mined from 18 case studies, 18 blind pairs drawn, 8 tactics kept, 6 unconventional. At no point did the model answer the question "come up with tactics".
 
 ---
 
@@ -83,7 +85,7 @@ Same pipeline, same quality gates. Full setup in [`codex/CODEX.md`](codex/CODEX.
 ## Requirements
 
 - **[Claude Code](https://claude.com/claude-code)** or **[OpenAI Codex](https://developers.openai.com/codex)**.
-- **Research backend:** the built-in web search, free, nothing to set up. A Perplexity MCP also works if you already have one (about $2-3 per run). Both are fully supported.
+- **Research backend:** the built-in web search — free, nothing to set up, no API key. That's the whole requirement. If you'd rather spend ~$2-3 a run on your own Perplexity MCP, add the word `perplexity` to the command and it'll use that instead; otherwise it's never touched.
 - **Model:** synthesis runs on Opus for reasoning quality; research and packaging use Sonnet.
 
 ---

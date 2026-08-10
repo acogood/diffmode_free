@@ -28,7 +28,7 @@ the Codex side.
 |---|---|---|
 | Skills | `plugin/skills/*` (auto-discovered) | `.agents/skills/*` (symlinks to the same files) |
 | Orchestrator | `/start` slash command (`plugin/commands/start.md`) | a `PLANS.md` ExecPlan + `AGENTS.md` durable instructions |
-| Workers | `plugin/agents/*.md` (`tools:` lists `mcp__perplexity__*` + `WebSearch`) | `agents/*.toml` custom agents (Perplexity MCP **optional** + native `web_search`) |
+| Workers | `plugin/agents/*.md` (`tools:` — `WebSearch`/`WebFetch`; `mcp__perplexity__*` only on the opt-in `research-worker-perplexity`) | `agents/*.toml` custom agents (native `web_search`; Perplexity **opt-in**, gated in `developer_instructions`) |
 | Plugin root | `${CLAUDE_PLUGIN_ROOT}` resolves at runtime | no equivalent — the orchestrator passes checkout-relative paths |
 
 Codex won't honor a Claude slash command, so the orchestrator is **re-authored** (see
@@ -52,12 +52,19 @@ are the same files.
 
 ## Setup
 
-### 1. (Optional) register the Perplexity MCP server
+### 1. (Skip this — Perplexity is opt-in) register the Perplexity MCP server
 
-Perplexity is **optional**. Register it for lower-cost, higher-quality deep research on the
-research stages; **without it, `research-worker` falls back to the native `web_search` tool**
-(`-c web_search="live"` at dispatch — zero setup, no API key). This mirrors the Claude plugin,
-which prefers Perplexity when present and falls back to the built-in WebSearch (plugin v2.4.0).
+**You almost certainly do not need this section.** `research-worker` runs on the native
+`web_search` tool (`-c web_search="live"` at dispatch — zero setup, no API key), which is the
+default and only assumed backend. `orchestrate.py` hard-codes `--backend native`.
+
+Register Perplexity only if you specifically want to spend your own API budget on it, and note
+that on Codex a globally-registered server is **inherited into the worker's tool list** — the
+worker is instructed not to use it unless the dispatch brief opts in, but unlike the Claude side
+(which isolates the tools in a separate `research-worker-perplexity.md`) that separation is
+prose, not structure. Opt-in exists for cost and key-expiry reasons, not quality: the backends
+measured no quality delta (`../docs/eval-methodology.md` §4c), and an expired key silently
+swapping backends mid-run is the failure this guards (plugin v2.8.0).
 
 ```bash
 codex mcp add perplexity --env PERPLEXITY_API_KEY="pplx-…" -- npx -y @perplexity-ai/mcp-server
@@ -69,7 +76,8 @@ Only `research-worker` uses a research backend at all. `analysis-worker`, `synth
 
 ### 2. ⚠ The `KEY` / `TOKEN` env-stripping gotcha (only if you registered Perplexity)
 
-*(Skip this entirely if you're using the native `web_search` fallback — it needs no key.)*
+*(Skip this entirely unless you deliberately registered Perplexity above — the default native
+`web_search` path needs no key.)*
 
 Codex strips environment variables whose names contain `KEY` / `SECRET` / `TOKEN` by default.
 Without a fix, `PERPLEXITY_API_KEY` never reaches the MCP process and **research silently
@@ -122,15 +130,15 @@ every other worker is offline by construction:
 ## Smoke test (prove the shared-skill seam first)
 
 Before building the full orchestrator, confirm a single skill loads and runs standalone under
-Codex. Perplexity is optional here — the **native `web_search` fallback path is the one to prove**,
-since it is the new zero-setup default:
+Codex. Perplexity is optional here — the **native `web_search` path is the one to prove**, since
+it is the zero-setup default:
 
 1. Ensure `.agents/skills/enrichment-competitors` resolves:
    `ls -L .agents/skills/enrichment-competitors/SKILL.md`.
 2. Make `research-worker` discoverable (copy `agents/research-worker.toml` into your Codex agents
    dir, e.g. `~/.codex/agents/`).
-3. **Drive it Perplexity-OFF / native-`web_search`-ON** (the fallback path): a `codex exec` with
-   `-c web_search="live"` (enables native web search), **no Perplexity registered** (⇒ fallback),
+3. **Drive it Perplexity-OFF / native-`web_search`-ON** (the default path): a `codex exec` with
+   `-c web_search="live"` (enables native web search), **no Perplexity registered**,
    `--skip-git-repo-check`, `--sandbox workspace-write -c sandbox_workspace_write.network_access=true`
    (so the citation re-fetch can `curl`), and a brief — `skill = enrichment-competitors`,
    `inputs =` a `founder-input.md` you supply + the channel menu path

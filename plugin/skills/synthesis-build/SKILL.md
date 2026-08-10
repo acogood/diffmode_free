@@ -87,8 +87,10 @@ work be on the product roadmap anyway? If YES → not demand gen.
 1. **Load diverse white space** from `synthesis-constraints.json` (`diverse_white_space`).
    These are pre-filtered to exclude content-flywheel-type vectors and limit repetition
    (max 2 per anchor). Display the loaded pairs in a table. **Category awareness:** aim for
-   ≥2 different category prefixes across your 4-5 tactics (soft target here; Phase 2 enforces
-   hard minimums from `category_diversity_requirements`).
+   ≥2 different category prefixes across your 4-5 tactics (soft target here; Phase 2 applies
+   the per-prefix minimums from `category_diversity_requirements`, which are built to be
+   satisfiable within 7-9 tactics of 2-3 vectors — if a minimum is still unreachable, say so
+   explicitly in the disposition rather than silently missing it).
 2. **For each combination, derive the emergent mechanism** (reuse/extend the matching
    `synthesis-explore.md` mechanism where one exists): "What UNUSUAL capability emerges?" It
    must differ from what either vector produces alone and feel uncomfortable/counterintuitive.

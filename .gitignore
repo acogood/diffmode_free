@@ -21,3 +21,6 @@ __pycache__/
 *.swp
 .idea/
 .vscode/
+
+# Local test runs of the pipeline (never committed).
+tmp/

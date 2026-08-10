@@ -100,23 +100,40 @@ big markdown outputs into its own context except when it must inject a path.
 
 ## Model-agnostic research seam
 
-Skills describe a **capability** ("use the web-research backend; Perplexity when present,
-else the built-in WebSearch fallback"), never a vendor. The concrete tool is chosen by the
-**worker's `tools:` list**:
+Skills describe a **capability** ("use the web-research backend"), never a vendor. The concrete
+tool is chosen by the **worker's `tools:` list** — and, since v2.8.0, by *which worker file the
+orchestrator dispatches*:
 
-- Claude Code: `mcp__perplexity__perplexity_research` / `_search` **plus `WebSearch`** on the
-  `research-worker` — it **prefers Perplexity when present and falls back to the built-in
-  `WebSearch`** otherwise, with a Step-6 citation-integrity re-fetch on the fallback path that
-  drops any non-resolving (NXDOMAIN / hard-404) cited URL (shipped in plugin **v2.4.0**).
-- Codex: the custom agent declares the Perplexity MCP in `mcp_servers` (attached only if
-  registered) and otherwise **falls back to the native `web_search` tool** (enabled per-dispatch
-  with `-c web_search="live"`), with the **same citation-integrity re-fetch** on the fallback
-  path. So Diffmode is now **Perplexity-optional on BOTH runtimes** (Claude → built-in
-  `WebSearch`; Codex → native `web_search`), shipped 2026-06-02.
+- Claude Code: `research-worker` carries `WebSearch` + `WebFetch` and **nothing else**. A
+  Step-6 citation-integrity re-fetch drops any non-resolving (NXDOMAIN / hard-404) cited URL
+  and confirms the page actually contains the attributed claim.
+- Claude Code, opt-in: `research-worker-perplexity` is the same worker with
+  `mcp__perplexity__perplexity_research` / `_search` added. The orchestrator dispatches it
+  **only** when the founder wrote `perplexity` in `$ARGUMENTS`. It must report
+  `backend: "perplexity→websearch"` if a Perplexity call fails and it continues on the
+  built-in search.
+- Codex: the native `web_search` tool (enabled per-dispatch with `-c web_search="live"`), with
+  the **same citation-integrity re-fetch**. `orchestrate.py` hard-codes `--backend native`.
+
+**Selection is structural, not advisory.** The default worker cannot call Perplexity because
+the tools are absent from its definition — the same enforcement that keeps the analysis workers
+off the web. A prose instruction not to use a tool that is sitting in the tool list is the
+weakest pattern available, and this repo deliberately doesn't use it.
+
+**Why opt-in, precisely.** Not quality: `eval-methodology.md` §4c measured no delta and requires
+n≥3 to re-open that. It's that Perplexity bills a paid API and holds a key that can expire —
+which happened mid-run in the field (HTTP 401 on the first research stage) *after* the founder
+had been told they were paying for it, with every later stage silently running on the built-in
+search. Detection is not consent, and a configured server is not a request.
+
+The one mechanical asymmetry survives: Perplexity returns already-grounded result URLs, while on
+the built-in search the model assembles citations itself. That is why the re-fetch is the
+default path's non-negotiable gate, and why the opt-in worker skips it only for
+Perplexity-sourced URLs.
 
 The **audience** dimension is the exception (ENR-001 forbids new web searches). It is
-served by a dedicated **no-MCP worker** (`enrichment-analysis-worker`, `tools: [Read,
-Write, Glob, Grep]`) so the no-search rule is **structurally enforced** — not merely
+served by a dedicated **no-web worker** (`analysis-worker`, `tools: [Read, Write, Edit, Glob,
+Grep, Skill]`) so the no-search rule is **structurally enforced** — not merely
 requested in prose.
 
 ## Deterministic checks replace Python `verify_outputs`

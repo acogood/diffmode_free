@@ -572,7 +572,13 @@ def check_synthesis_explore(path: str | Path, constraints_path: str | Path, gf_p
     md = check_markdown(
         path,
         stage,
-        anchors=["Blind Draw", "Vector Combinations", "Validated Mechanisms", "Action Deduplication Result"],
+        # "Summary Statistics" is the template's true final section (it follows "Action
+        # Deduplication Result"), so it — not the dedup table — is the completeness anchor that
+        # proves the worker reached the end. Mirrored in plugin/commands/start.md's anchor table.
+        anchors=[
+            "Blind Draw", "Vector Combinations", "Validated Mechanisms",
+            "Action Deduplication Result", "Summary Statistics",
+        ],
         order_pairs=[("Blind Draw", "Vector Combinations"), ("Vector Combinations", "Validated Mechanisms")],
         forbid_headings=["Generated Tactics"],  # build-only — its presence = tactic-name leak
         min_lines=60,
@@ -772,7 +778,8 @@ if __name__ == "__main__":
                 "## Blind Draw (IDs only)\n- Pool A\n\n"
                 "## Vector Combinations (15-20)\n" + combo_blocks + "\n"
                 "## Validated Mechanisms\n### Mechanism #1\n- m\n\n"
-                "## Action Deduplication Result\n| x | y |\n"
+                "## Action Deduplication Result\n| x | y |\n\n"
+                "## Summary Statistics\n- stats\n"
                 + ("\nfiller line" * 100) + "\n",
                 encoding="utf-8",
             )
@@ -783,7 +790,8 @@ if __name__ == "__main__":
             broken_explore.write_text(
                 "# Synthesis Explore\n\n## Vector Combinations\n### Combination #1\n- **Vectors:** `x` + `y`\n\n"
                 "## Blind Draw (IDs only)\n- late\n\n## Validated Mechanisms\n- m\n"
-                "## Action Deduplication Result\n- d\n" + ("\nfiller" * 100),
+                "## Action Deduplication Result\n- d\n\n## Summary Statistics\n- stats\n"
+                + ("\nfiller" * 100),
                 encoding="utf-8",
             )
             report("broken explore (order wall) fails", check_synthesis_explore(broken_explore, sc, gf), False)

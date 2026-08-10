@@ -67,11 +67,31 @@ specific pairs.
    - "content flywheel" + any SEO/authority/backlink vector → "create content to rank".
 
 4. **`category_diversity_requirements`** (build reads this) — compute from
-   `growth-factors.json` `metadata.category_counts` exactly like the paid script:
+   `growth-factors.json` `metadata.category_counts`:
    `{ "total_vectors": N, "category_counts": {…}, "minimum_unique_vectors_in_synthesis":
    {prefix: min}, "max_single_category_pct": 60, "note": "No single category prefix should
-   exceed 60% of vectors used in synthesis output" }`. Minimum rule per prefix by its share
-   of total: share ≥25% → 6; ≥10% → 5; ≥2% → 2; else → 1.
+   exceed 60% of vectors used in synthesis output" }`.
+
+   **Minimum rule per prefix — must be satisfiable, or it is worse than no rule at all:**
+   - `count == 0` → **0**. Never 1. A category with no vectors cannot contribute one.
+   - share of total **< 10%** → `min(2, count)`
+   - share of total **≥ 10%** → `min(3, count)`
+   - **Then cap the whole set: the sum across prefixes must not exceed 12.** If it does, shave
+     from the largest minimums first until it fits.
+
+   The cap is the load-bearing part. Synthesis produces **7-9 tactics carrying 2-3 vectors
+   each**, so ~12 distinct vectors is the realistic ceiling and ~18 is the absolute one. A
+   share-of-DB rule (the shape the proprietary script uses against a much larger database)
+   inverts on a 20-40 vector LIGHT DB and demands *every vector in it*.
+
+   > **Worked example — a real run.** 24 vectors: `struct-` 5, `lever-` 6, `resource-` 6,
+   > `psych-` 5, `pos-` 2, `conv-` 0.
+   > Shares: 21%, 25%, 25%, 21%, 8%, 0%.
+   > Minimums: `struct-` 3, `lever-` 3, `resource-` 3, `psych-` 3, `pos-` 2, `conv-` 0 — sum 14.
+   > Over the cap of 12, so shave two from the largest: **`struct-` 3, `lever-` 3, `resource-` 2,
+   > `psych-` 2, `pos-` 2, `conv-` 0 — sum 12.** Satisfiable by an 8-tactic set.
+   > (The old share rule produced 5/6/6/5/2/1 — sum 25, i.e. "use every vector plus one that
+   > doesn't exist." Build silently violated four of the six and nothing noticed.)
 
 Also emit (lite versions of the script's other fields, used loosely by synthesis explore/build):
 
@@ -143,4 +163,6 @@ Also emit (lite versions of the script's other fields, used loosely by synthesis
 - [ ] `prohibited_combinations` includes the 5 generic conventional patterns.
 - [ ] `category_diversity_requirements` computed from real `category_counts`,
       `max_single_category_pct: 60`.
+- [ ] `minimum_unique_vectors_in_synthesis` is **satisfiable**: every zero-count prefix maps to
+      0, and the sum across prefixes is **≤ 12**.
 - [ ] `anti_patterns` present (the clean-room replacement for the proprietary anti-vectors).

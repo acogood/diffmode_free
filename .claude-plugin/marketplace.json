@@ -9,7 +9,7 @@
     {
       "name": "diffmode-growth-tactics",
       "source": "./plugin",
-      "description": "Free growth-strategy builder for startups that can't outspend their competitors. Point /start at your product URL and Diffmode researches who your buyers are and how your rivals win them, then builds 7-9 unconventional ways to get users — calibrated to your budget, stage, and team. You keep the competitor read, the buyer map, and the acquisition audit as briefs you can reuse. Runs locally into ./<slug>/ in your cwd; no account or API key; Perplexity optional, with free built-in web search otherwise.",
+      "description": "Free growth-strategy builder for startups that can't outspend their competitors. Point /start at your product URL and Diffmode researches who your buyers are and how your rivals win them, then builds 7-9 unconventional ways to get users — calibrated to your budget, stage, and team. You keep the competitor read, the buyer map, and the acquisition audit as briefs you can reuse. Runs locally into ./<slug>/ in your cwd; no account or API key needed — research runs on the built-in web search, with an opt-in Perplexity MCP path if you'd rather use your own.",
       "category": "marketing"
     }
   ]

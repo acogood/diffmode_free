@@ -40,9 +40,15 @@ ONLY from the input files + general knowledge.
 2. **Read the inputs.** `founder-input.md` first; use the enrichment outputs and the
    channel menu as the skill directs. Do not look anything up online.
 3. **Address `blocking_issues` first** (if present), then re-validate the whole output.
-   **If the brief flags the retry as format-only and the output file already exists, use
-   the `Edit` tool to ADD the missing sections in place — do NOT Read-then-Write the whole
-   file (a full rewrite of a large file risks a mid-write failure).**
+   **Honor `edit_mode` from the brief** (default `full-write`):
+   - **`format-only-patch`** — the output file already exists and the rejection was
+     format-only: use `Edit` to ADD the missing sections in place. Do NOT Read-then-Write the
+     whole file (a full rewrite of a large file risks a mid-write failure).
+   - **`incremental-append`** — never emit the whole document in one response: `Write` the
+     header + first section, then `Edit`-append the rest in batches, each well under ~10k
+     tokens of content. End the first `Write` with the line `<!-- end -->`, target that
+     sentinel with every append (rewriting it at the new tail), and remove it on the last
+     append. Exceeding the response output ceiling kills you and can leave **no file at all**.
 4. **Write the output** to the exact `output` path (overwrite if present). Use the skill's
    template structure. Write no other files.
 5. **Self-validate** against the skill's calibration before returning.

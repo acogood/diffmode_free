@@ -83,8 +83,8 @@ Keep each question answerable in a phrase. Never block on the optional one.
    if available) on the homepage, the pricing page, and the about/product page. Extract:
    what the product does, who it's for, business model, pricing tiers, free trial,
    positioning language.
-2. **Research the company + market** with your web-research backend (Perplexity MCP when
-   present, else the built-in WebSearch fallback — deep research + targeted search): confirm
+2. **Research the company + market** with your web-research backend (whatever search +
+   page-retrieval tools your runtime gave you): confirm
    the category, find direct + indirect
    competitors/alternatives, note stage signals if public (funding, team size, launch
    date). Cite URLs + access dates in a Research Notes footer.

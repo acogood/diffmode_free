@@ -65,7 +65,7 @@ authority on scope, frameworks, output template, and validation. Reviewer rubric
 
 | Worker (`codex/agents/*.toml`) | Web access | Used for |
 |--------------------------------|-----------|----------|
-| `research-worker` | native `web_search` (built-in) + Perplexity MCP (optional) | diagnostics-intake (URL), enrichment research dims, platform-arbitrage, growth-factors-mining |
+| `research-worker` | native `web_search` (built-in, the default) · Perplexity MCP **opt-in only** | diagnostics-intake (URL), enrichment research dims, platform-arbitrage, growth-factors-mining |
 | `analysis-worker` | **none (enforced)** | enrichment-audience, competitor-gaps, cross-industry (analysis mode) |
 | `synthesis-worker` | **none (enforced)** | lite-constraints, synthesis explore → build |
 | `reviewer-worker`  | none | every reviewer-gated stage |
@@ -74,10 +74,18 @@ The no-web workers deliberately have **no `mcp_servers`** **and are dispatched w
 `web_search = "disabled"`** — both halves are required on Codex (the native `web_search` tool
 defaults to `cached`, i.e. web-cache, so "no `mcp_servers`" alone would still leave a web path
 open). `research-worker` declares **no** `mcp_servers` array — on Codex that field is a *map* keyed
-by server name (a bare list silently voids the whole agent file); instead it **inherits a
-globally-registered Perplexity MCP** (`codex mcp add perplexity`) when present, and is the only
-worker dispatched with web enabled (`-c web_search="live"`). Absent Perplexity it falls back to the
-native `web_search` tool — Perplexity-optional on Codex, mirroring the Claude plugin (v2.4.0).
+by server name (a bare list silently voids the whole agent file) — and is the only worker
+dispatched with web enabled (`-c web_search="live"`). It runs on the **native `web_search` tool**,
+which is the default and only assumed backend; `orchestrate.py` hard-codes `--backend native`.
+
+**Perplexity is opt-in and is never selected just because it is there.** A globally-registered
+server (`codex mcp add perplexity`) *is* inherited into the worker's tool list, so on Codex the
+isolation cannot be structural the way it is on Claude (which ships a separate
+`research-worker-perplexity.md` holding the tools). The rule is therefore enforced in the
+worker's `developer_instructions` → `<research_backend>`: use Perplexity **only** when the
+dispatch brief opts in, and report a mid-run fallthrough rather than switching silently. Both
+backends are alternatives with no measured quality delta (`../docs/eval-methodology.md` §4c) —
+opt-in is a cost and key-expiry decision (v2.8.0), not a quality one.
 
 ## The DAG
 

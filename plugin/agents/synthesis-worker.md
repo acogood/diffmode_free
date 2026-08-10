@@ -58,10 +58,20 @@ per-run LIGHT DB and stops at synthesis — full-depth *ideas*, deliberately lig
    `growth-factors.json`; white-space pairs / synergy pools / founder-leverage pools /
    prohibited combos / category-diversity requirements come from `synthesis-constraints.json`.
 3. **Address `blocking_issues` first** (if present), then re-run the skill's validation.
-   **If the brief flags the retry as format-only and the output file already exists, use
-   the `Edit` tool to ADD the missing sections in place — do NOT Read-then-Write the whole
-   file (a full rewrite of a large file — e.g. the final `synthesis.md` — is what hit
-   socket deaths in the field).**
+   **Honor `edit_mode` from the brief** (default `full-write`; the Stage-4 `explore` and
+   `build` steps always set `incremental-append`):
+   - **`incremental-append`** — **never emit the whole document in one response.** `Write` the
+     header + first section, then `Edit`-append the rest in batches, each well under ~10k
+     tokens of content (e.g. ~5 combinations or ~4 mechanisms per call). End the first `Write`
+     with the line `<!-- end -->`, target that sentinel with every append (rewriting it at the
+     new tail), and remove it on the last append. **This is not optional politeness:** a
+     one-shot write of `synthesis-explore.md` exceeded the response output ceiling in the
+     field, killed the worker, left **no file at all**, and cost ~63 minutes — the same stage
+     then succeeded in ~13 minutes writing incrementally.
+   - **`format-only-patch`** — the output file already exists and the rejection was
+     format-only: use `Edit` to ADD the missing sections in place — do NOT Read-then-Write the
+     whole file (a full rewrite of a large file — e.g. the final `synthesis.md` — is what hit
+     socket deaths in the field).
 4. **Write the output** to the exact `output` path (overwrite if present). Use the skill's
    output template verbatim. Write no other files.
 5. **Self-validate** against the skill's validation checkpoint before returning. For

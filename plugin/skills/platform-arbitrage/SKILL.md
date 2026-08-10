@@ -42,8 +42,7 @@ If a file is inaccessible, note the missing data and proceed.
 
 ## Invocation — REQUIRES web research
 
-Run by the **research-worker** with a web-research backend (Perplexity MCP when present, else
-the built-in WebSearch fallback). Feature
+Run by the **research-worker**, which carries a web-research backend. Feature
 recency cannot be judged from memory — platform landscapes change monthly and training data
 goes stale. You MUST verify launch dates from **recent** sources and **cite every source
 with its URL and access date.** A feature whose launch date you cannot verify within the
